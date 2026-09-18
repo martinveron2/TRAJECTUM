@@ -1,16 +1,18 @@
 from .aerodynamics import (
     CPContribution,
     CPResult,
+    axisymmetric_nose_cp_from_profile,
     combine_cp,
     tangent_ogive_cp,
     trapezoidal_fin_set_cp,
 )
-from .analysis import EngineeringResult, analyze_vehicle
+from .analysis import EngineeringResult, MissionSample, analyze_vehicle
 from .atmosphere import AtmosphereState, isa_troposphere
 from .cdr import CDRRun, run_cdr_case
 from .components import (
     ComponentMassProperty,
     axial_uniform_cg,
+    axisymmetric_shell_cg_from_profile,
     combine_component_mass_properties,
     tangent_ogive_shell_cg,
     trapezoidal_fin_planform_cg_x,
@@ -35,6 +37,7 @@ __all__ = [
     "FlightResult",
     "MassPoint",
     "MassProperties",
+    "MissionSample",
     "Motor",
     "RecoveryConfig",
     "RecoveryPoint",
@@ -42,6 +45,8 @@ __all__ = [
     "StaticMargin",
     "analyze_vehicle",
     "axial_uniform_cg",
+    "axisymmetric_nose_cp_from_profile",
+    "axisymmetric_shell_cg_from_profile",
     "center_of_gravity",
     "combine_component_mass_properties",
     "combine_cp",

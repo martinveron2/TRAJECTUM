@@ -97,6 +97,9 @@ def test_full_analysis_endpoint():
     assert data["deployment_altitude_m"] is not None
     assert data["landing_time_s"] > data["time_to_apogee_s"]
     assert data["impact_speed_m_s"] > 0
+    assert len(data["mission_timeline"]) > 10
+    assert data["mission_timeline"][0]["phase"] == "BOOST"
+    assert data["mission_timeline"][-1]["phase"] == "LANDED"
 
 
 def test_cad_formats_endpoint():

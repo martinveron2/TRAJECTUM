@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import sqrt
+from itertools import pairwise
+from math import pi, sqrt
 
 
 @dataclass(frozen=True)
@@ -101,3 +102,31 @@ def combine_cp(*parts: CPContribution) -> CPResult:
         cn_alpha_total=total_cn,
         contributions=tuple(parts),
     )
+
+
+def axisymmetric_nose_cp_from_profile(
+    profile: tuple[tuple[float, float], ...],
+    *,
+    base_radius_m: float,
+) -> CPContribution:
+    """Barrowman slender-body nose CP from an axisymmetric radius profile.
+
+    Profile stations are (x, radius) in metres with x=0 at the tip.
+    For a body of revolution, x_CP = L - V/A_base and CN_alpha = 2.
+    """
+    if len(profile) < 3 or base_radius_m <= 0:
+        raise ValueError("A valid nose profile and positive base radius are required.")
+    ordered = tuple(sorted(profile))
+    if ordered[0][0] < -1e-12:
+        raise ValueError("Nose profile x coordinates must be non-negative.")
+    length = ordered[-1][0]
+    if length <= 0:
+        raise ValueError("Nose profile length must be positive.")
+    volume = 0.0
+    for (x0, r0), (x1, r1) in pairwise(ordered):
+        dx = x1 - x0
+        if dx <= 0 or min(r0, r1) < 0:
+            raise ValueError("Nose profile stations must be ordered with non-negative radii.")
+        volume += 0.5 * (pi * r0**2 + pi * r1**2) * dx
+    base_area = pi * base_radius_m**2
+    return CPContribution(name="nose", cn_alpha=2.0, x_cp_m=length - volume / base_area)

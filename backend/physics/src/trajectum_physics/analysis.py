@@ -1,15 +1,28 @@
 from __future__ import annotations
 
+from bisect import bisect_left
 from dataclasses import dataclass
-from math import pi
+from math import ceil, pi
 
-from .aerodynamics import combine_cp, tangent_ogive_cp, trapezoidal_fin_set_cp
+from .aerodynamics import CPContribution, combine_cp, tangent_ogive_cp, trapezoidal_fin_set_cp
 from .atmosphere import isa_troposphere
 from .mass import MassPoint, center_of_gravity
 from .propulsion import Motor
-from .recovery import RecoveryConfig, simulate_recovery
+from .recovery import RecoveryConfig, RecoveryPoint, RecoveryResult, simulate_recovery
 from .stability import static_margin
-from .trajectory import FlightConfig, simulate_to_apogee
+from .trajectory import FlightConfig, FlightPoint, FlightResult, simulate_to_apogee
+
+
+@dataclass(frozen=True)
+class MissionSample:
+    t_s: float
+    phase: str
+    x_m: float
+    altitude_m: float
+    speed_m_s: float
+    vertical_speed_m_s: float
+    q_pa: float
+    parachute_deployed: bool
 
 
 @dataclass(frozen=True)
@@ -27,6 +40,91 @@ class EngineeringResult:
     deployment_altitude_m: float | None
     landing_time_s: float
     impact_speed_m_s: float
+    mission_timeline: tuple[MissionSample, ...]
+
+
+def _nearest_flight(points: tuple[FlightPoint, ...], t_s: float) -> FlightPoint:
+    times = [p.t_s for p in points]
+    idx = bisect_left(times, t_s)
+    if idx <= 0:
+        return points[0]
+    if idx >= len(points):
+        return points[-1]
+    before, after = points[idx - 1], points[idx]
+    return after if abs(after.t_s - t_s) < abs(before.t_s - t_s) else before
+
+
+def _nearest_recovery(points: tuple[RecoveryPoint, ...], t_s: float) -> RecoveryPoint:
+    times = [p.t_s for p in points]
+    idx = bisect_left(times, t_s)
+    if idx <= 0:
+        return points[0]
+    if idx >= len(points):
+        return points[-1]
+    before, after = points[idx - 1], points[idx]
+    return after if abs(after.t_s - t_s) < abs(before.t_s - t_s) else before
+
+
+def _build_mission_timeline(
+    trajectory: FlightResult,
+    recovery: RecoveryResult,
+    *,
+    motor_burn_time_s: float,
+) -> tuple[MissionSample, ...]:
+    samples: list[MissionSample] = []
+    apex_x = max(trajectory.points, key=lambda p: p.z_m).x_m
+    event_times = {
+        0.0,
+        motor_burn_time_s,
+        trajectory.time_to_apogee_s,
+        recovery.landing_time_s,
+    }
+    if recovery.deployment_time_s is not None:
+        event_times.add(recovery.deployment_time_s)
+
+    second_marks = {float(t) for t in range(ceil(recovery.landing_time_s) + 1)}
+    for t in sorted(event_times | second_marks):
+        if t <= trajectory.time_to_apogee_s:
+            point = _nearest_flight(trajectory.points, t)
+            if abs(t - trajectory.time_to_apogee_s) < 1e-6:
+                phase = "APOGEE"
+            elif t <= motor_burn_time_s:
+                phase = "BOOST"
+            else:
+                phase = "COAST"
+            samples.append(
+                MissionSample(
+                    t_s=t,
+                    phase=phase,
+                    x_m=point.x_m,
+                    altitude_m=max(point.z_m, 0.0),
+                    speed_m_s=point.speed_m_s,
+                    vertical_speed_m_s=point.vz_m_s,
+                    q_pa=point.q_pa,
+                    parachute_deployed=False,
+                )
+            )
+        else:
+            point = _nearest_recovery(recovery.points, t)
+            atmosphere = isa_troposphere(max(point.altitude_m, 0.0))
+            q = 0.5 * atmosphere.density_kg_m3 * point.velocity_m_s**2
+            phase = "PARACHUTE" if point.parachute_deployed else "DESCENT"
+            if point.altitude_m <= 0.01:
+                phase = "LANDED"
+            samples.append(
+                MissionSample(
+                    t_s=t,
+                    phase=phase,
+                    x_m=apex_x,
+                    altitude_m=max(point.altitude_m, 0.0),
+                    speed_m_s=abs(point.velocity_m_s),
+                    vertical_speed_m_s=point.velocity_m_s,
+                    q_pa=q,
+                    parachute_deployed=point.parachute_deployed,
+                )
+            )
+    return tuple(samples)
+
 
 def analyze_vehicle(
     *,
@@ -46,9 +144,10 @@ def analyze_vehicle(
     parachute_area_m2: float = 0.20,
     deploy_altitude_m: float | None = None,
     deploy_delay_s: float = 0.0,
+    nose_cp_contribution: CPContribution | None = None,
 ) -> EngineeringResult:
     mass = center_of_gravity(masses)
-    nose = tangent_ogive_cp(nose_length_m)
+    nose = nose_cp_contribution or tangent_ogive_cp(nose_length_m)
     fins = trapezoidal_fin_set_cp(
         count=fin_count,
         body_diameter_m=body_diameter_m,
@@ -98,6 +197,11 @@ def analyze_vehicle(
         initial_vertical_velocity_m_s=0.0,
         initial_time_s=trajectory.time_to_apogee_s,
     )
+    timeline = _build_mission_timeline(
+        trajectory,
+        recovery,
+        motor_burn_time_s=motor.burn_time_s,
+    )
 
     return EngineeringResult(
         total_mass_kg=mass.total_mass_kg,
@@ -113,4 +217,5 @@ def analyze_vehicle(
         deployment_altitude_m=recovery.deployment_altitude_m,
         landing_time_s=recovery.landing_time_s,
         impact_speed_m_s=recovery.impact_speed_m_s,
+        mission_timeline=timeline,
     )

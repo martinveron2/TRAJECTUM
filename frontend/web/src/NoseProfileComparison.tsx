@@ -23,7 +23,7 @@ function points(profile: Profile, length = 180, radius = 31.5) {
 }
 
 const cards: { key: Profile; title: string; note: string }[] = [
-  { key: 'tangent_ogive', title: 'Tangent ogive', note: 'Current baseline · smooth tangent junction' },
+  { key: 'tangent_ogive', title: 'Tangent ogive', note: 'Classic reference · smooth tangent junction' },
   { key: 'von_karman', title: 'Von Kármán', note: 'Haack C=0 · low-wave-drag family' },
   { key: 'power_series', title: 'Power series', note: 'n=0.75 · sharper geometric alternative' },
 ];
@@ -35,6 +35,6 @@ export function NoseProfileComparison({ selected }: { selected: string }) {
       <svg viewBox="0 0 190 72"><polyline points={points(card.key)} fill="none" stroke="currentColor" strokeWidth="2"/><line x1="10" y1="60" x2="172" y2="60" stroke="currentColor" strokeOpacity=".25"/></svg>
       <strong>{card.title}</strong><span>{card.note}</span>
     </div>)}</div>
-    <p className="cad-note">The visual comparison preserves length and base diameter. TRAJECTUM still uses the validated tangent-ogive Barrowman nose CP model for the current numerical CDR run; alternate-profile aerodynamic models remain a separate validation task.</p>
+    <p className="cad-note">All three preserve the same length and base diameter. TRAJECTUM derives nose CP from each axisymmetric profile volume and nose-shell xCG from its surface geometry; final CDR validation should still document which family is frozen.</p>
   </div>;
 }

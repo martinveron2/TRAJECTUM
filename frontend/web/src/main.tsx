@@ -45,7 +45,7 @@ const initialVehicle: Vehicle = {
   sweep: 20,
   finX: 760,
   airfoil: 'NACA 0012',
-  noseProfile: 'tangent_ogive',
+  noseProfile: 'von_karman',
   launchAngle: 85,
   cd: 0.55,
   parachuteCd: 1.5,
