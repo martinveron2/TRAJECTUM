@@ -23,6 +23,7 @@ if (!$SkipUpdate) {
 
 $VenvDir = Join-Path $Root ".venv"
 $VenvPython = Join-Path $VenvDir "Scripts\python.exe"
+$FreshVenv = $false
 
 Say "Preparing Python"
 $NeedFreshVenv = !(Test-Path $VenvPython)
@@ -36,18 +37,50 @@ if ($NeedFreshVenv) {
         Remove-Item $VenvDir -Recurse -Force
     }
     python -m venv $VenvDir
+    $FreshVenv = $true
 }
 
-# Always invoke tools through the venv Python. Windows entry-point .exe launchers
-# embed absolute paths and break if the repository folder is moved or renamed.
-& $VenvPython -m pip install -q --upgrade pip
-foreach ($module in @("core","physics","cad","validation","api","reporting")) {
-    & $VenvPython -m pip install -q -e "$Root\backend\$module[dev]"
+# Editable installs only need to be repeated when package manifests change.
+# Source-code updates are visible immediately through the editable links.
+$ManifestFiles = Get-ChildItem -Path (Join-Path $Root "backend") -Filter "pyproject.toml" -Recurse |
+    Sort-Object FullName
+$ManifestFingerprint = ($ManifestFiles | ForEach-Object {
+    (Get-FileHash $_.FullName -Algorithm SHA256).Hash
+}) -join "|"
+$DepsStamp = Join-Path $VenvDir ".trajectum-python-deps"
+$InstalledFingerprint = if (Test-Path $DepsStamp) { Get-Content $DepsStamp -Raw } else { "" }
+
+if ($FreshVenv -or $InstalledFingerprint -ne $ManifestFingerprint) {
+    Say "Python dependencies changed - installing once"
+    & $VenvPython -m pip install --disable-pip-version-check -q --upgrade pip
+    foreach ($module in @("core","physics","cad","validation","api","reporting")) {
+        Write-Host "  -> $module"
+        & $VenvPython -m pip install --disable-pip-version-check -q -e "$Root\backend\$module[dev]"
+        if ($LASTEXITCODE -ne 0) { throw "Python install failed for module: $module" }
+    }
+    Set-Content -Path $DepsStamp -Value $ManifestFingerprint -NoNewline
+    Write-Host "  Python dependencies ready."
+} else {
+    Write-Host "  Python dependencies unchanged - using cached environment."
 }
 
 Say "Preparing frontend"
 Push-Location "$Root\frontend\web"
-npm install --silent
+$PackageHash = (Get-FileHash (Join-Path $Root "frontend\web\package.json") -Algorithm SHA256).Hash
+$LockPath = Join-Path $Root "frontend\web\package-lock.json"
+if (Test-Path $LockPath) {
+    $PackageHash += "|" + (Get-FileHash $LockPath -Algorithm SHA256).Hash
+}
+$NodeStamp = Join-Path $Root "frontend\web\node_modules\.trajectum-node-deps"
+$NodeFingerprint = if (Test-Path $NodeStamp) { Get-Content $NodeStamp -Raw } else { "" }
+if (!(Test-Path (Join-Path $Root "frontend\web\node_modules")) -or $NodeFingerprint -ne $PackageHash) {
+    Write-Host "  -> npm dependencies"
+    npm install --silent
+    if ($LASTEXITCODE -ne 0) { throw "npm install failed" }
+    Set-Content -Path $NodeStamp -Value $PackageHash -NoNewline
+} else {
+    Write-Host "  Frontend dependencies unchanged - using cache."
+}
 Pop-Location
 
 Say "Starting API"
