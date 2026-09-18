@@ -33,7 +33,13 @@ function parseDxfPolyline(text: string): Point[] {
   return points;
 }
 
-export function CadInteroperabilityPanel() {
+type ImportedGeometry = {
+  totalLength: number;
+  diameter: number;
+  noseLength: number | null;
+};
+
+export function CadInteroperabilityPanel({ onGeometryImported }: { onGeometryImported?: (geometry: ImportedGeometry) => void }) {
   const [fileName, setFileName] = useState('');
   const [preview, setPreview] = useState<Point[]>([]);
   const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
@@ -42,7 +48,25 @@ export function CadInteroperabilityPanel() {
   const onFile = async (file?: File) => {
     setFileName(file?.name ?? ''); setPreview([]);
     if (!file || !file.name.toLowerCase().endsWith('.dxf')) return;
-    setPreview(parseDxfPolyline(await file.text()));
+    const points = parseDxfPolyline(await file.text());
+    setPreview(points);
+    if (points.length > 2 && onGeometryImported) {
+      const minX = Math.min(...points.map((p) => p.x));
+      const maxX = Math.max(...points.map((p) => p.x));
+      const minY = Math.min(...points.map((p) => p.y));
+      const maxY = Math.max(...points.map((p) => p.y));
+      const radius = Math.max(Math.abs(minY), Math.abs(maxY));
+      const tolerance = Math.max(radius * 0.002, 0.02);
+      const upper = points
+        .filter((p) => p.y >= 0)
+        .sort((a, b) => a.x - b.x);
+      const junction = upper.find((p) => Math.abs(p.y - radius) <= tolerance);
+      onGeometryImported({
+        totalLength: maxX - minX,
+        diameter: 2 * radius,
+        noseLength: junction ? junction.x - minX : null,
+      });
+    }
   };
 
   const bounds = preview.length ? {

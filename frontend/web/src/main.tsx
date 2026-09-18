@@ -154,6 +154,21 @@ function App() {
     setVehicle((current) => ({ ...current, [key]: value }));
   };
 
+  const importCadGeometry = (geometry: { totalLength: number; diameter: number; noseLength: number | null }) => {
+    setVehicle((current) => {
+      const noseLength = geometry.noseLength ?? current.noseLength;
+      const currentBay = Number(current.bayLength) || 0;
+      const lowerBody = Math.max(geometry.totalLength - Number(noseLength) - currentBay, 0);
+      return {
+        ...current,
+        totalLength: Number(geometry.totalLength.toFixed(3)),
+        diameter: Number(geometry.diameter.toFixed(3)),
+        noseLength: typeof noseLength === 'number' ? Number(noseLength.toFixed(3)) : noseLength,
+        bodyLength: Number(lowerBody.toFixed(3)),
+      };
+    });
+  };
+
   const blockers = useMemo(() => {
     const result: string[] = [];
     if (vehicle.tipChord === '') result.push('Fin tip chord');
@@ -305,7 +320,7 @@ function App() {
           </div>
 
           <LiveAnalysisPanel vehicle={vehicle} />
-          <CadInteroperabilityPanel />
+          <CadInteroperabilityPanel onGeometryImported={importCadGeometry} />
 
           <div className="panel readiness">
             <div className="panel-title compact">
