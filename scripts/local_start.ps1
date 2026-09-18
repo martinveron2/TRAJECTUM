@@ -7,6 +7,38 @@ $WebPort = if ($env:TRAJECTUM_WEB_PORT) { $env:TRAJECTUM_WEB_PORT } else { "5173
 
 function Say($msg) { Write-Host ""; Write-Host "[TRAJECTUM] $msg" }
 
+function Stop-PortListener($Port, $Label) {
+    $listeners = @()
+    try {
+        $listeners = Get-NetTCPConnection -LocalPort ([int]$Port) -State Listen -ErrorAction SilentlyContinue
+    } catch {
+        $listeners = @()
+    }
+    foreach ($listener in $listeners) {
+        if ($listener.OwningProcess -and $listener.OwningProcess -ne $PID) {
+            Write-Host "  -> stopping stale $Label process PID $($listener.OwningProcess) on port $Port"
+            Stop-Process -Id $listener.OwningProcess -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Wait-HttpReady($Url, $Label, $TimeoutSeconds = 20) {
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    while ((Get-Date) -lt $deadline) {
+        try {
+            $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 2
+            if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) {
+                Write-Host "  $Label ready."
+                return
+            }
+        } catch {
+            Start-Sleep -Milliseconds 400
+        }
+    }
+    throw "$Label did not become ready at $Url within $TimeoutSeconds seconds. Check runtime\logs."
+}
+
+
 $SkipUpdate = $env:TRAJECTUM_SKIP_UPDATE -eq "1"
 if (!$SkipUpdate) {
     if (Test-Path (Join-Path $Root ".git")) {
@@ -83,14 +115,22 @@ if (!(Test-Path (Join-Path $Root "frontend\web\node_modules")) -or $NodeFingerpr
 }
 Pop-Location
 
+Say "Stopping previous local services"
+Stop-PortListener $ApiPort "API"
+Stop-PortListener $WebPort "WEB"
+Start-Sleep -Milliseconds 500
+
 Say "Starting API"
 New-Item -ItemType Directory -Force -Path "$Root\runtime\logs" | Out-Null
 Start-Process -FilePath $VenvPython -ArgumentList "-m","uvicorn","trajectum_api.main:app","--host","127.0.0.1","--port",$ApiPort -WorkingDirectory $Root -RedirectStandardOutput "$Root\runtime\logs\api.log" -RedirectStandardError "$Root\runtime\logs\api.err.log" -WindowStyle Hidden
 
+Wait-HttpReady "http://127.0.0.1:$ApiPort/health" "API"
+
 Say "Starting WEB"
 Start-Process -FilePath "npm.cmd" -ArgumentList "run","dev","--","--host","127.0.0.1","--port",$WebPort -WorkingDirectory "$Root\frontend\web" -RedirectStandardOutput "$Root\runtime\logs\web.log" -RedirectStandardError "$Root\runtime\logs\web.err.log" -WindowStyle Hidden
 
-Start-Sleep -Seconds 2
+Wait-HttpReady "http://127.0.0.1:$WebPort" "WEB"
+
 Say "Running UTN CDR case"
 & $VenvPython -m trajectum_physics.cli "$Root\data\reference-cases\utn-frh-g07\vehicle.cdr.json"
 $cdrCode = $LASTEXITCODE
