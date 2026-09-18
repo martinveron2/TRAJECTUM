@@ -23,6 +23,10 @@ type Vehicle = {
   airfoil: string;
   launchAngle: NumericField;
   cd: NumericField;
+  parachuteCd: NumericField;
+  parachuteArea: NumericField;
+  deployAltitude: NumericField;
+  deployDelay: NumericField;
 };
 
 const initialVehicle: Vehicle = {
@@ -41,6 +45,10 @@ const initialVehicle: Vehicle = {
   airfoil: 'NACA 0012',
   launchAngle: 85,
   cd: '',
+  parachuteCd: 1.5,
+  parachuteArea: 0.20,
+  deployAltitude: '',
+  deployDelay: 0,
 };
 
 const motor = {
@@ -275,6 +283,10 @@ function App() {
             <div className="field-grid advanced">
               <Field label="Launch angle" value={vehicle.launchAngle} unit="deg" status="TP" onChange={(v) => update('launchAngle', v)} />
               <Field label="Drag coefficient Cd" value={vehicle.cd} status="TBD" onChange={(v) => update('cd', v)} />
+              <Field label="Parachute Cd" value={vehicle.parachuteCd} status="recovery" onChange={(v) => update('parachuteCd', v)} />
+              <Field label="Parachute area" value={vehicle.parachuteArea} unit="m²" status="recovery" onChange={(v) => update('parachuteArea', v)} />
+              <Field label="Deploy altitude" value={vehicle.deployAltitude} unit="m" status="blank = apogee" onChange={(v) => update('deployAltitude', v)} />
+              <Field label="Deploy delay" value={vehicle.deployDelay} unit="s" status="recovery" onChange={(v) => update('deployDelay', v)} />
             </div>
           )}
         </aside>
