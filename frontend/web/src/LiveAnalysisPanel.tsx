@@ -134,7 +134,11 @@ export function LiveAnalysisPanel({
   }, [analysis, componentResult, onAnalysisUpdate]);
 
   const totalMass = analysis?.total_mass_g ?? componentResult?.total_mass_g;
-  const totalCg = analysis?.cg_x_mm_from_nose ?? componentResult?.total_cg_mm;
+  const totalCgFromNose = analysis?.cg_x_mm_from_nose ?? componentResult?.total_cg_mm;
+  const totalLengthMm = Number(vehicle.totalLength);
+  const totalCgCatedra = totalCgFromNose !== undefined && Number.isFinite(totalLengthMm)
+    ? totalLengthMm - totalCgFromNose
+    : undefined;
 
   return <div className="panel mass-panel" id="engineering-analysis">
     <div className="panel-title compact"><div><p>GEOMETRY-DERIVED MASS PROPERTIES</p><h2>Component CG → vehicle CG → CP → flight → recovery</h2></div>
@@ -147,7 +151,7 @@ export function LiveAnalysisPanel({
     </div>
     <div className="analysis-metrics wide">
       <div><span>TOTAL MASS</span><strong>{totalMass !== undefined ? `${totalMass.toFixed(1)} g` : '—'}</strong></div>
-      <div><span>TOTAL CG</span><strong>{totalCg !== undefined ? `${totalCg.toFixed(1)} mm` : '—'}</strong></div>
+      <div><span>CG CÁTEDRA · DESDE APOYO</span><strong>{totalCgCatedra !== undefined ? `${totalCgCatedra.toFixed(1)} mm` : '—'}</strong><small>{totalCgFromNose !== undefined ? `interno: ${totalCgFromNose.toFixed(1)} mm desde punta` : ''}</small></div>
       <div><span>CP</span><strong>{analysis ? `${analysis.cp_x_mm_from_nose.toFixed(1)} mm` : '—'}</strong></div>
       <div><span>STATIC MARGIN</span><strong>{analysis ? `${analysis.static_margin_calibers.toFixed(2)} cal` : '—'}</strong></div>
       <div><span>APOGEE</span><strong>{analysis?.apogee_m !== undefined ? `${analysis.apogee_m.toFixed(1)} m` : '—'}</strong></div>
@@ -171,13 +175,13 @@ export function LiveAnalysisPanel({
       </div>
     </div>}
     <div className="demo-banner">Enter component MASS only. xCG is calculated by the backend from each component geometry/envelope.</div>
-    <div className="mass-head derived"><span>Component</span><span>Mass [g]</span><span>xCG AUTO [mm]</span></div>
+    <div className="mass-head derived"><span>Component</span><span>Mass [g]</span><span>xCG CÁTEDRA [mm]</span></div>
     <div className="mass-table">{rows.map((row) => {
       const computed = componentResult?.components.find((item) => item.name === row.name);
       return <div className="mass-row-wrap" key={row.id}><div className="mass-row derived">
         <span>{row.name}</span>
         <input type="number" value={row.massG} onChange={(e) => updateMass(row.id, e.target.value === '' ? '' : Number(e.target.value))}/>
-        <output>{computed ? computed.x_cg_mm.toFixed(1) : 'TBD'}</output>
+        <output>{computed ? (totalLengthMm - computed.x_cg_mm).toFixed(1) : 'TBD'}</output>
       </div><small>{computed?.source ?? row.note}</small></div>;
     })}</div>
     {!planformReady && <div className="analysis-note">Fin xCG and CP remain blocked until tip chord, sweep and fin X are defined.</div>}
