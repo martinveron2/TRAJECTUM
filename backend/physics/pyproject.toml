@@ -9,6 +9,9 @@ description = "Physics engine for mass properties, aerodynamics, atmosphere, pro
 requires-python = ">=3.11"
 dependencies = []
 
+[project.scripts]
+trajectum-cdr = "trajectum_physics.cli:main"
+
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.11"]
 

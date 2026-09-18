@@ -8,19 +8,55 @@
     "nose_length_mm": 180.0,
     "modular_bay_length_mm": 180.0,
     "lower_body_length_mm": 500.0,
-    "wall_thickness_mm": {"value": 2.0, "status": "provisional"}
+    "wall_thickness_mm": {
+      "value": 2.0,
+      "status": "provisional"
+    }
   },
   "launch_angle_deg": 85.0,
   "fins": {
     "count": 4,
-    "root_chord_mm": {"value": 80.0, "status": "provisional-legacy-pdr"},
-    "span_mm": {"value": 50.0, "status": "provisional-legacy-pdr"},
-    "tip_chord_mm": {"value": null, "status": "tbd"},
-    "sweep_length_mm": {"value": null, "status": "tbd"},
-    "leading_edge_x_mm": {"value": null, "status": "tbd"}
+    "root_chord_mm": {
+      "value": 80.0,
+      "status": "provisional-legacy-pdr"
+    },
+    "span_mm": {
+      "value": 50.0,
+      "status": "provisional-legacy-pdr"
+    },
+    "tip_chord_mm": {
+      "value": null,
+      "status": "tbd"
+    },
+    "sweep_length_mm": {
+      "value": null,
+      "status": "tbd"
+    },
+    "leading_edge_x_mm": {
+      "value": null,
+      "status": "tbd"
+    }
   },
   "masses": {
     "status": "tbd-current-design",
     "note": "Legacy PDR masses are intentionally not promoted to the CDR baseline."
+  },
+  "motor": {
+    "designation": "A-100 RN (29%H)",
+    "propellant": "KNDX",
+    "burn_time_s": 0.5,
+    "total_impulse_n_s": 207.0,
+    "average_thrust_n": 441.0,
+    "max_thrust_n": 600.0,
+    "propellant_mass_g": 140.0,
+    "dry_mass_g": 350.0,
+    "status": "tp-specified"
+  },
+  "aerodynamics": {
+    "cd": {
+      "value": null,
+      "status": "tbd"
+    },
+    "note": "Drag coefficient intentionally remains TBD until a defensible CDR assumption or source is selected."
   }
 }
