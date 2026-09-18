@@ -100,3 +100,20 @@ def test_cad_formats_endpoint():
     assert response.status_code == 200
     names = {item["name"] for item in response.json()}
     assert {"STEP", "Fusion 360", "Inventor", "STL"} <= names
+
+
+def test_component_geometry_endpoint_derives_component_and_total_cg():
+    response = client.post(
+        "/v1/components/cg",
+        json=[
+            {"name": "nose", "kind": "tangent_ogive_shell", "mass_g": 100, "length_mm": 180, "base_radius_mm": 31.5},
+            {"name": "body", "kind": "axial_uniform", "mass_g": 330, "x_start_mm": 180, "x_end_mm": 860},
+            {"name": "motor", "kind": "axial_uniform", "mass_g": 490, "x_start_mm": 670, "x_end_mm": 860},
+            {"name": "payload", "kind": "axial_uniform", "mass_g": 100, "x_start_mm": 180, "x_end_mm": 270},
+        ],
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["components"]) == 4
+    assert data["total_mass_g"] == 1020
+    assert all(item["x_cg_mm"] > 0 for item in data["components"])

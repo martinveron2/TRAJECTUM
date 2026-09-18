@@ -8,6 +8,13 @@ from .aerodynamics import (
 from .analysis import EngineeringResult, analyze_vehicle
 from .atmosphere import AtmosphereState, isa_troposphere
 from .cdr import CDRRun, run_cdr_case
+from .components import (
+    ComponentMassProperty,
+    axial_uniform_cg,
+    combine_component_mass_properties,
+    tangent_ogive_shell_cg,
+    trapezoidal_fin_planform_cg_x,
+)
 from .mass import MassPoint, MassProperties, center_of_gravity
 from .propulsion import Motor, motor_mass, rectangular_thrust
 from .stability import StaticMargin, static_margin
@@ -20,6 +27,7 @@ __all__ = [
     "CDRRun",
     "CPContribution",
     "CPResult",
+    "ComponentMassProperty",
     "EngineeringResult",
     "FlightConfig",
     "FlightPoint",
@@ -29,7 +37,9 @@ __all__ = [
     "Motor",
     "StaticMargin",
     "analyze_vehicle",
+    "axial_uniform_cg",
     "center_of_gravity",
+    "combine_component_mass_properties",
     "combine_cp",
     "isa_troposphere",
     "motor_mass",
@@ -38,5 +48,7 @@ __all__ = [
     "simulate_to_apogee",
     "static_margin",
     "tangent_ogive_cp",
+    "tangent_ogive_shell_cg",
+    "trapezoidal_fin_planform_cg_x",
     "trapezoidal_fin_set_cp",
 ]

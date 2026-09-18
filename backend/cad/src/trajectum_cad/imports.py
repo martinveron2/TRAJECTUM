@@ -14,6 +14,7 @@ class CadFormatCapability:
 
 
 CAD_FORMATS = (
+    CadFormatCapability("DXF", (".dxf",), "2D sketch/profile", True, "browser preview + Fusion sketch import"),
     CadFormatCapability("STEP", (".step", ".stp"), "B-rep solid/surface", False, "primary neutral exchange"),
     CadFormatCapability("Fusion 360", (".f3d",), "native parametric", False, "Fusion add-in or export STEP"),
     CadFormatCapability("Inventor", (".ipt", ".iam"), "native parametric", False, "Inventor connector or export STEP"),
