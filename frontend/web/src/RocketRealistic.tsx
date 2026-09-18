@@ -137,5 +137,3 @@ export function RocketRealistic({
   <div className="schematic-meta"><span><i className="dot frozen"/> Ø {vehicle.diameter || '—'} mm</span><span><i className="dot provisional"/> {vehicle.airfoil}</span><span><i className="dot tbd"/> {vehicle.noseProfile.replace(/_/g, " ")}</span></div>
   </div>;
 }
-
-[executed on device: ip-172-31-42-2 (b9766200-ad78-4bae-a8c9-0bbf87da1f37)]
