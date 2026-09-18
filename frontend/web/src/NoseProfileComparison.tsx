@@ -28,13 +28,25 @@ const cards: { key: Profile; title: string; note: string }[] = [
   { key: 'power_series', title: 'Power series', note: 'n=0.75 · sharper geometric alternative' },
 ];
 
-export function NoseProfileComparison({ selected }: { selected: string }) {
+export function NoseProfileComparison({
+  selected,
+  onSelect,
+}: {
+  selected: string;
+  onSelect?: (profile: Profile) => void;
+}) {
   return <div className="panel nose-compare">
-    <div className="panel-title compact"><div><p>GEOMETRY STUDY</p><h2>Nose profile comparison · same 180 mm × Ø63 mm</h2></div><span className="scale-note">geometry only</span></div>
-    <div className="nose-compare-grid">{cards.map((card) => <div key={card.key} className={selected === card.key ? 'nose-card selected' : 'nose-card'}>
+    <div className="panel-title compact"><div><p>GEOMETRY STUDY</p><h2>Nose profile comparison · same 180 mm × Ø63 mm</h2></div><span className="scale-note">selectable · live geometry</span></div>
+    <div className="nose-compare-grid">{cards.map((card) => <button
+      type="button"
+      key={card.key}
+      className={selected === card.key ? 'nose-card selected' : 'nose-card'}
+      onClick={() => onSelect?.(card.key)}
+      aria-pressed={selected === card.key}
+    >
       <svg viewBox="0 0 190 72"><polyline points={points(card.key)} fill="none" stroke="currentColor" strokeWidth="2"/><line x1="10" y1="60" x2="172" y2="60" stroke="currentColor" strokeOpacity=".25"/></svg>
       <strong>{card.title}</strong><span>{card.note}</span>
-    </div>)}</div>
+    </button>)}</div>
     <p className="cad-note">All three preserve the same length and base diameter. TRAJECTUM derives nose CP from each axisymmetric profile volume and nose-shell xCG from its surface geometry; final CDR validation should still document which family is frozen.</p>
   </div>;
 }

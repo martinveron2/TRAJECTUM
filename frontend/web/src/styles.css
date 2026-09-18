@@ -145,3 +145,16 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 @media(max-width:720px){.flight-controls{grid-template-columns:auto auto 1fr}.flight-controls select,.flight-controls>span{display:none}.flight-telemetry{grid-template-columns:1fr 1fr}}
 .info-badge{display:inline-flex;align-items:center;justify-content:center;padding:7px 9px;border:0;background:transparent;color:#7292b5;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 .launch-guide{stroke:#ffc66d;stroke-width:1.4;stroke-dasharray:5 4;opacity:.85}
+
+.nose-card{appearance:none;text-align:left;font:inherit;cursor:pointer;width:100%}
+.nose-card:hover{border-color:#4f79ad;transform:translateY(-1px)}
+.nose-card:focus-visible{outline:2px solid #75a8ff;outline-offset:2px}
+
+.cg-ring{fill:#fff;stroke:#0a0f18;stroke-width:1.4}
+.cg-fill{fill:#0a0f18}
+.cg-cross{stroke:#0a0f18;stroke-width:1}
+.cg-label{fill:#eef4fb;font-size:9px;font-weight:700;letter-spacing:.03em}
+
+.cp-ring{fill:none;stroke:#ffb35c;stroke-width:2}
+.cp-cross{stroke:#ffb35c;stroke-width:1.5}
+.cp-label{fill:#ffd39f;font-size:9px;font-weight:700;letter-spacing:.03em}
