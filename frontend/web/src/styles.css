@@ -227,3 +227,14 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .label-plate{paint-order:stroke;stroke:#081521;stroke-width:3px;stroke-linejoin:round}
 .component-cg-projection{opacity:.62}
 .callout{font-size:9px!important;paint-order:stroke;stroke:#081521;stroke-width:2.5px;stroke-linejoin:round}
+
+.electronics-label{font-size:4.9px!important;letter-spacing:.005em}
+.cg-total-ring{fill:#8fd3ff;stroke:#dff5ff;stroke-width:1.2}
+.cg-total-fill{fill:#0b2134}
+.cg-total-cross{stroke:#dff5ff;stroke-width:.9}
+.cp-total-ring{fill:none;stroke:#ffb35c;stroke-width:1.8}
+.cp-total-core{fill:#ffb35c}
+.cp-total-cross{stroke:#ffb35c;stroke-width:1.2}
+.component-cg-ring{fill:#8fd3ff;stroke:#dff5ff;stroke-width:.9}
+.component-cg-fill{fill:#0b2134}
+.component-cg-cross{stroke:#dff5ff;stroke-width:.7}

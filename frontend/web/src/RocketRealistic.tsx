@@ -203,27 +203,25 @@ export function RocketRealistic({
         className="nozzle"
       />
 
-      <text x={centerX} y={yBay + bayH / 2 - 4} className="module-label payload-label">PAYLOAD</text>
-      <text x={centerX} y={yBay + bayH / 2 + 5} className="module-label payload-label">ELECTRÓNICA</text>
+      <text x={centerX} y={yBay + bayH / 2 - 3.5} className="module-label payload-label">PAYLOAD</text>
+      <text x={centerX} y={yBay + bayH / 2 + 4.5} className="module-label electronics-label">ELECTRONICS</text>
       <text x={centerX} y={yBody + bodyH * .28} className="utn-mark">UTN</text>
       <text x={centerX} y={yBody + bodyH * .28 + 12} className="module-label utn-submark">FRH · G07</text>
 
-      <line x1="365" y1={top} x2="365" y2={supportY} className="datum-rail"/>
-      <text x="365" y={supportY + 18} textAnchor="middle" className="datum-label">R7 · 0 mm</text>
-      <text x="365" y={top - 6} textAnchor="middle" className="datum-label">EJE X · HACIA PUNTA</text>
+      <line x1="365" y1={top + 18} x2="365" y2={supportY} className="datum-rail"/>
+      <text x="365" y={supportY + 18} textAnchor="middle" className="datum-label">REFERENCIA R7 · 0 mm</text>
 
       {cgY !== null && <>
         <line x1={centerX} y1={cgY} x2="360" y2={cgY} className="projection-line cg-projection"/>
         <circle cx="365" cy={cgY} r="3.5" className="datum-tick cg-datum"/>
-        <circle cx={centerX} cy={cgY} r="2.8" className="cg-station-dot"/>
-        <line x1={centerX + 4} y1={cgY} x2="398" y2={cgY} className="cg-leader"/>
-        <g transform={`translate(398 ${cgY})`} aria-label="Center of gravity symbol at exact axial station">
-          <circle r="7.2" className="cg-ring"/>
-          <path d="M 0 0 L 0 -7.2 A 7.2 7.2 0 0 1 7.2 0 Z" className="cg-fill"/>
-          <path d="M 0 0 L 0 7.2 A 7.2 7.2 0 0 1 -7.2 0 Z" className="cg-fill"/>
-          <line x1="-9.5" y1="0" x2="9.5" y2="0" className="cg-cross"/>
-          <line x1="0" y1="-9.5" x2="0" y2="9.5" className="cg-cross"/>
+        <g transform={`translate(${centerX} ${cgY})`} aria-label="CG total at exact axial station">
+          <circle r="8.2" className="cg-total-ring"/>
+          <path d="M 0 0 L 0 -8.2 A 8.2 8.2 0 0 1 8.2 0 Z" className="cg-total-fill"/>
+          <path d="M 0 0 L 0 8.2 A 8.2 8.2 0 0 1 -8.2 0 Z" className="cg-total-fill"/>
+          <line x1="-10.5" y1="0" x2="10.5" y2="0" className="cg-total-cross"/>
+          <line x1="0" y1="-10.5" x2="0" y2="10.5" className="cg-total-cross"/>
         </g>
+        <line x1={centerX + 11} y1={cgY} x2="430" y2={cgY} className="cg-leader"/>
         <line x1="430" y1={supportY} x2="430" y2={cgY} className="cg-dimension" markerStart="url(#dimArrow)" markerEnd="url(#dimArrow)"/>
         <line x1="423" y1={supportY} x2="437" y2={supportY} className="cg-dimension"/>
         <line x1="423" y1={cgY} x2="437" y2={cgY} className="cg-dimension"/>
@@ -233,13 +231,13 @@ export function RocketRealistic({
       {cpY !== null && <>
         <line x1={centerX} y1={cpY} x2="455" y2={cpY} className="projection-line cp-projection"/>
         <circle cx="455" cy={cpY} r="3.5" className="datum-tick cp-datum"/>
-        <circle cx={centerX} cy={cpY} r="2.8" className="cp-station-dot"/>
-        <line x1={centerX + 4} y1={cpY} x2="505" y2={cpY} className="cp-leader"/>
-        <g transform={`translate(505 ${cpY})`} aria-label="Center of pressure symbol at exact axial station">
-          <circle r="6.8" className="cp-ring"/>
-          <line x1="-9" y1="0" x2="9" y2="0" className="cp-cross"/>
-          <line x1="0" y1="-9" x2="0" y2="9" className="cp-cross"/>
+        <g transform={`translate(${centerX} ${cpY})`} aria-label="CP total at exact axial station">
+          <circle r="7.4" className="cp-total-ring"/>
+          <circle r="2.2" className="cp-total-core"/>
+          <line x1="-10" y1="0" x2="10" y2="0" className="cp-total-cross"/>
+          <line x1="0" y1="-10" x2="0" y2="10" className="cp-total-cross"/>
         </g>
+        <line x1={centerX + 10} y1={cpY} x2="535" y2={cpY} className="cp-leader"/>
         <line x1="535" y1={supportY} x2="535" y2={cpY} className="cp-dimension" markerStart="url(#dimArrow)" markerEnd="url(#dimArrow)"/>
         <line x1="528" y1={supportY} x2="542" y2={supportY} className="cp-dimension"/>
         <line x1="528" y1={cpY} x2="542" y2={cpY} className="cp-dimension"/>
@@ -250,8 +248,13 @@ export function RocketRealistic({
         const r7 = fromSupport(component.x_cg_mm);
         const textY = component.labelY - 5;
         return <g key={component.name}>
-          <circle cx={centerX} cy={component.y} r="3.4" className="component-cg-dot"/>
-          <line x1={centerX - 6} y1={component.y} x2={centerX + 6} y2={component.y} className="component-cg-cross"/>
+          <g transform={`translate(${centerX} ${component.y})`} aria-label={`${component.name} CG at exact axial station`}>
+            <circle r="5.2" className="component-cg-ring"/>
+            <path d="M 0 0 L 0 -5.2 A 5.2 5.2 0 0 1 5.2 0 Z" className="component-cg-fill"/>
+            <path d="M 0 0 L 0 5.2 A 5.2 5.2 0 0 1 -5.2 0 Z" className="component-cg-fill"/>
+            <line x1="-6.8" y1="0" x2="6.8" y2="0" className="component-cg-cross"/>
+            <line x1="0" y1="-6.8" x2="0" y2="6.8" className="component-cg-cross"/>
+          </g>
           <path
             d={`M ${centerX + 7} ${component.y} L 545 ${component.y} L 558 ${component.labelY}`}
             className="component-cg-projection"
