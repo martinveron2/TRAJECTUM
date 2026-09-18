@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .airfoil import AirfoilProfile
 from .errors import ErrorCode, TrajectumError
 
 
@@ -61,6 +62,7 @@ class FinGeometry:
     span_mm: float
     sweep_length_mm: float | None
     leading_edge_x_mm: float | None
+    airfoil: AirfoilProfile | None = None
 
     @property
     def is_complete_for_cp(self) -> bool:

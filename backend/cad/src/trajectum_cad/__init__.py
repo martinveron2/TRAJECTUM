@@ -1,3 +1,4 @@
+from .airfoil import naca4_coordinates
 from .export import export_fusion_csv, export_parameter_json, parameter_dict, unresolved_parameters
 from .parameters import CDR_PARAMETERS, Parameter
 
@@ -8,6 +9,7 @@ __all__ = [
     "Parameter",
     "export_fusion_csv",
     "export_parameter_json",
+    "naca4_coordinates",
     "parameter_dict",
     "unresolved_parameters",
 ]
