@@ -11,7 +11,7 @@ export type MissionSample = {
   parachute_deployed: boolean;
 };
 
-export function FlightVisualizer({ samples }: { samples: MissionSample[] }) {
+export function FlightVisualizer({ samples, launchAngleDeg = 85 }: { samples: MissionSample[]; launchAngleDeg?: number }) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [rate, setRate] = useState(4);
@@ -38,16 +38,24 @@ export function FlightVisualizer({ samples }: { samples: MissionSample[] }) {
   const current = samples[Math.min(index, Math.max(samples.length - 1, 0))];
   const maxAltitude = Math.max(...samples.map((s) => s.altitude_m), 1);
   const maxRange = Math.max(...samples.map((s) => s.x_m), 1);
+  const engineeringScale = Math.min(676 / Math.max(maxRange, 1), 250 / Math.max(maxAltitude, 1));
+  const originX = 92;
+  const originY = 300;
   const plot = useMemo(() => samples.map((s) => {
-    const x = 42 + (s.x_m / maxRange) * 676;
-    const y = 300 - (s.altitude_m / maxAltitude) * 250;
+    const x = originX + s.x_m * engineeringScale;
+    const y = originY - s.altitude_m * engineeringScale;
     return `${x},${y}`;
-  }).join(' '), [samples, maxAltitude, maxRange]);
+  }).join(' '), [samples, engineeringScale]);
 
   if (!current) return null;
 
-  const rocketX = 42 + (current.x_m / maxRange) * 676;
-  const rocketY = 300 - (current.altitude_m / maxAltitude) * 250;
+  const rocketX = originX + current.x_m * engineeringScale;
+  const rocketY = originY - current.altitude_m * engineeringScale;
+  const horizontalSpeed = Math.sqrt(Math.max(current.speed_m_s ** 2 - current.vertical_speed_m_s ** 2, 0));
+  const flightAngle = current.parachute_deployed
+    ? -90
+    : Math.atan2(current.vertical_speed_m_s, Math.max(horizontalSpeed, 1e-6)) * 180 / Math.PI;
+  const svgRotation = 90 - flightAngle;
   const progress = samples.length <= 1 ? 0 : index / (samples.length - 1);
 
   return <div className="panel flight-visualizer">
@@ -67,7 +75,15 @@ export function FlightVisualizer({ samples }: { samples: MissionSample[] }) {
         </defs>
         <rect x="0" y="0" width="760" height="340" rx="12" fill="url(#skyFade)"/>
         <line x1="30" y1="300" x2="735" y2="300" className="ground-line"/>
-        <line x1="42" y1="45" x2="42" y2="300" className="flight-axis"/>
+        <line x1={originX} y1="45" x2={originX} y2="300" className="flight-axis"/>
+        <line
+          x1={originX}
+          y1={originY}
+          x2={originX + Math.cos(launchAngleDeg * Math.PI / 180) * 92}
+          y2={originY - Math.sin(launchAngleDeg * Math.PI / 180) * 92}
+          className="launch-guide"
+        />
+        <text x={originX + 14} y={originY - 86} className="flight-label">LAUNCH {launchAngleDeg.toFixed(0)}°</text>
         <polyline points={plot} fill="none" className="trajectory-line"/>
         <text x="54" y="62" className="flight-label">APOGEE {maxAltitude.toFixed(1)} m</text>
         <text x="54" y="322" className="flight-label">RANGE {maxRange.toFixed(1)} m · vertical recovery model after apogee</text>
@@ -78,7 +94,7 @@ export function FlightVisualizer({ samples }: { samples: MissionSample[] }) {
           <line x1={rocketX+16} y1={rocketY-27} x2={rocketX+5} y2={rocketY-10} className="parachute-line"/>
         </>}
 
-        <g transform={`translate(${rocketX} ${rocketY})`} filter="url(#rocketGlow)">
+        <g transform={`translate(${rocketX} ${rocketY}) rotate(${svgRotation})`} filter="url(#rocketGlow)">
           <path d="M 0 -13 L 6 -2 L 6 10 L -6 10 L -6 -2 Z" className="flight-rocket"/>
           <path d="M -6 5 L -11 11 L -6 10 Z M 6 5 L 11 11 L 6 10 Z" className="flight-rocket-fin"/>
           {current.phase === 'BOOST' && <path d="M -3 10 L 0 22 L 3 10 Z" className="flight-flame"/>}
