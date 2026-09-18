@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlightVisualizer, type MissionSample } from './FlightVisualizer';
+import { EngineeringEquations } from './EngineeringEquations';
 
 type NumericField = number | '';
 type VehicleLike = {
@@ -11,24 +12,47 @@ type VehicleLike = {
 };
 type ComponentRow = { id: number; name: string; massG: NumericField; kind: string; note: string };
 type ComponentOut = { name: string; mass_g: number; x_cg_mm: number; source: string };
+type UnifiedComponentOut = {
+  name: string;
+  mass_g: number;
+  x_cg_mm_from_nose: number;
+  x_cg_mm_from_support: number;
+  source: string;
+};
 type ComponentResponse = { components: ComponentOut[]; total_mass_g: number; total_cg_mm: number };
 type ComponentPayload = { name: string; mass_g: number; kind: string; x_start_mm?: number; x_end_mm?: number; length_mm?: number; base_radius_mm?: number; leading_edge_x_mm?: number; root_chord_mm?: number; tip_chord_mm?: number; span_mm?: number; sweep_mm?: number; profile?: string; power_exponent?: number };
 type Analysis = {
-  total_mass_g: number; cg_x_mm_from_nose: number; cp_x_mm_from_nose: number;
-  static_margin_calibers: number; apogee_m?: number; max_q_pa?: number;
-  max_speed_m_s?: number; max_mach?: number;
-  deployment_time_s?: number | null; deployment_altitude_m?: number | null;
-  landing_time_s?: number; impact_speed_m_s?: number; time_to_apogee_s?: number;
+  total_mass_g: number;
+  components?: UnifiedComponentOut[];
+  cg_x_mm_from_nose: number;
+  cg_x_mm_from_support?: number;
+  cp_x_mm_from_nose: number;
+  cp_x_mm_from_support?: number;
+  nose_cp_x_mm_from_nose?: number;
+  nose_cp_x_mm_from_support?: number;
+  fins_cp_x_mm_from_nose?: number;
+  fins_cp_x_mm_from_support?: number;
+  static_margin_calibers: number;
+  apogee_m?: number;
+  max_q_pa?: number;
+  max_speed_m_s?: number;
+  max_mach?: number;
+  deployment_time_s?: number | null;
+  deployment_altitude_m?: number | null;
+  landing_time_s?: number;
+  impact_speed_m_s?: number;
+  time_to_apogee_s?: number;
   mission_timeline?: MissionSample[];
 };
 
 const initialRows: ComponentRow[] = [
-  { id: 1, name: 'Nose', massG: 100, kind: 'nose', note: 'xCG from selected nose-profile geometry' },
-  { id: 2, name: 'Main airframe', massG: 330, kind: 'body', note: 'xCG from 180–860 mm envelope' },
-  { id: 3, name: 'Motor', massG: 490, kind: 'motor', note: 'xCG from 670–860 mm envelope' },
-  { id: 4, name: 'Parachute', massG: 30, kind: 'parachute', note: 'demo envelope 180–220 mm' },
-  { id: 5, name: 'Payload', massG: 100, kind: 'payload', note: '90 mm bay: 180–270 mm' },
-  { id: 6, name: 'Fins · 4 total', massG: 20, kind: 'fins', note: 'xCG from fin planform when complete' },
+  { id: 1, name: 'Cofia', massG: 100, kind: 'nose', note: 'xCG from selected nose-profile shell' },
+  { id: 2, name: 'Cuerpo principal', massG: 330, kind: 'body', note: 'xCG from axial shell envelope' },
+  { id: 3, name: 'Motor', massG: 490, kind: 'motor', note: 'xCG from motor axial envelope' },
+  { id: 4, name: 'Paracaídas', massG: 30, kind: 'parachute', note: 'upper third of modular bay · demo geometry' },
+  { id: 5, name: 'Electrónica', massG: 80, kind: 'electronics', note: 'middle third of modular bay · demo geometry' },
+  { id: 6, name: 'Carga útil', massG: 100, kind: 'payload', note: 'lower third of modular bay · demo geometry' },
+  { id: 7, name: 'Aletas · 4 total', massG: 20, kind: 'fins', note: 'xCG from trapezoidal planform' },
 ];
 
 export function LiveAnalysisPanel({
@@ -62,9 +86,15 @@ export function LiveAnalysisPanel({
     const common = { name: row.name, mass_g: Number(row.massG) };
     if (row.kind === 'nose') return [{ ...common, kind: 'profile_shell', profile: vehicle.noseProfile, length_mm: Number(vehicle.noseLength), base_radius_mm: Number(vehicle.diameter) / 2, power_exponent: 0.75 }];
     if (row.kind === 'body') return [{ ...common, kind: 'axial_uniform', x_start_mm: Number(vehicle.noseLength), x_end_mm: Number(vehicle.totalLength) }];
-    if (row.kind === 'motor') { const end = Number(vehicle.totalLength); return [{ ...common, kind: 'axial_uniform', x_start_mm: Math.max(end - 190, 0), x_end_mm: end }]; }
-    if (row.kind === 'parachute') { const start = Number(vehicle.noseLength); return [{ ...common, kind: 'axial_uniform', x_start_mm: start, x_end_mm: start + 40 }]; }
-    if (row.kind === 'payload') { const start = Number(vehicle.noseLength); return [{ ...common, kind: 'axial_uniform', x_start_mm: start, x_end_mm: start + Math.max(Number(vehicle.bayLength) / 2, 1) }]; }
+    if (row.kind === 'motor') {
+      const end = Number(vehicle.totalLength);
+      return [{ ...common, kind: 'axial_uniform', x_start_mm: Math.max(end - 190, 0), x_end_mm: end }];
+    }
+    const bayStart = Number(vehicle.noseLength);
+    const bayThird = Math.max(Number(vehicle.bayLength) / 3, 1);
+    if (row.kind === 'parachute') return [{ ...common, kind: 'axial_uniform', x_start_mm: bayStart, x_end_mm: bayStart + bayThird }];
+    if (row.kind === 'electronics') return [{ ...common, kind: 'axial_uniform', x_start_mm: bayStart + bayThird, x_end_mm: bayStart + 2 * bayThird }];
+    if (row.kind === 'payload') return [{ ...common, kind: 'axial_uniform', x_start_mm: bayStart + 2 * bayThird, x_end_mm: bayStart + 3 * bayThird }];
     if (row.kind === 'fins' && planformReady) return [{ ...common, kind: 'trapezoidal_fin_set', leading_edge_x_mm: Number(vehicle.finX), root_chord_mm: Number(vehicle.rootChord), tip_chord_mm: Number(vehicle.tipChord), span_mm: Number(vehicle.span), sweep_mm: Number(vehicle.sweep) }];
     return [];
   }), [rows, vehicle, planformReady]);
@@ -90,39 +120,63 @@ export function LiveAnalysisPanel({
     setAnalysis(null);
   };
 
-  const derivedMasses = componentResult?.components.map((item) => ({
-    name: item.name, mass_g: item.mass_g, x_cg_mm: item.x_cg_mm,
-  })) ?? [];
-
-  const run = async () => {
-    if (!planformReady || !componentResult || derivedMasses.length !== rows.length) return;
-    setRunning(true); setError('');
+    const run = async () => {
+    if (!planformReady || !componentResult || componentPayload.length !== rows.length) return;
+    setRunning(true);
+    setError('');
     try {
-      const base = {
-        nose_length_mm: Number(vehicle.noseLength), body_diameter_mm: Number(vehicle.diameter),
-        fin_count: Number(vehicle.finCount), fin_root_chord_mm: Number(vehicle.rootChord),
-        fin_tip_chord_mm: Number(vehicle.tipChord), fin_span_mm: Number(vehicle.span),
-        fin_sweep_mm: Number(vehicle.sweep), fin_leading_edge_x_mm: Number(vehicle.finX),
-        masses: derivedMasses,
+      const body = {
+        total_length_mm: Number(vehicle.totalLength),
+        body_diameter_mm: Number(vehicle.diameter),
+        nose_length_mm: Number(vehicle.noseLength),
         nose_profile: vehicle.noseProfile,
         nose_power_exponent: 0.75,
-      };
-      const full = vehicle.cd !== '' && vehicle.launchAngle !== '';
-      const endpoint = full ? '/v1/analysis/full' : '/v1/analysis/cg-cp';
-      const body = full ? {
-        ...base,
+        fin_count: Number(vehicle.finCount),
+        fin_root_chord_mm: Number(vehicle.rootChord),
+        fin_tip_chord_mm: Number(vehicle.tipChord),
+        fin_span_mm: Number(vehicle.span),
+        fin_sweep_mm: Number(vehicle.sweep),
+        fin_leading_edge_x_mm: Number(vehicle.finX),
+        components: componentPayload,
         launch_angle_deg: Number(vehicle.launchAngle),
         cd: Number(vehicle.cd),
+        motor_burn_time_s: 0.5,
+        motor_total_impulse_n_s: 207.0,
+        motor_propellant_mass_g: 140.0,
+        motor_dry_mass_g: 350.0,
         parachute_cd: Number(vehicle.parachuteCd),
         parachute_area_m2: Number(vehicle.parachuteArea),
         deploy_altitude_m: vehicle.deployAltitude === '' ? null : Number(vehicle.deployAltitude),
         deploy_delay_s: Number(vehicle.deployDelay),
-      } : base;
-      const response = await fetch(`http://127.0.0.1:8000${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (!response.ok) throw new Error(`API ${response.status}`);
-      setAnalysis(await response.json());
-    } catch (e) { setError(e instanceof Error ? e.message : 'Unknown error'); }
-    finally { setRunning(false); }
+      };
+      const response = await fetch('http://127.0.0.1:8000/v2/analysis/full', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(`API ${response.status}: ${detail}`);
+      }
+      const fullAnalysis: Analysis = await response.json();
+      setAnalysis(fullAnalysis);
+      if (fullAnalysis.components) {
+        setComponentResult({
+          components: fullAnalysis.components.map((item) => ({
+            name: item.name,
+            mass_g: item.mass_g,
+            x_cg_mm: item.x_cg_mm_from_nose,
+            source: item.source,
+          })),
+          total_mass_g: fullAnalysis.total_mass_g,
+          total_cg_mm: fullAnalysis.cg_x_mm_from_nose,
+        });
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
+    } finally {
+      setRunning(false);
+    }
   };
 
   useEffect(() => {
@@ -136,13 +190,20 @@ export function LiveAnalysisPanel({
   const totalMass = analysis?.total_mass_g ?? componentResult?.total_mass_g;
   const totalCgFromNose = analysis?.cg_x_mm_from_nose ?? componentResult?.total_cg_mm;
   const totalLengthMm = Number(vehicle.totalLength);
-  const totalCgCatedra = totalCgFromNose !== undefined && Number.isFinite(totalLengthMm)
-    ? totalLengthMm - totalCgFromNose
-    : undefined;
+  const totalCgCatedra = analysis?.cg_x_mm_from_support ??
+    (totalCgFromNose !== undefined && Number.isFinite(totalLengthMm) ? totalLengthMm - totalCgFromNose : undefined);
+  const cpCatedra = analysis?.cp_x_mm_from_support ??
+    (analysis?.cp_x_mm_from_nose !== undefined ? totalLengthMm - analysis.cp_x_mm_from_nose : undefined);
 
   return <div className="panel mass-panel" id="engineering-analysis">
     <div className="panel-title compact"><div><p>GEOMETRY-DERIVED MASS PROPERTIES</p><h2>Component CG → vehicle CG → CP → flight → recovery</h2></div>
-      <button className="run" disabled={!planformReady || !componentResult || derivedMasses.length !== rows.length || running} onClick={run}>{running ? 'RUNNING…' : planformReady ? (vehicle.cd !== '' ? 'RUN FULL ANALYSIS' : 'RUN CG + CP') : 'ENTER FIN GEOMETRY'}</button></div>
+      <button
+        className="run"
+        disabled={!planformReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
+        onClick={run}
+      >
+        {running ? 'RUNNING…' : !planformReady ? 'ENTER FIN GEOMETRY' : vehicle.cd === '' || vehicle.launchAngle === '' ? 'ENTER FLIGHT INPUTS' : 'RUN FULL ANALYSIS'}
+      </button></div>
     <div className="module-state">
       <span className={componentResult ? 'module-on' : ''}>CG · {componentResult ? 'READY' : 'WAIT'}</span>
       <span className={planformReady ? 'module-on' : ''}>CP · {planformReady ? 'READY' : 'NEEDS FINS'}</span>
@@ -152,7 +213,9 @@ export function LiveAnalysisPanel({
     <div className="analysis-metrics wide">
       <div><span>TOTAL MASS</span><strong>{totalMass !== undefined ? `${totalMass.toFixed(1)} g` : '—'}</strong></div>
       <div><span>CG CÁTEDRA · DESDE APOYO</span><strong>{totalCgCatedra !== undefined ? `${totalCgCatedra.toFixed(1)} mm` : '—'}</strong><small>{totalCgFromNose !== undefined ? `interno: ${totalCgFromNose.toFixed(1)} mm desde punta` : ''}</small></div>
-      <div><span>CP</span><strong>{analysis ? `${analysis.cp_x_mm_from_nose.toFixed(1)} mm` : '—'}</strong></div>
+      <div><span>CP CÁTEDRA · DESDE APOYO</span><strong>{cpCatedra !== undefined ? `${cpCatedra.toFixed(1)} mm` : '—'}</strong><small>{analysis?.cp_x_mm_from_nose !== undefined ? `interno: ${analysis.cp_x_mm_from_nose.toFixed(1)} mm desde punta` : ''}</small></div>
+      <div><span>CP COFIA</span><strong>{analysis?.nose_cp_x_mm_from_support !== undefined ? `${analysis.nose_cp_x_mm_from_support.toFixed(1)} mm` : '—'}</strong><small>desde apoyo</small></div>
+      <div><span>CP ALETAS</span><strong>{analysis?.fins_cp_x_mm_from_support !== undefined ? `${analysis.fins_cp_x_mm_from_support.toFixed(1)} mm` : '—'}</strong><small>desde apoyo</small></div>
       <div><span>STATIC MARGIN</span><strong>{analysis ? `${analysis.static_margin_calibers.toFixed(2)} cal` : '—'}</strong></div>
       <div><span>APOGEE</span><strong>{analysis?.apogee_m !== undefined ? `${analysis.apogee_m.toFixed(1)} m` : '—'}</strong></div>
       <div><span>MAX Q</span><strong>{analysis?.max_q_pa !== undefined ? `${analysis.max_q_pa.toFixed(0)} Pa` : '—'}</strong></div>
@@ -187,5 +250,6 @@ export function LiveAnalysisPanel({
     {!planformReady && <div className="analysis-note">Fin xCG and CP remain blocked until tip chord, sweep and fin X are defined.</div>}
     {planformReady && vehicle.cd === '' && <div className="analysis-note">CG + CP available. Enter Cd to unlock trajectory, apogee, MaxQ and Mach.</div>}
     {error && <div className="analysis-error">API error: {error}</div>}
+    <EngineeringEquations />
   </div>;
 }

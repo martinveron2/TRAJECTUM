@@ -59,7 +59,7 @@ const motor = {
   propellant: 'KNDX',
   burn: 0.5,
   impulse: 207,
-  averageThrust: 441,
+  averageThrust: 414,
   maxThrust: 600,
   propellantMass: 140,
   dryMass: 350,
@@ -365,8 +365,8 @@ function App() {
             </article>
             <article className="metric-card">
               <span>CP</span>
-              <strong>{analysisSummary?.cp_x_mm_from_nose !== undefined ? `${analysisSummary.cp_x_mm_from_nose.toFixed(1)} mm` : '—'}</strong>
-              <small>Barrowman/profile model</small>
+              <strong>{analysisSummary?.cp_x_mm_from_support !== undefined ? `${analysisSummary.cp_x_mm_from_support.toFixed(1)} mm` : analysisSummary?.cp_x_mm_from_nose !== undefined ? `${(Number(vehicle.totalLength) - analysisSummary.cp_x_mm_from_nose).toFixed(1)} mm` : '—'}</strong>
+              <small>desde apoyo · Barrowman/profile</small>
             </article>
             <article className="metric-card">
               <span>STATIC MARGIN</span>
@@ -428,6 +428,7 @@ function App() {
               <div><dt>Propellant</dt><dd>{motor.propellantMass} g</dd></div>
               <div><dt>Dry</dt><dd>{motor.dryMass} g</dd></div>
             </dl>
+            <small className="motor-consistency-note">Empuje medio mostrado = I/t = 207 N·s / 0.5 s = 414 N. El valor TP 441 N queda marcado para reconciliación con la curva real de empuje.</small>
           </div>
         </section>
       </section>

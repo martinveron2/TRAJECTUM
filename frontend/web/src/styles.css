@@ -172,3 +172,16 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .component-cg-dot{fill:#0b1522;stroke:#7eb7f5;stroke-width:1.5}
 .component-cg-label{fill:#8fb2d7;font-size:8px;letter-spacing:.015em}
 .dimension-arrowed{stroke-width:1.1}
+.equations-panel{margin-top:16px;padding:20px}
+.equation-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.equation-card{border:1px solid #243c58;background:#081521;border-radius:10px;padding:13px;min-width:0}
+.equation-card header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.equation-card header strong{font-size:.76rem;color:#dce8f7}
+.equation-card header span{font-size:.58rem;color:#6f91b8;text-transform:uppercase;letter-spacing:.08em;text-align:right}
+.math-equation{overflow-x:auto;overflow-y:hidden;margin:7px 0;color:#eef5ff;font-size:1.02rem}
+.math-equation .katex-display{margin:.55em 0;text-align:left}
+.math-equation .katex-display>.katex{white-space:normal}
+.equation-card p{margin:4px 0 0;color:#7891ad;font-size:.64rem;line-height:1.45}
+@media(max-width:900px){.equation-grid{grid-template-columns:1fr}}
+
+.motor-consistency-note{display:block;margin-top:10px;color:#c99962;font-size:.62rem;line-height:1.4}
