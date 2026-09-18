@@ -1,14 +1,13 @@
-# trajectum-data
+# TRAJECTUM Data
 
-Versioned engineering datasets for TRAJECTUM.
+Canonical, versioned engineering inputs and reference cases.
 
-Data is separated from solver code so every simulation can identify the exact dataset and revision used.
+- `motors/` — motor metadata and thrust curves when available
+- `materials/` — density and material properties with source metadata
+- `atmosphere/` — atmospheric datasets/models
+- `vehicles/` — canonical vehicle input snapshots
+- `flights/` — simulation/flight result datasets
+- `experiments/` — physical measurements and test evidence
+- `reference-cases/` — reproducible verification fixtures
 
-Initial domains:
-- motors
-- atmosphere
-- materials
-- reference cases
-- experiments
-
-Current milestone: v0.1.0-cdr.
+Unknown engineering inputs are represented as TBD/null, never invented.
