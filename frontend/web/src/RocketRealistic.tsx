@@ -36,7 +36,7 @@ export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
     <text x="28" y={(top+bottom)/2} transform={`rotate(-90 28 ${(top+bottom)/2})`} className="dimtext">{vehicle.totalLength || '—'} mm</text>
     <polygon points={ogivePoints} className="rocket-shell"/>
     <rect x={x} y={yBay} width={w} height={bayH} className="rocket-shell"/><rect x={x} y={yBody} width={w} height={bodyH} className="rocket-shell"/>
-    <rect x={x} y={yBay+12} width={w} height="15" className="reflective-band"/><rect x={x} y={bottom-48} width={w} height="15" className="reflective-band"/>
+    <rect x={x} y={yBay+12} width={w} height="15" className="reflective-band"/><rect x={x} y={bottom-116} width={w} height="15" className="reflective-band"/>
     <line x1={x-8} y1={yBay} x2={x+w+8} y2={yBay} className="station"/><line x1={x-8} y1={yBody} x2={x+w+8} y2={yBody} className="station"/>
     <polygon points={`${x},${bottom-92} ${x},${bottom-12} ${x-60},${bottom+10} ${x-37},${bottom-75}`} className="rocket-fin"/>
     <polygon points={`${x+w},${bottom-92} ${x+w},${bottom-12} ${x+w+60},${bottom+10} ${x+w+37},${bottom-75}`} className="rocket-fin"/>

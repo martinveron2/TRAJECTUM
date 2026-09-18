@@ -103,9 +103,15 @@ export function LiveAnalysisPanel({ vehicle }: { vehicle: VehicleLike }) {
   const totalMass = analysis?.total_mass_g ?? componentResult?.total_mass_g;
   const totalCg = analysis?.cg_x_mm_from_nose ?? componentResult?.total_cg_mm;
 
-  return <div className="panel mass-panel">
-    <div className="panel-title compact"><div><p>GEOMETRY-DERIVED MASS PROPERTIES</p><h2>Component CG → vehicle CG → CP</h2></div>
-      <button className="run" disabled={!planformReady || !componentResult || derivedMasses.length !== rows.length || running} onClick={run}>{running ? 'RUNNING…' : planformReady ? 'RUN ANALYSIS' : 'FIN PLANFORM REQUIRED'}</button></div>
+  return <div className="panel mass-panel" id="engineering-analysis">
+    <div className="panel-title compact"><div><p>GEOMETRY-DERIVED MASS PROPERTIES</p><h2>Component CG → vehicle CG → CP → flight → recovery</h2></div>
+      <button className="run" disabled={!planformReady || !componentResult || derivedMasses.length !== rows.length || running} onClick={run}>{running ? 'RUNNING…' : planformReady ? (vehicle.cd !== '' ? 'RUN FULL ANALYSIS' : 'RUN CG + CP') : 'ENTER FIN GEOMETRY'}</button></div>
+    <div className="module-state">
+      <span className={componentResult ? 'module-on' : ''}>CG · {componentResult ? 'READY' : 'WAIT'}</span>
+      <span className={planformReady ? 'module-on' : ''}>CP · {planformReady ? 'READY' : 'NEEDS FINS'}</span>
+      <span className={vehicle.cd !== '' && planformReady ? 'module-on' : ''}>TRAJECTORY · {vehicle.cd !== '' && planformReady ? 'READY' : 'NEEDS Cd'}</span>
+      <span className={vehicle.cd !== '' && planformReady ? 'module-on' : ''}>RECOVERY · {vehicle.cd !== '' && planformReady ? 'READY' : 'AFTER FLIGHT'}</span>
+    </div>
     <div className="analysis-metrics wide">
       <div><span>TOTAL MASS</span><strong>{totalMass !== undefined ? `${totalMass.toFixed(1)} g` : '—'}</strong></div>
       <div><span>TOTAL CG</span><strong>{totalCg !== undefined ? `${totalCg.toFixed(1)} mm` : '—'}</strong></div>

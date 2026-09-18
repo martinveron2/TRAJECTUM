@@ -183,7 +183,6 @@ function App() {
     if (vehicle.sweep === '') result.push('Fin sweep');
     if (vehicle.finX === '') result.push('Fin axial location');
     if (vehicle.cd === '') result.push('Drag coefficient Cd');
-    result.push('Current-design mass table');
     return result;
   }, [vehicle]);
 
@@ -193,6 +192,8 @@ function App() {
     (Number(vehicle.bodyLength) || 0);
   const geometryConsistent = vehicle.totalLength !== '' && axialSum === Number(vehicle.totalLength);
   const ready = blockers.length === 0;
+
+  const goToAnalysis = () => document.getElementById('engineering-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const reset = () => setVehicle(initialVehicle);
 
@@ -216,8 +217,8 @@ function App() {
         <div className="top-actions">
           <button className="ghost" onClick={reset}>Reset UTN baseline</button>
           <button className="ghost" onClick={exportCase}>Export draft JSON</button>
-          <button className="run" disabled={!ready}>
-            {ready ? 'RUN ANALYSIS' : `RUN BLOCKED · ${blockers.length}`}
+          <button className="run" onClick={goToAnalysis}>
+            {ready ? 'RUN FULL ANALYSIS' : `OPEN ANALYSIS · ${blockers.length} INPUTS`}
           </button>
         </div>
       </header>
@@ -346,7 +347,7 @@ function App() {
               <div className="ready-row complete"><b>01</b><span>Principal geometry</span><em>860 / 180 / 180 / 500 / Ø63</em></div>
               <div className="ready-row complete"><b>02</b><span>Fin profile</span><em>{vehicle.airfoil}</em></div>
               <div className={`ready-row ${vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'complete' : ''}`}><b>03</b><span>Fin planform</span><em>{vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'READY' : 'TBD'}</em></div>
-              <div className="ready-row"><b>04</b><span>Mass table</span><em>TBD</em></div>
+              <div className="ready-row complete"><b>04</b><span>Mass table</span><em>PRELOADED · EDITABLE</em></div>
               <div className={`ready-row ${vehicle.cd !== '' ? 'complete' : ''}`}><b>05</b><span>Drag model</span><em>{vehicle.cd === '' ? 'TBD' : `Cd ${vehicle.cd}`}</em></div>
             </div>
             <div className="blocker-box">
