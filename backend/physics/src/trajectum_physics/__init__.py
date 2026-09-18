@@ -17,6 +17,7 @@ from .components import (
 )
 from .mass import MassPoint, MassProperties, center_of_gravity
 from .propulsion import Motor, motor_mass, rectangular_thrust
+from .recovery import RecoveryConfig, RecoveryPoint, RecoveryResult, simulate_recovery
 from .stability import StaticMargin, static_margin
 from .trajectory import FlightConfig, FlightPoint, FlightResult, simulate_to_apogee
 
@@ -35,6 +36,9 @@ __all__ = [
     "MassPoint",
     "MassProperties",
     "Motor",
+    "RecoveryConfig",
+    "RecoveryPoint",
+    "RecoveryResult",
     "StaticMargin",
     "analyze_vehicle",
     "axial_uniform_cg",
@@ -45,6 +49,7 @@ __all__ = [
     "motor_mass",
     "rectangular_thrust",
     "run_cdr_case",
+    "simulate_recovery",
     "simulate_to_apogee",
     "static_margin",
     "tangent_ogive_cp",

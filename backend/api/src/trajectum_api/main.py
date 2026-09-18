@@ -110,6 +110,10 @@ class FullAnalysisRequest(AnalysisRequest):
     motor_total_impulse_n_s: float = Field(default=207.0, gt=0)
     motor_propellant_mass_g: float = Field(default=140.0, gt=0)
     motor_dry_mass_g: float = Field(default=350.0, gt=0)
+    parachute_cd: float = Field(default=1.5, gt=0)
+    parachute_area_m2: float = Field(default=0.20, gt=0)
+    deploy_altitude_m: float | None = Field(default=None, gt=0)
+    deploy_delay_s: float = Field(default=0.0, ge=0)
 
 class AnalysisResponse(BaseModel):
     total_mass_g: float
@@ -130,6 +134,10 @@ class FullAnalysisResponse(BaseModel):
     max_q_pa: float
     max_speed_m_s: float
     max_mach: float
+    deployment_time_s: float | None
+    deployment_altitude_m: float | None
+    landing_time_s: float
+    impact_speed_m_s: float
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -266,6 +274,10 @@ def analyze_full(request: FullAnalysisRequest) -> FullAnalysisResponse:
             request.motor_propellant_mass_g / 1000.0,
             request.motor_dry_mass_g / 1000.0,
         ),
+        parachute_cd=request.parachute_cd,
+        parachute_area_m2=request.parachute_area_m2,
+        deploy_altitude_m=request.deploy_altitude_m,
+        deploy_delay_s=request.deploy_delay_s,
     )
     return FullAnalysisResponse(
         total_mass_g=result.total_mass_kg * 1000.0,
@@ -277,4 +289,8 @@ def analyze_full(request: FullAnalysisRequest) -> FullAnalysisResponse:
         max_q_pa=result.max_q_pa,
         max_speed_m_s=result.max_speed_m_s,
         max_mach=result.max_mach,
+        deployment_time_s=result.deployment_time_s,
+        deployment_altitude_m=result.deployment_altitude_m,
+        landing_time_s=result.landing_time_s,
+        impact_speed_m_s=result.impact_speed_m_s,
     )

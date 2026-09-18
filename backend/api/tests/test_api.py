@@ -93,6 +93,10 @@ def test_full_analysis_endpoint():
     assert data["apogee_m"] > 0
     assert data["max_q_pa"] > 0
     assert data["max_mach"] > 0
+    assert data["deployment_time_s"] is not None
+    assert data["deployment_altitude_m"] is not None
+    assert data["landing_time_s"] > data["time_to_apogee_s"]
+    assert data["impact_speed_m_s"] > 0
 
 
 def test_cad_formats_endpoint():
