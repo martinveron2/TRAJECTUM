@@ -218,9 +218,13 @@ function App() {
   };
 
   const handleAnalysisUpdate = useCallback((analysis: any, components: any) => {
+    // Mass properties are the live source of truth for CG. A full-analysis result
+    // may be older than the latest mass/geometry edit, so never let it pin CG.
     setAnalysisSummary(analysis);
     setComponentSummary(components);
   }, []);
+
+  const liveCgFromNose = componentSummary?.total_cg_mm ?? analysisSummary?.cg_x_mm_from_nose ?? null;
 
   const exportCase = () => {
     const blob = new Blob([JSON.stringify({ vehicle, motor }, null, 2)], { type: 'application/json' });
@@ -349,7 +353,7 @@ function App() {
             </div>
             <RocketRealistic
               vehicle={vehicle}
-              cgMm={analysisSummary?.cg_x_mm_from_nose ?? componentSummary?.total_cg_mm ?? null}
+              cgMm={liveCgFromNose}
               cpMm={analysisSummary?.cp_x_mm_from_nose ?? null}
               componentCgs={componentSummary?.components ?? []}
               showComponentCgs={showComponentCgs}
@@ -364,7 +368,7 @@ function App() {
           <div className="result-grid">
             <article className="metric-card">
               <span>CG</span>
-              <strong>{analysisSummary?.cg_x_mm_from_nose !== undefined ? `${(Number(vehicle.totalLength) - analysisSummary.cg_x_mm_from_nose).toFixed(1)} mm` : componentSummary?.total_cg_mm !== undefined ? `${(Number(vehicle.totalLength) - componentSummary.total_cg_mm).toFixed(1)} mm` : '—'}</strong>
+              <strong>{liveCgFromNose !== null ? `${(Number(vehicle.totalLength) - liveCgFromNose).toFixed(1)} mm` : '—'}</strong>
               <small>desde apoyo · referencia cátedra</small>
             </article>
             <article className="metric-card">
