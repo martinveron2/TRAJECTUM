@@ -219,3 +219,11 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .cp-leader{stroke:#ffb35c;stroke-width:1;stroke-dasharray:4 4;opacity:.9}
 .component-cg-label{font-size:7.2px!important}
 .callout{font-size:9.5px!important}
+
+/* R7 technical-view legibility: text never sits on top of construction lines. */
+.payload-label{font-size:5.8px!important;letter-spacing:.015em}
+.component-cg-label{font-size:6.9px!important}
+.cg-label,.cp-label{font-size:7.3px!important}
+.label-plate{paint-order:stroke;stroke:#081521;stroke-width:3px;stroke-linejoin:round}
+.component-cg-projection{opacity:.62}
+.callout{font-size:9px!important;paint-order:stroke;stroke:#081521;stroke-width:2.5px;stroke-linejoin:round}
