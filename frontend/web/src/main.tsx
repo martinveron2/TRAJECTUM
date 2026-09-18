@@ -436,5 +436,3 @@ function App() {
 }
 
 createRoot(document.getElementById('root')!).render(<App />);
-
-[executed on device: ip-172-31-42-2 (b9766200-ad78-4bae-a8c9-0bbf87da1f37)]
