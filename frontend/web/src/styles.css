@@ -240,3 +240,37 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .component-cg-cross{stroke:#dff5ff;stroke-width:.7}
 
 .section-name{fill:#9bb0c8;font-size:8px;font-weight:700;letter-spacing:.08em;paint-order:stroke;stroke:#081521;stroke-width:2.4px;stroke-linejoin:round}
+
+/* Mobile: keep the engineering drawing readable instead of shrinking its labels to illegibility. */
+@media(max-width:720px){
+  .app-shell{padding:14px 8px 32px}
+  .visual,.editor,.mass-panel,.cad-panel,.nose-compare,.readiness,.equations-panel{padding:12px}
+  .panel-title{flex-direction:column;align-items:flex-start}
+  .panel-title.compact{align-items:flex-start}
+  .visual-tools{justify-content:flex-start;width:100%}
+  .top-actions{width:100%}
+  .top-actions button{flex:1 1 140px}
+  .schematic.realistic{
+    min-height:0;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    padding:8px;
+  }
+  .schematic.realistic svg{
+    width:720px;
+    min-width:720px;
+    max-width:none;
+    max-height:none;
+    height:auto;
+  }
+  .schematic-meta{gap:8px 12px;font-size:.62rem}
+  .analysis-metrics.wide{grid-template-columns:1fr 1fr}
+  .mass-head.derived,.mass-row.derived{grid-template-columns:1.25fr .8fr .95fr}
+  .mass-row{padding:7px 6px}
+  .mass-row>span{font-size:.68rem}
+  .mass-row input,.mass-row output{padding:7px 6px}
+  .metric-card{padding:12px}
+  .metric-card strong{font-size:1.25rem}
+}
