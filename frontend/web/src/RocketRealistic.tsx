@@ -122,9 +122,12 @@ export function RocketRealistic({
   const finOutLeft = x - finSpan * scale;
   const finOutRight = x + w + finSpan * scale;
 
-  const cgY = cgMm == null ? null : top + cgMm * scale;
-  const cpY = cpMm == null ? null : top + cpMm * scale;
   const fromSupport = (fromNoseMm: number) => total - fromNoseMm;
+  const yFromR7 = (r7Mm: number) => supportY - r7Mm * scale;
+  const cgR7 = cgMm == null ? null : fromSupport(cgMm);
+  const cpR7 = cpMm == null ? null : fromSupport(cpMm);
+  const cgY = cgR7 == null ? null : yFromR7(cgR7);
+  const cpY = cpR7 == null ? null : yFromR7(cpR7);
   const sectionDims = [
     { label: `${nose.toFixed(0)} mm`, y1: top, y2: yBay },
     { label: `${bay.toFixed(0)} mm`, y1: yBay, y2: yBody },
@@ -134,7 +137,10 @@ export function RocketRealistic({
   const componentStations = distributeLabels(
     componentCgs
       .filter((component) => Number.isFinite(component.x_cg_mm))
-      .map((component) => ({ ...component, y: top + component.x_cg_mm * scale })),
+      .map((component) => {
+        const r7 = fromSupport(component.x_cg_mm);
+        return { ...component, y: yFromR7(r7) };
+      }),
     top + 8,
     bottom - 8,
   );
@@ -197,8 +203,8 @@ export function RocketRealistic({
         className="nozzle"
       />
 
-      <text x={centerX} y={yBay + bayH / 2 - 5} className="module-label payload-label">PAYLOAD</text>
-      <text x={centerX} y={yBay + bayH / 2 + 6} className="module-label payload-label">ELECTRONICS</text>
+      <text x={centerX} y={yBay + bayH / 2 - 4} className="module-label payload-label">PAYLOAD</text>
+      <text x={centerX} y={yBay + bayH / 2 + 5} className="module-label payload-label">ELECTRÓNICA</text>
       <text x={centerX} y={yBody + bodyH * .28} className="utn-mark">UTN</text>
       <text x={centerX} y={yBody + bodyH * .28 + 12} className="module-label utn-submark">FRH · G07</text>
 
@@ -221,7 +227,7 @@ export function RocketRealistic({
         <line x1="430" y1={supportY} x2="430" y2={cgY} className="cg-dimension" markerStart="url(#dimArrow)" markerEnd="url(#dimArrow)"/>
         <line x1="423" y1={supportY} x2="437" y2={supportY} className="cg-dimension"/>
         <line x1="423" y1={cgY} x2="437" y2={cgY} className="cg-dimension"/>
-        <text x="444" y={cgY + 3} className="cg-label">CG TOTAL · {fromSupport(cgMm!).toFixed(1)} mm R7</text>
+        <text x="444" y={cgY - 8} className="cg-label label-plate">CG TOTAL · {cgR7!.toFixed(1)} mm R7</text>
       </>}
 
       {cpY !== null && <>
@@ -237,40 +243,27 @@ export function RocketRealistic({
         <line x1="535" y1={supportY} x2="535" y2={cpY} className="cp-dimension" markerStart="url(#dimArrow)" markerEnd="url(#dimArrow)"/>
         <line x1="528" y1={supportY} x2="542" y2={supportY} className="cp-dimension"/>
         <line x1="528" y1={cpY} x2="542" y2={cpY} className="cp-dimension"/>
-        <text x="548" y={cpY + 3} className="cp-label">CP TOTAL · {fromSupport(cpMm!).toFixed(1)} mm R7</text>
+        <text x="548" y={cpY - 8} className="cp-label label-plate">CP TOTAL · {cpR7!.toFixed(1)} mm R7</text>
       </>}
 
-      {showComponentCgs && componentStations.map((component) => <>
-        <g key={`mark-${component.name}`} aria-label={`${component.name} component CG at exact axial station`}>
-          <circle cx={centerX} cy={component.y} r="3.7" className="component-cg-dot"/>
-          <line x1={centerX - 7} y1={component.y} x2={centerX + 7} y2={component.y} className="component-cg-cross"/>
-        </g>
-        <path
-          key={`leader-${component.name}`}
-          d={`M ${centerX + 7} ${component.y} L 568 ${component.y} L 582 ${component.labelY}`}
-          className="component-cg-projection"
-        />
-        <line
-          key={`tick-${component.name}`}
-          x1="562"
-          y1={component.y}
-          x2="574"
-          y2={component.y}
-          className="component-cg-tick"
-        />
-        <text
-          key={`label-${component.name}`}
-          x="590"
-          y={component.labelY + 3}
-          className="component-cg-label"
-        >
-          {component.name} · xCG {fromSupport(component.x_cg_mm).toFixed(1)} mm R7
-        </text>
-      </>)}
+      {showComponentCgs && componentStations.map((component) => {
+        const r7 = fromSupport(component.x_cg_mm);
+        const textY = component.labelY - 5;
+        return <g key={component.name}>
+          <circle cx={centerX} cy={component.y} r="3.4" className="component-cg-dot"/>
+          <line x1={centerX - 6} y1={component.y} x2={centerX + 6} y2={component.y} className="component-cg-cross"/>
+          <path
+            d={`M ${centerX + 7} ${component.y} L 545 ${component.y} L 558 ${component.labelY}`}
+            className="component-cg-projection"
+          />
+          <text x="574" y={textY} className="component-cg-label label-plate">
+            {component.name} · xCG {r7.toFixed(1)} mm R7
+          </text>
+        </g>;
+      })}
 
       <text x="300" y={top + noseH / 2} className="callout">NOSE · {nose} mm</text>
       <text x="300" y={yBay + bayH / 2} className="callout">BAY · {bay} mm</text>
-      <text x="300" y={yBody + bodyH / 2} className="callout">BODY · {body} mm</text>
 
       <text x="112" y={bottom + 36} className="scale-note-svg">
         ESCALA GEOMÉTRICA ÚNICA · 1 px = {(1 / scale).toFixed(2)} mm
