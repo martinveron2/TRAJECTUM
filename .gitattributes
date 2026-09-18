@@ -1,0 +1,10 @@
+docs/** linguist-documentation
+*.md linguist-documentation
+*.lock linguist-generated=true
+**/dist/** linguist-generated=true
+**/build/** linguist-generated=true
+**/.next/** linguist-generated=true
+**/node_modules/** linguist-vendored
+**/.venv/** linguist-vendored
+**/venv/** linguist-vendored
+*.tsbuildinfo linguist-generated=true
