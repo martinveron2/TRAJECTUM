@@ -208,3 +208,14 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .component-cg-cross{stroke:#7eb7f5;stroke-width:1}
 .component-cg-tick{stroke:#6c9ac8;stroke-width:1.1}
 .scale-note-svg{fill:#6d89a8;font-size:8px;letter-spacing:.05em}
+
+.payload-label{font-size:6.8px!important;letter-spacing:.025em}
+.utn-mark{font-size:16px!important}
+.utn-submark{font-size:6.6px!important;letter-spacing:.02em}
+.cg-label,.cp-label{font-size:7.6px!important}
+.cg-station-dot{fill:#eef4fb;stroke:#0a0f18;stroke-width:1}
+.cp-station-dot{fill:#ffb35c;stroke:#2a1600;stroke-width:1}
+.cg-leader{stroke:#e8eef6;stroke-width:1;stroke-dasharray:4 4;opacity:.9}
+.cp-leader{stroke:#ffb35c;stroke-width:1;stroke-dasharray:4 4;opacity:.9}
+.component-cg-label{font-size:7.2px!important}
+.callout{font-size:9.5px!important}

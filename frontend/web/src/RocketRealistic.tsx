@@ -197,10 +197,10 @@ export function RocketRealistic({
         className="nozzle"
       />
 
-      <text x={centerX} y={yBay + bayH / 2 - 8} className="module-label">PAYLOAD +</text>
-      <text x={centerX} y={yBay + bayH / 2 + 7} className="module-label">ELECTRONICS</text>
-      <text x={centerX} y={yBody + bodyH * .34} className="utn-mark">UTN</text>
-      <text x={centerX} y={yBody + bodyH * .34 + 18} className="module-label">FRH · G07</text>
+      <text x={centerX} y={yBay + bayH / 2 - 5} className="module-label payload-label">PAYLOAD</text>
+      <text x={centerX} y={yBay + bayH / 2 + 6} className="module-label payload-label">ELECTRONICS</text>
+      <text x={centerX} y={yBody + bodyH * .28} className="utn-mark">UTN</text>
+      <text x={centerX} y={yBody + bodyH * .28 + 12} className="module-label utn-submark">FRH · G07</text>
 
       <line x1="365" y1={top} x2="365" y2={supportY} className="datum-rail"/>
       <text x="365" y={supportY + 18} textAnchor="middle" className="datum-label">R7 · 0 mm</text>
@@ -209,31 +209,35 @@ export function RocketRealistic({
       {cgY !== null && <>
         <line x1={centerX} y1={cgY} x2="360" y2={cgY} className="projection-line cg-projection"/>
         <circle cx="365" cy={cgY} r="3.5" className="datum-tick cg-datum"/>
-        <g transform={`translate(${centerX} ${cgY})`} aria-label="Center of gravity at exact axial station">
-          <circle r="9" className="cg-ring"/>
-          <path d="M 0 0 L 0 -9 A 9 9 0 0 1 9 0 Z" className="cg-fill"/>
-          <path d="M 0 0 L 0 9 A 9 9 0 0 1 -9 0 Z" className="cg-fill"/>
-          <line x1="-12" y1="0" x2="12" y2="0" className="cg-cross"/>
-          <line x1="0" y1="-12" x2="0" y2="12" className="cg-cross"/>
+        <circle cx={centerX} cy={cgY} r="2.8" className="cg-station-dot"/>
+        <line x1={centerX + 4} y1={cgY} x2="398" y2={cgY} className="cg-leader"/>
+        <g transform={`translate(398 ${cgY})`} aria-label="Center of gravity symbol at exact axial station">
+          <circle r="7.2" className="cg-ring"/>
+          <path d="M 0 0 L 0 -7.2 A 7.2 7.2 0 0 1 7.2 0 Z" className="cg-fill"/>
+          <path d="M 0 0 L 0 7.2 A 7.2 7.2 0 0 1 -7.2 0 Z" className="cg-fill"/>
+          <line x1="-9.5" y1="0" x2="9.5" y2="0" className="cg-cross"/>
+          <line x1="0" y1="-9.5" x2="0" y2="9.5" className="cg-cross"/>
         </g>
-        <line x1="398" y1={supportY} x2="398" y2={cgY} className="cg-dimension" markerStart="url(#dimArrow)" markerEnd="url(#dimArrow)"/>
-        <line x1="390" y1={supportY} x2="406" y2={supportY} className="cg-dimension"/>
-        <line x1="390" y1={cgY} x2="406" y2={cgY} className="cg-dimension"/>
-        <text x="412" y={cgY + 4} className="cg-label">CG TOTAL · {fromSupport(cgMm!).toFixed(1)} mm R7</text>
+        <line x1="430" y1={supportY} x2="430" y2={cgY} className="cg-dimension" markerStart="url(#dimArrow)" markerEnd="url(#dimArrow)"/>
+        <line x1="423" y1={supportY} x2="437" y2={supportY} className="cg-dimension"/>
+        <line x1="423" y1={cgY} x2="437" y2={cgY} className="cg-dimension"/>
+        <text x="444" y={cgY + 3} className="cg-label">CG TOTAL · {fromSupport(cgMm!).toFixed(1)} mm R7</text>
       </>}
 
       {cpY !== null && <>
         <line x1={centerX} y1={cpY} x2="455" y2={cpY} className="projection-line cp-projection"/>
         <circle cx="455" cy={cpY} r="3.5" className="datum-tick cp-datum"/>
-        <g transform={`translate(${centerX} ${cpY})`} aria-label="Center of pressure at exact axial station">
-          <circle r="8" className="cp-ring"/>
-          <line x1="-11" y1="0" x2="11" y2="0" className="cp-cross"/>
-          <line x1="0" y1="-11" x2="0" y2="11" className="cp-cross"/>
+        <circle cx={centerX} cy={cpY} r="2.8" className="cp-station-dot"/>
+        <line x1={centerX + 4} y1={cpY} x2="505" y2={cpY} className="cp-leader"/>
+        <g transform={`translate(505 ${cpY})`} aria-label="Center of pressure symbol at exact axial station">
+          <circle r="6.8" className="cp-ring"/>
+          <line x1="-9" y1="0" x2="9" y2="0" className="cp-cross"/>
+          <line x1="0" y1="-9" x2="0" y2="9" className="cp-cross"/>
         </g>
-        <line x1="488" y1={supportY} x2="488" y2={cpY} className="cp-dimension" markerStart="url(#dimArrow)" markerEnd="url(#dimArrow)"/>
-        <line x1="480" y1={supportY} x2="496" y2={supportY} className="cp-dimension"/>
-        <line x1="480" y1={cpY} x2="496" y2={cpY} className="cp-dimension"/>
-        <text x="502" y={cpY + 4} className="cp-label">CP TOTAL · {fromSupport(cpMm!).toFixed(1)} mm R7</text>
+        <line x1="535" y1={supportY} x2="535" y2={cpY} className="cp-dimension" markerStart="url(#dimArrow)" markerEnd="url(#dimArrow)"/>
+        <line x1="528" y1={supportY} x2="542" y2={supportY} className="cp-dimension"/>
+        <line x1="528" y1={cpY} x2="542" y2={cpY} className="cp-dimension"/>
+        <text x="548" y={cpY + 3} className="cp-label">CP TOTAL · {fromSupport(cpMm!).toFixed(1)} mm R7</text>
       </>}
 
       {showComponentCgs && componentStations.map((component) => <>
