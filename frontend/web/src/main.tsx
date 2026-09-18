@@ -162,6 +162,7 @@ function App() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [runToken, setRunToken] = useState(0);
   const [resetToken, setResetToken] = useState(0);
+  const [showComponentCgs, setShowComponentCgs] = useState(false);
   const [analysisSummary, setAnalysisSummary] = useState<any>(null);
   const [componentSummary, setComponentSummary] = useState<any>(null);
 
@@ -330,12 +331,24 @@ function App() {
                 <p>GEOMETRY</p>
                 <h2>Parametric side view</h2>
               </div>
-              <span className="scale-note">schematic · live dimensions</span>
+              <div className="visual-tools">
+                <button
+                  type="button"
+                  className={showComponentCgs ? 'technical-toggle active' : 'technical-toggle'}
+                  onClick={() => setShowComponentCgs((value) => !value)}
+                  aria-pressed={showComponentCgs}
+                >
+                  {showComponentCgs ? 'HIDE COMPONENT CGs' : 'SHOW COMPONENT CGs'}
+                </button>
+                <span className="scale-note">technical view · live dimensions</span>
+              </div>
             </div>
             <RocketRealistic
               vehicle={vehicle}
               cgMm={analysisSummary?.cg_x_mm_from_nose ?? componentSummary?.total_cg_mm ?? null}
               cpMm={analysisSummary?.cp_x_mm_from_nose ?? null}
+              componentCgs={componentSummary?.components ?? []}
+              showComponentCgs={showComponentCgs}
             />
           </div>
 
