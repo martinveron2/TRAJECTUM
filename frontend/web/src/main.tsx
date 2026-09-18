@@ -4,6 +4,7 @@ import './styles.css';
 import { LiveAnalysisPanel } from './LiveAnalysisPanel';
 import { CadInteroperabilityPanel } from './CadInteroperabilityPanel';
 import { RocketRealistic } from './RocketRealistic';
+import { NoseProfileComparison } from './NoseProfileComparison';
 
 type NumericField = number | '';
 
@@ -21,6 +22,7 @@ type Vehicle = {
   sweep: NumericField;
   finX: NumericField;
   airfoil: string;
+  noseProfile: string;
   launchAngle: NumericField;
   cd: NumericField;
   parachuteCd: NumericField;
@@ -38,13 +40,14 @@ const initialVehicle: Vehicle = {
   wall: 2,
   finCount: 4,
   rootChord: 80,
-  tipChord: '',
+  tipChord: 40,
   span: 50,
-  sweep: '',
-  finX: '',
+  sweep: 20,
+  finX: 760,
   airfoil: 'NACA 0012',
+  noseProfile: 'tangent_ogive',
   launchAngle: 85,
-  cd: '',
+  cd: 0.55,
   parachuteCd: 1.5,
   parachuteArea: 0.20,
   deployAltitude: '',
@@ -157,6 +160,7 @@ function RocketSchematic({ vehicle }: { vehicle: Vehicle }) {
 function App() {
   const [vehicle, setVehicle] = useState(initialVehicle);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [runToken, setRunToken] = useState(0);
 
   const update = <K extends keyof Vehicle>(key: K, value: Vehicle[K]) => {
     setVehicle((current) => ({ ...current, [key]: value }));
@@ -193,7 +197,10 @@ function App() {
   const geometryConsistent = vehicle.totalLength !== '' && axialSum === Number(vehicle.totalLength);
   const ready = blockers.length === 0;
 
-  const goToAnalysis = () => document.getElementById('engineering-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const goToAnalysis = () => {
+    setRunToken((value) => value + 1);
+    document.getElementById('engineering-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const reset = () => setVehicle(initialVehicle);
 
@@ -242,6 +249,17 @@ function App() {
           </div>
 
           <h3>Primary geometry</h3>
+          <div className="airfoil-row nose-selector">
+            <label>
+              <span>Nose profile family</span>
+              <select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}>
+                <option value="tangent_ogive">Tangent ogive</option>
+                <option value="von_karman">Von Kármán</option>
+                <option value="power_series">Power series n=0.75</option>
+              </select>
+            </label>
+            <div className="naca-chip">same L · same Ø</div>
+          </div>
           <div className="field-grid">
             <Field label="Total length" value={vehicle.totalLength} unit="mm" status="frozen" onChange={(v) => update('totalLength', v)} />
             <Field label="Outer diameter" value={vehicle.diameter} unit="mm" status="frozen" onChange={(v) => update('diameter', v)} />
@@ -271,10 +289,10 @@ function App() {
           <div className="field-grid">
             <Field label="Fin count" value={vehicle.finCount} status="frozen" onChange={(v) => update('finCount', v)} />
             <Field label="Root chord" value={vehicle.rootChord} unit="mm" status="provisional" onChange={(v) => update('rootChord', v)} />
-            <Field label="Tip chord" value={vehicle.tipChord} unit="mm" status="TBD" onChange={(v) => update('tipChord', v)} />
+            <Field label="Tip chord" value={vehicle.tipChord} unit="mm" status="demo" onChange={(v) => update('tipChord', v)} />
             <Field label="Span" value={vehicle.span} unit="mm" status="provisional" onChange={(v) => update('span', v)} />
-            <Field label="Sweep" value={vehicle.sweep} unit="mm" status="TBD" onChange={(v) => update('sweep', v)} />
-            <Field label="Leading-edge X" value={vehicle.finX} unit="mm" status="TBD" onChange={(v) => update('finX', v)} />
+            <Field label="Sweep" value={vehicle.sweep} unit="mm" status="demo" onChange={(v) => update('sweep', v)} />
+            <Field label="Leading-edge X" value={vehicle.finX} unit="mm" status="demo" onChange={(v) => update('finX', v)} />
           </div>
 
           <button className="advanced-toggle" onClick={() => setShowAdvanced((v) => !v)}>
@@ -283,7 +301,7 @@ function App() {
           {showAdvanced && (
             <div className="field-grid advanced">
               <Field label="Launch angle" value={vehicle.launchAngle} unit="deg" status="TP" onChange={(v) => update('launchAngle', v)} />
-              <Field label="Drag coefficient Cd" value={vehicle.cd} status="TBD" onChange={(v) => update('cd', v)} />
+              <Field label="Drag coefficient Cd" value={vehicle.cd} status="demo" onChange={(v) => update('cd', v)} />
               <Field label="Parachute Cd" value={vehicle.parachuteCd} status="recovery" onChange={(v) => update('parachuteCd', v)} />
               <Field label="Parachute area" value={vehicle.parachuteArea} unit="m²" status="recovery" onChange={(v) => update('parachuteArea', v)} />
               <Field label="Deploy altitude" value={vehicle.deployAltitude} unit="m" status="blank = apogee" onChange={(v) => update('deployAltitude', v)} />
@@ -303,6 +321,8 @@ function App() {
             </div>
             <RocketRealistic vehicle={vehicle} />
           </div>
+
+          <NoseProfileComparison selected={vehicle.noseProfile} />
 
           <div className="result-grid">
             <article className="metric-card">
@@ -332,7 +352,7 @@ function App() {
             </article>
           </div>
 
-          <LiveAnalysisPanel vehicle={vehicle} />
+          <LiveAnalysisPanel vehicle={vehicle} runToken={runToken} />
           <CadInteroperabilityPanel onGeometryImported={importCadGeometry} />
 
           <div className="panel readiness">

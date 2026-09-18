@@ -28,7 +28,7 @@ const initialRows: ComponentRow[] = [
   { id: 6, name: 'Fins · 4 total', massG: 20, kind: 'fins', note: 'xCG from fin planform when complete' },
 ];
 
-export function LiveAnalysisPanel({ vehicle }: { vehicle: VehicleLike }) {
+export function LiveAnalysisPanel({ vehicle, runToken = 0 }: { vehicle: VehicleLike; runToken?: number }) {
   const [rows, setRows] = useState(initialRows);
   const [componentResult, setComponentResult] = useState<ComponentResponse | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -99,6 +99,10 @@ export function LiveAnalysisPanel({ vehicle }: { vehicle: VehicleLike }) {
     } catch (e) { setError(e instanceof Error ? e.message : 'Unknown error'); }
     finally { setRunning(false); }
   };
+
+  useEffect(() => {
+    if (runToken > 0 && componentResult) void run();
+  }, [runToken, componentResult]);
 
   const totalMass = analysis?.total_mass_g ?? componentResult?.total_mass_g;
   const totalCg = analysis?.cg_x_mm_from_nose ?? componentResult?.total_cg_mm;
