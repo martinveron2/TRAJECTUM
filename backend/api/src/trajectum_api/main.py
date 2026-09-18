@@ -5,13 +5,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from trajectum_cad import CAD_FORMATS
 from trajectum_physics import (
+    ComponentMassProperty,
     MassPoint,
     Motor,
     analyze_vehicle,
+    axial_uniform_cg,
     center_of_gravity,
+    combine_component_mass_properties,
     combine_cp,
     static_margin,
     tangent_ogive_cp,
+    tangent_ogive_shell_cg,
+    trapezoidal_fin_planform_cg_x,
     trapezoidal_fin_set_cp,
 )
 
@@ -46,6 +51,36 @@ class MassItemIn(BaseModel):
     name: str
     mass_g: float = Field(gt=0)
     x_cg_mm: float = Field(ge=0)
+
+
+
+class ComponentGeometryIn(BaseModel):
+    name: str
+    kind: str
+    mass_g: float = Field(gt=0)
+    x_start_mm: float | None = None
+    x_end_mm: float | None = None
+    length_mm: float | None = None
+    base_radius_mm: float | None = None
+    leading_edge_x_mm: float | None = None
+    root_chord_mm: float | None = None
+    tip_chord_mm: float | None = None
+    span_mm: float | None = None
+    sweep_mm: float | None = None
+
+
+class ComponentCGOut(BaseModel):
+    name: str
+    mass_g: float
+    x_cg_mm: float
+    source: str
+
+
+class ComponentCGResponse(BaseModel):
+    components: list[ComponentCGOut]
+    total_mass_g: float
+    total_cg_mm: float
+
 
 class CGRequest(BaseModel):
     masses: list[MassItemIn]
@@ -126,6 +161,45 @@ def cad_formats() -> list[CadFormatResponse]:
         )
         for item in CAD_FORMATS
     ]
+
+
+
+
+@app.post("/v1/components/cg", response_model=ComponentCGResponse)
+def component_cg(request: list[ComponentGeometryIn]) -> ComponentCGResponse:
+    calculated: list[ComponentMassProperty] = []
+    for item in request:
+        if item.kind == "axial_uniform":
+            if item.x_start_mm is None or item.x_end_mm is None:
+                raise ValueError("axial_uniform requires x_start_mm and x_end_mm")
+            x = axial_uniform_cg(x_start_m=item.x_start_mm / 1000.0, x_end_m=item.x_end_mm / 1000.0)
+            source = "geometry:axial_uniform"
+        elif item.kind == "tangent_ogive_shell":
+            if item.length_mm is None or item.base_radius_mm is None:
+                raise ValueError("tangent_ogive_shell requires length_mm and base_radius_mm")
+            x = tangent_ogive_shell_cg(length_m=item.length_mm / 1000.0, base_radius_m=item.base_radius_mm / 1000.0)
+            source = "geometry:tangent_ogive_shell"
+        elif item.kind == "trapezoidal_fin_set":
+            values = [item.leading_edge_x_mm, item.root_chord_mm, item.tip_chord_mm, item.span_mm, item.sweep_mm]
+            if any(value is None for value in values):
+                raise ValueError("trapezoidal_fin_set requires leading edge, root/tip chord, span and sweep")
+            x = trapezoidal_fin_planform_cg_x(
+                leading_edge_x_m=item.leading_edge_x_mm / 1000.0,
+                root_chord_m=item.root_chord_mm / 1000.0,
+                tip_chord_m=item.tip_chord_mm / 1000.0,
+                span_m=item.span_mm / 1000.0,
+                sweep_m=item.sweep_mm / 1000.0,
+            )
+            source = "geometry:trapezoidal_fin_planform"
+        else:
+            raise ValueError(f"Unsupported component geometry kind: {item.kind}")
+        calculated.append(ComponentMassProperty(item.name, item.mass_g / 1000.0, x, source))
+    total = combine_component_mass_properties(tuple(calculated))
+    return ComponentCGResponse(
+        components=[ComponentCGOut(name=c.name, mass_g=c.mass_kg * 1000.0, x_cg_mm=c.x_cg_m * 1000.0, source=c.source) for c in calculated],
+        total_mass_g=total.total_mass_kg * 1000.0,
+        total_cg_mm=total.cg_x_m * 1000.0,
+    )
 
 
 @app.post("/v1/analysis/cg", response_model=CGResponse)

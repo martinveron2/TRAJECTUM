@@ -1,0 +1,14 @@
+name,unit,value,status,comment
+L_TOTAL,mm,860,frozen,total length
+D_EXT,mm,63,frozen,outer diameter
+L_NOSE,mm,180,frozen,tangent ogive
+L_BAY,mm,180,frozen,payload + electronics
+L_BODY,mm,500,frozen,lower body
+WALL,mm,2,provisional,printed shell
+FIN_COUNT,unitless,4,frozen,90 deg spacing
+FIN_ROOT,mm,80,provisional,legacy PDR
+FIN_SPAN,mm,50,provisional,legacy PDR
+FIN_TIP,mm,,TBD,required for final planform
+FIN_SWEEP,mm,,TBD,required for final planform
+FIN_X,mm,,TBD,leading-edge axial station from nose tip
+AIRFOIL,text,NACA 0012,professor/PDR,fin cross-section

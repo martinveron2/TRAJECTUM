@@ -10,6 +10,7 @@ def test_tangent_ogive_hits_tip_and_base_radius():
 
 
 def test_cad_format_registry_classifies_common_files():
+    assert classify_cad_filename('rocket.dxf').name == 'DXF'
     assert classify_cad_filename('rocket.step').name == 'STEP'
     assert classify_cad_filename('rocket.f3d').name == 'Fusion 360'
     assert classify_cad_filename('rocket.ipt').name == 'Inventor'
