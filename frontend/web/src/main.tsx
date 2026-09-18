@@ -201,6 +201,10 @@ function App() {
   const geometryConsistent = vehicle.totalLength !== '' && axialSum === Number(vehicle.totalLength);
   const ready = blockers.length === 0;
 
+  const runFromTop = () => {
+    setRunToken((value) => value + 1);
+  };
+
   const goToAnalysis = () => {
     setRunToken((value) => value + 1);
     document.getElementById('engineering-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -238,8 +242,8 @@ function App() {
         <div className="top-actions">
           <button className="ghost" onClick={reset}>Reset UTN baseline</button>
           <button className="ghost" onClick={exportCase}>Export draft JSON</button>
-          <button className="run" onClick={goToAnalysis}>
-            {ready ? 'RUN FULL ANALYSIS' : `OPEN ANALYSIS · ${blockers.length} INPUTS`}
+          <button className="run" onClick={ready ? runFromTop : goToAnalysis}>
+            {ready ? 'RUN · UPDATE CG/CP' : `OPEN ANALYSIS · ${blockers.length} INPUTS`}
           </button>
         </div>
       </header>
