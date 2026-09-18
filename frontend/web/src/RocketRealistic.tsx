@@ -6,7 +6,15 @@ type VehicleLike = {
   bayLength: NumericField; bodyLength: NumericField; airfoil: string; noseProfile: string;
 };
 
-export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
+export function RocketRealistic({
+  vehicle,
+  cgMm,
+  cpMm,
+}: {
+  vehicle: VehicleLike;
+  cgMm?: number | null;
+  cpMm?: number | null;
+}) {
   const total = Number(vehicle.totalLength) || 860;
   const nose = Number(vehicle.noseLength) || 180;
   const bay = Number(vehicle.bayLength) || 180;
@@ -36,6 +44,8 @@ export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
   const left = ogive.map((p) => `${centerX - p.half},${p.y}`).join(' ');
   const right = [...ogive].reverse().map((p) => `${centerX + p.half},${p.y}`).join(' ');
   const ogivePoints = `${left} ${right}`;
+  const cgY = cgMm == null ? null : top + cgMm * scale;
+  const cpY = cpMm == null ? null : top + cpMm * scale;
 
   return <div className="schematic realistic"><svg viewBox="0 0 390 590" role="img" aria-label="Rocket side view">
     <defs>
@@ -53,6 +63,23 @@ export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
     <path d={`M ${x+w/2-14} ${bottom} L ${x+w/2+14} ${bottom} L ${x+w/2+10} ${bottom+24} L ${x+w/2-10} ${bottom+24} Z`} className="nozzle"/>
     <text x={x+w/2} y={yBay+bayH/2-8} className="module-label">PAYLOAD +</text><text x={x+w/2} y={yBay+bayH/2+7} className="module-label">ELECTRONICS</text>
     <text x={x+w/2} y={yBody+bodyH*.34} className="utn-mark">UTN</text><text x={x+w/2} y={yBody+bodyH*.34+18} className="module-label">FRH · G07</text>
+
+    {cgY !== null && <g transform={`translate(270 ${cgY})`} aria-label="Center of gravity marker">
+      <circle r="10" className="cg-ring"/>
+      <path d="M 0 0 L 0 -10 A 10 10 0 0 1 10 0 Z" className="cg-fill"/>
+      <path d="M 0 0 L 0 10 A 10 10 0 0 1 -10 0 Z" className="cg-fill"/>
+      <line x1="-14" y1="0" x2="14" y2="0" className="cg-cross"/>
+      <line x1="0" y1="-14" x2="0" y2="14" className="cg-cross"/>
+      <text x="18" y="4" className="cg-label">CG {cgMm?.toFixed(1)} mm</text>
+    </g>}
+
+    {cpY !== null && <g transform={`translate(270 ${cpY})`} aria-label="Center of pressure marker">
+      <circle r="9" className="cp-ring"/>
+      <line x1="-13" y1="0" x2="13" y2="0" className="cp-cross"/>
+      <line x1="0" y1="-13" x2="0" y2="13" className="cp-cross"/>
+      <text x="18" y="4" className="cp-label">CP {cpMm?.toFixed(1)} mm</text>
+    </g>}
+
     <text x="300" y={top+noseH/2} className="callout">NOSE · {nose} mm</text><text x="300" y={yBay+bayH/2} className="callout">BAY · {bay} mm</text><text x="300" y={yBody+bodyH/2} className="callout">BODY · {body} mm</text>
   </svg>
   <div className="schematic-meta"><span><i className="dot frozen"/> Ø {vehicle.diameter || '—'} mm</span><span><i className="dot provisional"/> {vehicle.airfoil}</span><span><i className="dot tbd"/> {vehicle.noseProfile.replace(/_/g, " ")}</span></div>

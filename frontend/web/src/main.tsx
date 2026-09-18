@@ -45,7 +45,7 @@ const initialVehicle: Vehicle = {
   sweep: 20,
   finX: 760,
   airfoil: 'NACA 0012',
-  noseProfile: 'von_karman',
+  noseProfile: 'tangent_ogive',
   launchAngle: 85,
   cd: 0.55,
   parachuteCd: 1.5,
@@ -332,10 +332,17 @@ function App() {
               </div>
               <span className="scale-note">schematic · live dimensions</span>
             </div>
-            <RocketRealistic vehicle={vehicle} />
+            <RocketRealistic
+              vehicle={vehicle}
+              cgMm={analysisSummary?.cg_x_mm_from_nose ?? componentSummary?.total_cg_mm ?? null}
+              cpMm={analysisSummary?.cp_x_mm_from_nose ?? null}
+            />
           </div>
 
-          <NoseProfileComparison selected={vehicle.noseProfile} />
+          <NoseProfileComparison
+            selected={vehicle.noseProfile}
+            onSelect={(profile) => update('noseProfile', profile)}
+          />
 
           <div className="result-grid">
             <article className="metric-card">
