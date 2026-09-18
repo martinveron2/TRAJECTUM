@@ -265,8 +265,9 @@ export function RocketRealistic({
         </g>;
       })}
 
-      <text x="300" y={top + noseH / 2} className="callout">NOSE · {nose} mm</text>
-      <text x="300" y={yBay + bayH / 2} className="callout">BAY · {bay} mm</text>
+      <text x={x - 16} y={top + noseH / 2} textAnchor="end" className="section-name">NOSE</text>
+      <text x={x - 16} y={yBay + bayH / 2} textAnchor="end" className="section-name">BAY</text>
+      <text x={x - 16} y={yBody + bodyH / 2} textAnchor="end" className="section-name">BODY</text>
 
       <text x="112" y={bottom + 36} className="scale-note-svg">
         ESCALA GEOMÉTRICA ÚNICA · 1 px = {(1 / scale).toFixed(2)} mm

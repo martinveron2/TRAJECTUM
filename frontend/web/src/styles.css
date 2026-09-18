@@ -238,3 +238,5 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .component-cg-ring{fill:#8fd3ff;stroke:#dff5ff;stroke-width:.9}
 .component-cg-fill{fill:#0b2134}
 .component-cg-cross{stroke:#dff5ff;stroke-width:.7}
+
+.section-name{fill:#9bb0c8;font-size:8px;font-weight:700;letter-spacing:.08em;paint-order:stroke;stroke:#081521;stroke-width:2.4px;stroke-linejoin:round}
