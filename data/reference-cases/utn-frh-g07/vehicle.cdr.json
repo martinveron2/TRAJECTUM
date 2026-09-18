@@ -35,6 +35,18 @@
     "leading_edge_x_mm": {
       "value": null,
       "status": "tbd"
+    },
+    "airfoil": {
+      "type": "naca4-or-custom",
+      "designation": {
+        "value": null,
+        "status": "tbd-professor-specified"
+      },
+      "custom_coordinates": {
+        "value": null,
+        "status": "optional"
+      },
+      "note": "Enter a standard NACA 4-digit designation or normalized custom profile coordinates. Planform dimensions are entered separately."
     }
   },
   "masses": {
