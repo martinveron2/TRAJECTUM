@@ -347,8 +347,8 @@ function App() {
           <div className="result-grid">
             <article className="metric-card">
               <span>CG</span>
-              <strong>{analysisSummary?.cg_x_mm_from_nose !== undefined ? `${analysisSummary.cg_x_mm_from_nose.toFixed(1)} mm` : componentSummary?.total_cg_mm !== undefined ? `${componentSummary.total_cg_mm.toFixed(1)} mm` : '—'}</strong>
-              <small>geometry-derived</small>
+              <strong>{analysisSummary?.cg_x_mm_from_nose !== undefined ? `${(Number(vehicle.totalLength) - analysisSummary.cg_x_mm_from_nose).toFixed(1)} mm` : componentSummary?.total_cg_mm !== undefined ? `${(Number(vehicle.totalLength) - componentSummary.total_cg_mm).toFixed(1)} mm` : '—'}</strong>
+              <small>desde apoyo · referencia cátedra</small>
             </article>
             <article className="metric-card">
               <span>CP</span>
