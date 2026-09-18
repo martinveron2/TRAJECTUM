@@ -5,6 +5,7 @@ from .aerodynamics import (
     tangent_ogive_cp,
     trapezoidal_fin_set_cp,
 )
+from .analysis import EngineeringResult, analyze_vehicle
 from .atmosphere import AtmosphereState, isa_troposphere
 from .cdr import CDRRun, run_cdr_case
 from .mass import MassPoint, MassProperties, center_of_gravity
@@ -19,6 +20,7 @@ __all__ = [
     "CDRRun",
     "CPContribution",
     "CPResult",
+    "EngineeringResult",
     "FlightConfig",
     "FlightPoint",
     "FlightResult",
@@ -26,6 +28,7 @@ __all__ = [
     "MassProperties",
     "Motor",
     "StaticMargin",
+    "analyze_vehicle",
     "center_of_gravity",
     "combine_cp",
     "isa_troposphere",

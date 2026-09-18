@@ -20,6 +20,7 @@ jobs:
         run: |
           if [ "${{ matrix.module }}" = "api" ]; then
             pip install -e "backend/physics[dev]"
+            pip install -e "backend/cad[dev]"
             pip install -e "backend/api[dev]"
           else
             pip install -e "backend/${{ matrix.module }}[dev]"

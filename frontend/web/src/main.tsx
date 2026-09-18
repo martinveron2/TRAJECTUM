@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 import { LiveAnalysisPanel } from './LiveAnalysisPanel';
+import { CadInteroperabilityPanel } from './CadInteroperabilityPanel';
 import { RocketRealistic } from './RocketRealistic';
 
 type NumericField = number | '';
@@ -304,6 +305,7 @@ function App() {
           </div>
 
           <LiveAnalysisPanel vehicle={vehicle} />
+          <CadInteroperabilityPanel />
 
           <div className="panel readiness">
             <div className="panel-title compact">

@@ -14,6 +14,18 @@ export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
   const top = 24, usable = 500, scale = usable / total;
   const noseH = nose * scale, bayH = bay * scale, bodyH = body * scale;
   const x = 145, w = 88, yBay = top + noseH, yBody = yBay + bayH, bottom = yBody + bodyH;
+  const centerX = x + w / 2;
+  const radiusMm = (Number(vehicle.diameter) || 63) / 2;
+  const rho = (radiusMm ** 2 + nose ** 2) / (2 * radiusMm);
+  const ogive = Array.from({ length: 31 }, (_, i) => {
+    const axial = nose * i / 30;
+    const inside = Math.max(rho ** 2 - (nose - axial) ** 2, 0);
+    const radius = Math.sqrt(inside) + radiusMm - rho;
+    return { y: top + axial * scale, half: (radius / radiusMm) * (w / 2) };
+  });
+  const left = ogive.map((p) => `${centerX - p.half},${p.y}`).join(' ');
+  const right = [...ogive].reverse().map((p) => `${centerX + p.half},${p.y}`).join(' ');
+  const ogivePoints = `${left} ${right}`;
 
   return <div className="schematic realistic"><svg viewBox="0 0 390 590" role="img" aria-label="Rocket side view">
     <defs>
@@ -22,7 +34,7 @@ export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
     </defs>
     <line x1="48" y1={top} x2="48" y2={bottom} className="dimension"/><line x1="41" y1={top} x2="55" y2={top} className="dimension"/><line x1="41" y1={bottom} x2="55" y2={bottom} className="dimension"/>
     <text x="28" y={(top+bottom)/2} transform={`rotate(-90 28 ${(top+bottom)/2})`} className="dimtext">{vehicle.totalLength || '—'} mm</text>
-    <path d={`M ${x+w/2} ${top} C ${x+10} ${top+noseH*.40}, ${x} ${top+noseH*.76}, ${x} ${top+noseH} L ${x+w} ${top+noseH} C ${x+w} ${top+noseH*.76}, ${x+w-10} ${top+noseH*.40}, ${x+w/2} ${top} Z`} className="rocket-shell"/>
+    <polygon points={ogivePoints} className="rocket-shell"/>
     <rect x={x} y={yBay} width={w} height={bayH} className="rocket-shell"/><rect x={x} y={yBody} width={w} height={bodyH} className="rocket-shell"/>
     <rect x={x} y={yBay+12} width={w} height="15" className="reflective-band"/><rect x={x} y={bottom-48} width={w} height="15" className="reflective-band"/>
     <line x1={x-8} y1={yBay} x2={x+w+8} y2={yBay} className="station"/><line x1={x-8} y1={yBody} x2={x+w+8} y2={yBody} className="station"/>
