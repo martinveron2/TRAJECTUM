@@ -124,3 +124,42 @@ def test_component_geometry_endpoint_derives_component_and_total_cg():
     assert len(data["components"]) == 4
     assert data["total_mass_g"] == 1020
     assert all(item["x_cg_mm"] > 0 for item in data["components"])
+
+
+
+def test_unified_full_analysis_derives_components_and_support_reference():
+    response = client.post(
+        "/v2/analysis/full",
+        json={
+            "total_length_mm": 860,
+            "body_diameter_mm": 63,
+            "nose_length_mm": 180,
+            "nose_profile": "tangent_ogive",
+            "fin_count": 4,
+            "fin_root_chord_mm": 80,
+            "fin_tip_chord_mm": 40,
+            "fin_span_mm": 50,
+            "fin_sweep_mm": 20,
+            "fin_leading_edge_x_mm": 760,
+            "launch_angle_deg": 85,
+            "cd": 0.55,
+            "components": [
+                {"name": "Cofia", "kind": "profile_shell", "mass_g": 100, "length_mm": 180, "base_radius_mm": 31.5, "profile": "tangent_ogive"},
+                {"name": "Cuerpo principal", "kind": "axial_uniform", "mass_g": 330, "x_start_mm": 180, "x_end_mm": 860},
+                {"name": "Motor", "kind": "axial_uniform", "mass_g": 490, "x_start_mm": 670, "x_end_mm": 860},
+                {"name": "Paracaídas", "kind": "axial_uniform", "mass_g": 30, "x_start_mm": 180, "x_end_mm": 240},
+                {"name": "Electrónica", "kind": "axial_uniform", "mass_g": 80, "x_start_mm": 240, "x_end_mm": 300},
+                {"name": "Carga útil", "kind": "axial_uniform", "mass_g": 100, "x_start_mm": 300, "x_end_mm": 360},
+                {"name": "Aletas · 4 total", "kind": "trapezoidal_fin_set", "mass_g": 20, "leading_edge_x_mm": 760, "root_chord_mm": 80, "tip_chord_mm": 40, "span_mm": 50, "sweep_mm": 20},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["components"]) == 7
+    assert abs(data["total_mass_g"] - 1150.0) < 1e-6
+    assert abs(data["cg_x_mm_from_support"] - (860.0 - data["cg_x_mm_from_nose"])) < 1e-6
+    assert abs(data["cp_x_mm_from_support"] - (860.0 - data["cp_x_mm_from_nose"])) < 1e-6
+    assert all(item["x_cg_mm_from_support"] >= 0 for item in data["components"])
+    assert data["apogee_m"] > 0
+    assert data["mission_timeline"][-1]["phase"] == "LANDED"

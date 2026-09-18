@@ -9,6 +9,7 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
+    "katex": "^0.18.7",
     "react": "latest",
     "react-dom": "latest"
   },
