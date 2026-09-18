@@ -61,3 +61,42 @@ def test_cg_only_endpoint():
     data = response.json()
     assert abs(data["total_mass_g"] - 1130) < 1e-6
     assert 570 < data["cg_x_mm_from_nose"] < 580
+
+
+def test_full_analysis_endpoint():
+    response = client.post(
+        "/v1/analysis/full",
+        json={
+            "nose_length_mm": 180,
+            "body_diameter_mm": 63,
+            "fin_count": 4,
+            "fin_root_chord_mm": 80,
+            "fin_tip_chord_mm": 40,
+            "fin_span_mm": 50,
+            "fin_sweep_mm": 20,
+            "fin_leading_edge_x_mm": 760,
+            "launch_angle_deg": 85,
+            "cd": 0.55,
+            "masses": [
+                {"name": "nose", "mass_g": 100, "x_cg_mm": 111.4},
+                {"name": "fins", "mass_g": 20, "x_cg_mm": 822.2},
+                {"name": "body", "mass_g": 330, "x_cg_mm": 520},
+                {"name": "motor", "mass_g": 490, "x_cg_mm": 765},
+                {"name": "parachute", "mass_g": 30, "x_cg_mm": 200},
+                {"name": "payload", "mass_g": 100, "x_cg_mm": 225},
+            ],
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert abs(data["total_mass_g"] - 1070) < 1e-6
+    assert data["apogee_m"] > 0
+    assert data["max_q_pa"] > 0
+    assert data["max_mach"] > 0
+
+
+def test_cad_formats_endpoint():
+    response = client.get("/v1/cad/formats")
+    assert response.status_code == 200
+    names = {item["name"] for item in response.json()}
+    assert {"STEP", "Fusion 360", "Inventor", "STL"} <= names
