@@ -106,7 +106,7 @@ export function LiveAnalysisPanel({
     setComponentResult(null);
     const timer = window.setTimeout(async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/v1/components/cg', {
+        const response = await fetch('/api/v1/components/cg', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(componentPayload),
         });
@@ -150,7 +150,7 @@ export function LiveAnalysisPanel({
         deploy_altitude_m: vehicle.deployAltitude === '' ? null : Number(vehicle.deployAltitude),
         deploy_delay_s: Number(vehicle.deployDelay),
       };
-      const response = await fetch('http://127.0.0.1:8000/v2/analysis/full', {
+      const response = await fetch('/api/v2/analysis/full', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
