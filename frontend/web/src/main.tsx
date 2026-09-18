@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
+import { LiveAnalysisPanel } from './LiveAnalysisPanel';
+import { RocketRealistic } from './RocketRealistic';
 
 type NumericField = number | '';
 
@@ -270,7 +272,7 @@ function App() {
               </div>
               <span className="scale-note">schematic · live dimensions</span>
             </div>
-            <RocketSchematic vehicle={vehicle} />
+            <RocketRealistic vehicle={vehicle} />
           </div>
 
           <div className="result-grid">
@@ -300,6 +302,8 @@ function App() {
               <small>Trajectory required</small>
             </article>
           </div>
+
+          <LiveAnalysisPanel vehicle={vehicle} />
 
           <div className="panel readiness">
             <div className="panel-title compact">

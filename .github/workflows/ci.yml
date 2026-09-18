@@ -16,7 +16,14 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install --upgrade pip
-      - run: pip install -e "backend/${{ matrix.module }}[dev]"
+      - name: Install module
+        run: |
+          if [ "${{ matrix.module }}" = "api" ]; then
+            pip install -e "backend/physics[dev]"
+            pip install -e "backend/api[dev]"
+          else
+            pip install -e "backend/${{ matrix.module }}[dev]"
+          fi
       - run: pytest -q
         working-directory: backend/${{ matrix.module }}
       - run: ruff check .
