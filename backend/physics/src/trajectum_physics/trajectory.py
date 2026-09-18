@@ -50,7 +50,7 @@ def simulate_to_apogee(cfg: FlightConfig) -> FlightResult:
     max_q = 0.0
 
     def derivatives(state: tuple[float, float, float, float], time_s: float):
-        x_, z_, vx_, vz_ = state
+        _x, z_, vx_, vz_ = state
         speed = hypot(vx_, vz_)
         atmosphere = isa_troposphere(max(z_, 0.0))
         mass = cfg.non_motor_mass_kg + motor_mass(cfg.motor, time_s)

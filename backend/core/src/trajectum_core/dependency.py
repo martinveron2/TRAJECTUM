@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections import deque
 
-
 DEFAULT_DEPENDENCIES: dict[str, set[str]] = {
     "geometry": {"mass", "aerodynamics", "cad"},
     "mass": {"cg", "trajectory"},
