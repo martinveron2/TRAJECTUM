@@ -7,15 +7,18 @@ $WebPort = if ($env:TRAJECTUM_WEB_PORT) { $env:TRAJECTUM_WEB_PORT } else { "5173
 
 function Say($msg) { Write-Host ""; Write-Host "[TRAJECTUM] $msg" }
 
-if (Test-Path (Join-Path $Root ".git")) {
-    Say "Updating canonical repository"
-    git -C $Root fetch origin
-    git -C $Root checkout main
-    git -C $Root pull --ff-only origin main
-} else {
-    Say "Cloning canonical repository"
-    if (Test-Path $Root) { Remove-Item $Root -Recurse -Force }
-    git clone $Repo $Root
+$SkipUpdate = $env:TRAJECTUM_SKIP_UPDATE -eq "1"
+if (!$SkipUpdate) {
+    if (Test-Path (Join-Path $Root ".git")) {
+        Say "Updating canonical repository"
+        git -C $Root fetch origin
+        git -C $Root checkout main
+        git -C $Root pull --ff-only origin main
+    } else {
+        Say "Cloning canonical repository"
+        if (Test-Path $Root) { Remove-Item $Root -Recurse -Force }
+        git clone $Repo $Root
+    }
 }
 
 $VenvPython = Join-Path $Root ".venv\Scripts\python.exe"
