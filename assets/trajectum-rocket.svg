@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" role="img" aria-label="Technical rocket and trajectory visualization">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#06101d"/><stop offset="1" stop-color="#0b1f33"/></linearGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#8796a8"/><stop offset=".45" stop-color="#f5f8fb"/><stop offset=".7" stop-color="#b2bfcc"/><stop offset="1" stop-color="#657487"/></linearGradient>
+  <linearGradient id="plume" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset=".28" stop-color="#9bd8ff"/><stop offset="1" stop-color="#2589d8" stop-opacity="0"/></linearGradient>
+  <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M56 0H0V56" fill="none" stroke="#83b8dc" stroke-opacity=".08"/></pattern>
+  <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1600" height="720" fill="url(#bg)"/><rect width="1600" height="720" fill="url(#grid)"/>
+<g fill="none" stroke="#7bc8ff" stroke-width="2" opacity=".78">
+  <path d="M95 612C330 312 575 145 835 132s470 125 660 387" stroke-dasharray="10 12"/>
+  <path d="M178 612C402 360 626 230 850 224s415 86 598 277" opacity=".55"/>
+  <path d="M1130 162c96-45 200-45 310 0M1130 192c102-36 206-32 313 12M1130 222c103-27 207-18 315 28" opacity=".45"/>
+</g>
+<g fill="#b8e4ff"><circle cx="315" cy="440" r="4"/><circle cx="530" cy="274" r="4"/><circle cx="758" cy="157" r="4"/><circle cx="992" cy="157" r="4"/><circle cx="1218" cy="241" r="4"/><circle cx="1408" cy="424" r="4"/></g>
+<g transform="translate(760 72)">
+  <path d="M40 0C63 27 80 69 80 114v328H0V114C0 69 17 27 40 0Z" fill="url(#metal)" stroke="#d9e7f3" stroke-width="2"/>
+  <path d="M0 126h80v70H0z" fill="#162636" opacity=".95"/><path d="M8 208h64" stroke="#64788b" stroke-width="2"/>
+  <path d="M0 350L-74 460 0 432Z" fill="#68798b" stroke="#c3d2de" stroke-width="2"/><path d="M80 350l74 110-74-28Z" fill="#68798b" stroke="#c3d2de" stroke-width="2"/>
+  <path d="M16 442h48l-10 30H26Z" fill="#dce6ee"/><path d="M27 468h26l26 164H1Z" fill="url(#plume)" filter="url(#glow)"/>
+  <path d="M22 78h36M18 100h44M20 295h40M20 320h40" stroke="#8ba0b3" stroke-opacity=".55"/>
+</g>
+<g transform="translate(88 86)" fill="none" stroke="#78bce8" stroke-width="1.5" opacity=".72">
+  <path d="M48 0C69 28 80 57 80 92v286H16V92C16 57 27 28 48 0ZM16 294l-44 88 44-22M80 294l44 88-44-22"/>
+  <path d="M-28 404h152M-6 0v378M102 0v378" stroke-dasharray="5 7" opacity=".45"/>
+  <circle cx="48" cy="466" r="54"/><circle cx="48" cy="466" r="22"/><path d="M-14 466h124M48 404v124"/>
+</g>
+<g transform="translate(1110 404)" fill="none" stroke="#79c8ff" stroke-width="2" opacity=".75">
+  <path d="M0 150C70 42 145 36 220 116S370 183 445 62"/><path d="M0 150C92 73 172 78 240 139S370 194 445 123" opacity=".55"/>
+  <path d="M0 0v170h460" stroke="#9cc7e2" opacity=".38"/>
+</g>
+</svg>
