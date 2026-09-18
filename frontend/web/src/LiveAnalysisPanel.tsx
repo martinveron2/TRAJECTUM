@@ -23,7 +23,7 @@ type Analysis = {
 };
 
 const initialRows: ComponentRow[] = [
-  { id: 1, name: 'Nose', massG: 100, kind: 'nose', note: 'xCG from tangent-ogive geometry' },
+  { id: 1, name: 'Nose', massG: 100, kind: 'nose', note: 'xCG from selected nose-profile geometry' },
   { id: 2, name: 'Main airframe', massG: 330, kind: 'body', note: 'xCG from 180–860 mm envelope' },
   { id: 3, name: 'Motor', massG: 490, kind: 'motor', note: 'xCG from 670–860 mm envelope' },
   { id: 4, name: 'Parachute', massG: 30, kind: 'parachute', note: 'demo envelope 180–220 mm' },
@@ -31,12 +31,30 @@ const initialRows: ComponentRow[] = [
   { id: 6, name: 'Fins · 4 total', massG: 20, kind: 'fins', note: 'xCG from fin planform when complete' },
 ];
 
-export function LiveAnalysisPanel({ vehicle, runToken = 0 }: { vehicle: VehicleLike; runToken?: number }) {
+export function LiveAnalysisPanel({
+  vehicle,
+  runToken = 0,
+  resetToken = 0,
+  onAnalysisUpdate,
+}: {
+  vehicle: VehicleLike;
+  runToken?: number;
+  resetToken?: number;
+  onAnalysisUpdate?: (analysis: Analysis | null, components: ComponentResponse | null) => void;
+}) {
   const [rows, setRows] = useState(initialRows);
   const [componentResult, setComponentResult] = useState<ComponentResponse | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState('');
   const [running, setRunning] = useState(false);
+
+  useEffect(() => {
+    if (resetToken > 0) {
+      setRows(initialRows);
+      setAnalysis(null);
+      setError('');
+    }
+  }, [resetToken]);
 
   const planformReady = [vehicle.tipChord, vehicle.sweep, vehicle.finX].every((v) => v !== '');
   const massesReady = rows.every((row) => row.massG !== '');
@@ -52,7 +70,9 @@ export function LiveAnalysisPanel({ vehicle, runToken = 0 }: { vehicle: VehicleL
   }), [rows, vehicle, planformReady]);
 
   useEffect(() => {
+    setAnalysis(null);
     if (!massesReady) { setComponentResult(null); return; }
+    setComponentResult(null);
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch('http://127.0.0.1:8000/v1/components/cg', {
@@ -109,6 +129,10 @@ export function LiveAnalysisPanel({ vehicle, runToken = 0 }: { vehicle: VehicleL
     if (runToken > 0 && componentResult) void run();
   }, [runToken, componentResult]);
 
+  useEffect(() => {
+    onAnalysisUpdate?.(analysis, componentResult);
+  }, [analysis, componentResult, onAnalysisUpdate]);
+
   const totalMass = analysis?.total_mass_g ?? componentResult?.total_mass_g;
   const totalCg = analysis?.cg_x_mm_from_nose ?? componentResult?.total_cg_mm;
 
@@ -135,7 +159,7 @@ export function LiveAnalysisPanel({ vehicle, runToken = 0 }: { vehicle: VehicleL
       <div><span>LANDING TIME</span><strong>{analysis?.landing_time_s !== undefined ? `${analysis.landing_time_s.toFixed(1)} s` : '—'}</strong></div>
       <div><span>IMPACT SPEED</span><strong>{analysis?.impact_speed_m_s !== undefined ? `${analysis.impact_speed_m_s.toFixed(2)} m/s` : '—'}</strong></div>
     </div>
-    {analysis?.mission_timeline && analysis.mission_timeline.length > 1 && <FlightVisualizer samples={analysis.mission_timeline} />}
+    {analysis?.mission_timeline && analysis.mission_timeline.length > 1 && <FlightVisualizer samples={analysis.mission_timeline} launchAngleDeg={Number(vehicle.launchAngle) || 85} />}
         {analysis?.landing_time_s !== undefined && <div className="recovery-timeline">
       <div className="timeline-title"><span>RECOVERY SEQUENCE</span><strong>Flight → deployment → landing</strong></div>
       <div className="timeline-track">

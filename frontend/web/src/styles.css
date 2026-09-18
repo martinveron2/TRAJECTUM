@@ -143,3 +143,5 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .flight-live{border-color:#2f7054!important;background:#103323!important;color:#7be3ae!important}
 @media(max-width:900px){.flight-telemetry{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:720px){.flight-controls{grid-template-columns:auto auto 1fr}.flight-controls select,.flight-controls>span{display:none}.flight-telemetry{grid-template-columns:1fr 1fr}}
+.info-badge{display:inline-flex;align-items:center;justify-content:center;padding:7px 9px;border:0;background:transparent;color:#7292b5;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.launch-guide{stroke:#ffc66d;stroke-width:1.4;stroke-dasharray:5 4;opacity:.85}

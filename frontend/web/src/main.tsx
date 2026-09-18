@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 import { LiveAnalysisPanel } from './LiveAnalysisPanel';
@@ -161,6 +161,9 @@ function App() {
   const [vehicle, setVehicle] = useState(initialVehicle);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [runToken, setRunToken] = useState(0);
+  const [resetToken, setResetToken] = useState(0);
+  const [analysisSummary, setAnalysisSummary] = useState<any>(null);
+  const [componentSummary, setComponentSummary] = useState<any>(null);
 
   const update = <K extends keyof Vehicle>(key: K, value: Vehicle[K]) => {
     setVehicle((current) => ({ ...current, [key]: value }));
@@ -202,7 +205,17 @@ function App() {
     document.getElementById('engineering-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const reset = () => setVehicle(initialVehicle);
+  const reset = () => {
+    setVehicle(initialVehicle);
+    setAnalysisSummary(null);
+    setComponentSummary(null);
+    setResetToken((value) => value + 1);
+  };
+
+  const handleAnalysisUpdate = useCallback((analysis: any, components: any) => {
+    setAnalysisSummary(analysis);
+    setComponentSummary(components);
+  }, []);
 
   const exportCase = () => {
     const blob = new Blob([JSON.stringify({ vehicle, motor }, null, 2)], { type: 'application/json' });
@@ -258,7 +271,7 @@ function App() {
                 <option value="power_series">Power series n=0.75</option>
               </select>
             </label>
-            <div className="naca-chip">same L · same Ø</div>
+            <span className="info-badge">same L · same Ø</span>
           </div>
           <div className="field-grid">
             <Field label="Total length" value={vehicle.totalLength} unit="mm" status="frozen" onChange={(v) => update('totalLength', v)} />
@@ -284,7 +297,7 @@ function App() {
                 <option>CUSTOM</option>
               </select>
             </label>
-            <div className="naca-chip">Professor / PDR correction</div>
+            <span className="info-badge">Professor / PDR correction</span>
           </div>
           <div className="field-grid">
             <Field label="Fin count" value={vehicle.finCount} status="frozen" onChange={(v) => update('finCount', v)} />
@@ -327,32 +340,37 @@ function App() {
           <div className="result-grid">
             <article className="metric-card">
               <span>CG</span>
-              <strong>—</strong>
-              <small>Waiting for current mass table</small>
+              <strong>{analysisSummary?.cg_x_mm_from_nose !== undefined ? `${analysisSummary.cg_x_mm_from_nose.toFixed(1)} mm` : componentSummary?.total_cg_mm !== undefined ? `${componentSummary.total_cg_mm.toFixed(1)} mm` : '—'}</strong>
+              <small>geometry-derived</small>
             </article>
             <article className="metric-card">
               <span>CP</span>
-              <strong>—</strong>
-              <small>Needs final fin planform</small>
+              <strong>{analysisSummary?.cp_x_mm_from_nose !== undefined ? `${analysisSummary.cp_x_mm_from_nose.toFixed(1)} mm` : '—'}</strong>
+              <small>Barrowman/profile model</small>
             </article>
             <article className="metric-card">
               <span>STATIC MARGIN</span>
-              <strong>—</strong>
-              <small>CG + CP required</small>
+              <strong>{analysisSummary?.static_margin_calibers !== undefined ? `${analysisSummary.static_margin_calibers.toFixed(2)} cal` : '—'}</strong>
+              <small>CP − CG / D</small>
             </article>
             <article className="metric-card">
               <span>APOGEE</span>
-              <strong>—</strong>
-              <small>Mass + Cd required</small>
+              <strong>{analysisSummary?.apogee_m !== undefined ? `${analysisSummary.apogee_m.toFixed(1)} m` : '—'}</strong>
+              <small>trajectory result</small>
             </article>
             <article className="metric-card">
               <span>MAX Q</span>
-              <strong>—</strong>
-              <small>Trajectory required</small>
+              <strong>{analysisSummary?.max_q_pa !== undefined ? `${analysisSummary.max_q_pa.toFixed(0)} Pa` : '—'}</strong>
+              <small>trajectory result</small>
             </article>
           </div>
 
-          <LiveAnalysisPanel vehicle={vehicle} runToken={runToken} />
+          <LiveAnalysisPanel
+            vehicle={vehicle}
+            runToken={runToken}
+            resetToken={resetToken}
+            onAnalysisUpdate={handleAnalysisUpdate}
+          />
           <CadInteroperabilityPanel onGeometryImported={importCadGeometry} />
 
           <div className="panel readiness">
