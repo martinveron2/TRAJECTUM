@@ -83,3 +83,18 @@ def test_trajectory_time_step_convergence_is_reasonable():
     fine = simulate_to_apogee(FlightConfig(85.0, area, 0.55, 0.58, motor, dt_s=0.005))
     relative = abs(coarse.apogee_m - fine.apogee_m) / fine.apogee_m
     assert relative < 0.02
+
+
+def test_axisymmetric_profile_cp_matches_tangent_ogive_order():
+    from trajectum_physics import axisymmetric_nose_cp_from_profile
+
+    length = 0.18
+    radius = 0.0315
+    rho = (radius**2 + length**2) / (2 * radius)
+    profile = []
+    for i in range(401):
+        x = length * i / 400
+        y = (rho**2 - (length - x) ** 2) ** 0.5 + radius - rho
+        profile.append((x, y))
+    contribution = axisymmetric_nose_cp_from_profile(tuple(profile), base_radius_m=radius)
+    assert 0.45 * length < contribution.x_cp_m < 0.48 * length

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { FlightVisualizer, type MissionSample } from './FlightVisualizer';
 
 type NumericField = number | '';
 type VehicleLike = {
@@ -6,17 +7,19 @@ type VehicleLike = {
   rootChord: NumericField; tipChord: NumericField; span: NumericField;
   sweep: NumericField; finX: NumericField; launchAngle: NumericField; cd: NumericField;
   parachuteCd: NumericField; parachuteArea: NumericField; deployAltitude: NumericField; deployDelay: NumericField;
+  noseProfile: string;
 };
 type ComponentRow = { id: number; name: string; massG: NumericField; kind: string; note: string };
 type ComponentOut = { name: string; mass_g: number; x_cg_mm: number; source: string };
 type ComponentResponse = { components: ComponentOut[]; total_mass_g: number; total_cg_mm: number };
-type ComponentPayload = { name: string; mass_g: number; kind: string; x_start_mm?: number; x_end_mm?: number; length_mm?: number; base_radius_mm?: number; leading_edge_x_mm?: number; root_chord_mm?: number; tip_chord_mm?: number; span_mm?: number; sweep_mm?: number };
+type ComponentPayload = { name: string; mass_g: number; kind: string; x_start_mm?: number; x_end_mm?: number; length_mm?: number; base_radius_mm?: number; leading_edge_x_mm?: number; root_chord_mm?: number; tip_chord_mm?: number; span_mm?: number; sweep_mm?: number; profile?: string; power_exponent?: number };
 type Analysis = {
   total_mass_g: number; cg_x_mm_from_nose: number; cp_x_mm_from_nose: number;
   static_margin_calibers: number; apogee_m?: number; max_q_pa?: number;
   max_speed_m_s?: number; max_mach?: number;
   deployment_time_s?: number | null; deployment_altitude_m?: number | null;
   landing_time_s?: number; impact_speed_m_s?: number; time_to_apogee_s?: number;
+  mission_timeline?: MissionSample[];
 };
 
 const initialRows: ComponentRow[] = [
@@ -28,7 +31,7 @@ const initialRows: ComponentRow[] = [
   { id: 6, name: 'Fins · 4 total', massG: 20, kind: 'fins', note: 'xCG from fin planform when complete' },
 ];
 
-export function LiveAnalysisPanel({ vehicle }: { vehicle: VehicleLike }) {
+export function LiveAnalysisPanel({ vehicle, runToken = 0 }: { vehicle: VehicleLike; runToken?: number }) {
   const [rows, setRows] = useState(initialRows);
   const [componentResult, setComponentResult] = useState<ComponentResponse | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -39,7 +42,7 @@ export function LiveAnalysisPanel({ vehicle }: { vehicle: VehicleLike }) {
   const massesReady = rows.every((row) => row.massG !== '');
   const componentPayload = useMemo<ComponentPayload[]>(() => rows.flatMap<ComponentPayload>((row) => {
     const common = { name: row.name, mass_g: Number(row.massG) };
-    if (row.kind === 'nose') return [{ ...common, kind: 'tangent_ogive_shell', length_mm: Number(vehicle.noseLength), base_radius_mm: Number(vehicle.diameter) / 2 }];
+    if (row.kind === 'nose') return [{ ...common, kind: 'profile_shell', profile: vehicle.noseProfile, length_mm: Number(vehicle.noseLength), base_radius_mm: Number(vehicle.diameter) / 2, power_exponent: 0.75 }];
     if (row.kind === 'body') return [{ ...common, kind: 'axial_uniform', x_start_mm: Number(vehicle.noseLength), x_end_mm: Number(vehicle.totalLength) }];
     if (row.kind === 'motor') { const end = Number(vehicle.totalLength); return [{ ...common, kind: 'axial_uniform', x_start_mm: Math.max(end - 190, 0), x_end_mm: end }]; }
     if (row.kind === 'parachute') { const start = Number(vehicle.noseLength); return [{ ...common, kind: 'axial_uniform', x_start_mm: start, x_end_mm: start + 40 }]; }
@@ -81,6 +84,8 @@ export function LiveAnalysisPanel({ vehicle }: { vehicle: VehicleLike }) {
         fin_tip_chord_mm: Number(vehicle.tipChord), fin_span_mm: Number(vehicle.span),
         fin_sweep_mm: Number(vehicle.sweep), fin_leading_edge_x_mm: Number(vehicle.finX),
         masses: derivedMasses,
+        nose_profile: vehicle.noseProfile,
+        nose_power_exponent: 0.75,
       };
       const full = vehicle.cd !== '' && vehicle.launchAngle !== '';
       const endpoint = full ? '/v1/analysis/full' : '/v1/analysis/cg-cp';
@@ -99,6 +104,10 @@ export function LiveAnalysisPanel({ vehicle }: { vehicle: VehicleLike }) {
     } catch (e) { setError(e instanceof Error ? e.message : 'Unknown error'); }
     finally { setRunning(false); }
   };
+
+  useEffect(() => {
+    if (runToken > 0 && componentResult) void run();
+  }, [runToken, componentResult]);
 
   const totalMass = analysis?.total_mass_g ?? componentResult?.total_mass_g;
   const totalCg = analysis?.cg_x_mm_from_nose ?? componentResult?.total_cg_mm;
@@ -126,7 +135,8 @@ export function LiveAnalysisPanel({ vehicle }: { vehicle: VehicleLike }) {
       <div><span>LANDING TIME</span><strong>{analysis?.landing_time_s !== undefined ? `${analysis.landing_time_s.toFixed(1)} s` : '—'}</strong></div>
       <div><span>IMPACT SPEED</span><strong>{analysis?.impact_speed_m_s !== undefined ? `${analysis.impact_speed_m_s.toFixed(2)} m/s` : '—'}</strong></div>
     </div>
-    {analysis?.landing_time_s !== undefined && <div className="recovery-timeline">
+    {analysis?.mission_timeline && analysis.mission_timeline.length > 1 && <FlightVisualizer samples={analysis.mission_timeline} />}
+        {analysis?.landing_time_s !== undefined && <div className="recovery-timeline">
       <div className="timeline-title"><span>RECOVERY SEQUENCE</span><strong>Flight → deployment → landing</strong></div>
       <div className="timeline-track">
         <div className="timeline-node complete"><b>1</b><span>Launch</span><em>t = 0 s</em></div>

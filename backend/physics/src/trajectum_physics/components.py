@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import pairwise
 from math import pi, sqrt
 
 from .mass import MassPoint, MassProperties, center_of_gravity
@@ -74,3 +75,25 @@ def trapezoidal_fin_planform_cg_x(*, leading_edge_x_m: float, root_chord_m: floa
 
 def combine_component_mass_properties(items: tuple[ComponentMassProperty, ...]) -> MassProperties:
     return center_of_gravity(tuple(MassPoint(item.name, item.mass_kg, item.x_cg_m) for item in items))
+
+
+def axisymmetric_shell_cg_from_profile(
+    profile: tuple[tuple[float, float], ...],
+) -> float:
+    """Thin-shell axial CG for an arbitrary body-of-revolution profile."""
+    if len(profile) < 3:
+        raise ValueError("At least three profile stations are required.")
+    ordered = tuple(sorted(profile))
+    area_sum = 0.0
+    moment_sum = 0.0
+    for (x0, r0), (x1, r1) in pairwise(ordered):
+        if x1 <= x0 or min(r0, r1) < 0:
+            raise ValueError("Invalid shell profile stations.")
+        ds = sqrt((x1 - x0) ** 2 + (r1 - r0) ** 2)
+        area = 2.0 * pi * 0.5 * (r0 + r1) * ds
+        x_mid = 0.5 * (x0 + x1)
+        area_sum += area
+        moment_sum += x_mid * area
+    if area_sum <= 0:
+        raise ValueError("Profile has zero shell area.")
+    return moment_sum / area_sum

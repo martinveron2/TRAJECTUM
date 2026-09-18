@@ -3,19 +3,19 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from trajectum_cad import CAD_FORMATS
+from trajectum_cad import CAD_FORMATS, nose_profile
 from trajectum_physics import (
     ComponentMassProperty,
     MassPoint,
     Motor,
     analyze_vehicle,
     axial_uniform_cg,
+    axisymmetric_nose_cp_from_profile,
+    axisymmetric_shell_cg_from_profile,
     center_of_gravity,
     combine_component_mass_properties,
     combine_cp,
     static_margin,
-    tangent_ogive_cp,
-    tangent_ogive_shell_cg,
     trapezoidal_fin_planform_cg_x,
     trapezoidal_fin_set_cp,
 )
@@ -67,6 +67,8 @@ class ComponentGeometryIn(BaseModel):
     tip_chord_mm: float | None = None
     span_mm: float | None = None
     sweep_mm: float | None = None
+    profile: str | None = None
+    power_exponent: float = 0.75
 
 
 class ComponentCGOut(BaseModel):
@@ -101,6 +103,8 @@ class AnalysisRequest(BaseModel):
     fin_sweep_mm: float = Field(ge=0)
     fin_leading_edge_x_mm: float = Field(ge=0)
     masses: list[MassItemIn]
+    nose_profile: str = "tangent_ogive"
+    nose_power_exponent: float = 0.75
 
 
 class FullAnalysisRequest(AnalysisRequest):
@@ -124,6 +128,19 @@ class AnalysisResponse(BaseModel):
     fins_cp_x_mm: float
 
 
+
+
+class MissionSampleOut(BaseModel):
+    t_s: float
+    phase: str
+    x_m: float
+    altitude_m: float
+    speed_m_s: float
+    vertical_speed_m_s: float
+    q_pa: float
+    parachute_deployed: bool
+
+
 class FullAnalysisResponse(BaseModel):
     total_mass_g: float
     cg_x_mm_from_nose: float
@@ -138,6 +155,7 @@ class FullAnalysisResponse(BaseModel):
     deployment_altitude_m: float | None
     landing_time_s: float
     impact_speed_m_s: float
+    mission_timeline: list[MissionSampleOut]
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -182,11 +200,20 @@ def component_cg(request: list[ComponentGeometryIn]) -> ComponentCGResponse:
                 raise ValueError("axial_uniform requires x_start_mm and x_end_mm")
             x = axial_uniform_cg(x_start_m=item.x_start_mm / 1000.0, x_end_m=item.x_end_mm / 1000.0)
             source = "geometry:axial_uniform"
-        elif item.kind == "tangent_ogive_shell":
+        elif item.kind in {"tangent_ogive_shell", "profile_shell"}:
             if item.length_mm is None or item.base_radius_mm is None:
-                raise ValueError("tangent_ogive_shell requires length_mm and base_radius_mm")
-            x = tangent_ogive_shell_cg(length_m=item.length_mm / 1000.0, base_radius_m=item.base_radius_mm / 1000.0)
-            source = "geometry:tangent_ogive_shell"
+                raise ValueError("nose shell requires length_mm and base_radius_mm")
+            profile_name = item.profile or "tangent_ogive"
+            stations_mm = nose_profile(
+                profile_name,
+                length_mm=item.length_mm,
+                base_radius_mm=item.base_radius_mm,
+                stations=401,
+                power_exponent=item.power_exponent,
+            )
+            stations_m = tuple((px / 1000.0, pr / 1000.0) for px, pr in stations_mm)
+            x = axisymmetric_shell_cg_from_profile(stations_m)
+            source = f"geometry:{profile_name}_shell"
         elif item.kind == "trapezoidal_fin_set":
             values = [item.leading_edge_x_mm, item.root_chord_mm, item.tip_chord_mm, item.span_mm, item.sweep_mm]
             if any(value is None for value in values):
@@ -229,7 +256,18 @@ def analyze_cg_cp(request: AnalysisRequest) -> AnalysisResponse:
         for item in request.masses
     )
     mass = center_of_gravity(masses)
-    nose = tangent_ogive_cp(request.nose_length_mm / 1000.0)
+    nose_stations_mm = nose_profile(
+        request.nose_profile,
+        length_mm=request.nose_length_mm,
+        base_radius_mm=request.body_diameter_mm / 2.0,
+        stations=401,
+        power_exponent=request.nose_power_exponent,
+    )
+    nose_stations_m = tuple((x / 1000.0, r / 1000.0) for x, r in nose_stations_mm)
+    nose = axisymmetric_nose_cp_from_profile(
+        nose_stations_m,
+        base_radius_m=request.body_diameter_mm / 2000.0,
+    )
     fins = trapezoidal_fin_set_cp(
         count=request.fin_count,
         body_diameter_m=request.body_diameter_mm / 1000.0,
@@ -256,6 +294,18 @@ def analyze_full(request: FullAnalysisRequest) -> FullAnalysisResponse:
         MassPoint(name=item.name, mass_kg=item.mass_g / 1000.0, x_m=item.x_cg_mm / 1000.0)
         for item in request.masses
     )
+    nose_stations_mm = nose_profile(
+        request.nose_profile,
+        length_mm=request.nose_length_mm,
+        base_radius_mm=request.body_diameter_mm / 2.0,
+        stations=401,
+        power_exponent=request.nose_power_exponent,
+    )
+    nose_stations_m = tuple((x / 1000.0, r / 1000.0) for x, r in nose_stations_mm)
+    nose_contribution = axisymmetric_nose_cp_from_profile(
+        nose_stations_m,
+        base_radius_m=request.body_diameter_mm / 2000.0,
+    )
     result = analyze_vehicle(
         masses=masses,
         nose_length_m=request.nose_length_mm / 1000.0,
@@ -278,6 +328,7 @@ def analyze_full(request: FullAnalysisRequest) -> FullAnalysisResponse:
         parachute_area_m2=request.parachute_area_m2,
         deploy_altitude_m=request.deploy_altitude_m,
         deploy_delay_s=request.deploy_delay_s,
+        nose_cp_contribution=nose_contribution,
     )
     return FullAnalysisResponse(
         total_mass_g=result.total_mass_kg * 1000.0,
@@ -293,4 +344,17 @@ def analyze_full(request: FullAnalysisRequest) -> FullAnalysisResponse:
         deployment_altitude_m=result.deployment_altitude_m,
         landing_time_s=result.landing_time_s,
         impact_speed_m_s=result.impact_speed_m_s,
+        mission_timeline=[
+            MissionSampleOut(
+                t_s=sample.t_s,
+                phase=sample.phase,
+                x_m=sample.x_m,
+                altitude_m=sample.altitude_m,
+                speed_m_s=sample.speed_m_s,
+                vertical_speed_m_s=sample.vertical_speed_m_s,
+                q_pa=sample.q_pa,
+                parachute_deployed=sample.parachute_deployed,
+            )
+            for sample in result.mission_timeline
+        ],
     )

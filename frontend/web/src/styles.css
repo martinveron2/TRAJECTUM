@@ -119,3 +119,27 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .module-state span{padding:8px 10px;border:1px solid #3c3543;background:#15131e;border-radius:8px;color:#a999ad;font-size:.62rem;letter-spacing:.05em}
 .module-state span.module-on{border-color:#275a47;background:#0c1d18;color:#7be1ad}
 @media(max-width:720px){.module-state{grid-template-columns:1fr 1fr}}
+
+.nose-selector{margin:0 0 12px}.nose-selector select{text-transform:none}
+
+.nose-compare{padding:20px}.nose-compare-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.nose-card{border:1px solid #203653;background:#081321;border-radius:10px;padding:10px;color:#7da8f7}.nose-card.selected{border-color:#68a0ff;box-shadow:0 0 0 2px rgba(104,160,255,.12)}.nose-card svg{width:100%;height:74px;display:block}.nose-card strong{display:block;color:#dce7f8;font-size:.78rem}.nose-card span{display:block;margin-top:4px;color:#7188aa;font-size:.64rem;line-height:1.35}
+@media(max-width:720px){.nose-compare-grid{grid-template-columns:1fr}}
+
+.flight-visualizer{padding:20px;margin:14px 0}
+.flight-stage{border:1px solid #203b59;background:#07111d;border-radius:12px;overflow:hidden}
+.flight-stage svg{display:block;width:100%;height:auto}
+.ground-line{stroke:#45647f;stroke-width:2}.flight-axis{stroke:#27445f;stroke-width:1;stroke-dasharray:4 4}
+.trajectory-line{stroke:#6aa4ff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.flight-label{fill:#7694b7;font-size:10px;letter-spacing:.05em}
+.flight-rocket{fill:#f5f8fc;stroke:#86b4ff;stroke-width:1.2}.flight-rocket-fin{fill:#6f8eb4;stroke:#95b8e5;stroke-width:1}
+.flight-flame{fill:#ff9d3b;stroke:#ffd17b;stroke-width:.8}
+.parachute-canopy{fill:none;stroke:#ffbc66;stroke-width:3}.parachute-line{stroke:#d5a75e;stroke-width:1}
+.flight-telemetry{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:#18304a;border-top:1px solid #1f3b58}
+.flight-telemetry>div{background:#091725;padding:10px}
+.flight-telemetry span{display:block;color:#6787aa;font-size:.58rem;letter-spacing:.09em}.flight-telemetry strong{display:block;margin-top:4px;color:#e4edf8;font-size:.78rem}
+.flight-controls{display:grid;grid-template-columns:auto auto 1fr auto auto;gap:9px;align-items:center;margin-top:10px}
+.flight-controls button,.flight-controls select{padding:8px 11px;border:1px solid #2e4a6a;background:#0b1a2a;color:#d9e6f6;border-radius:8px}
+.flight-controls input[type="range"]{width:100%;accent-color:#6aa4ff}.flight-controls>span{color:#7995b7;font-size:.7rem}
+.flight-live{border-color:#2f7054!important;background:#103323!important;color:#7be3ae!important}
+@media(max-width:900px){.flight-telemetry{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:720px){.flight-controls{grid-template-columns:auto auto 1fr}.flight-controls select,.flight-controls>span{display:none}.flight-telemetry{grid-template-columns:1fr 1fr}}

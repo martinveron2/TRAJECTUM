@@ -3,7 +3,7 @@ import React from 'react';
 type NumericField = number | '';
 type VehicleLike = {
   totalLength: NumericField; diameter: NumericField; noseLength: NumericField;
-  bayLength: NumericField; bodyLength: NumericField; airfoil: string;
+  bayLength: NumericField; bodyLength: NumericField; airfoil: string; noseProfile: string;
 };
 
 export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
@@ -17,10 +17,20 @@ export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
   const centerX = x + w / 2;
   const radiusMm = (Number(vehicle.diameter) || 63) / 2;
   const rho = (radiusMm ** 2 + nose ** 2) / (2 * radiusMm);
-  const ogive = Array.from({ length: 31 }, (_, i) => {
-    const axial = nose * i / 30;
+  const profileRadius = (axial: number) => {
+    const u = Math.max(0, Math.min(1, axial / nose));
+    if (vehicle.noseProfile === 'von_karman') {
+      const theta = Math.acos(1 - 2 * u);
+      const term = theta - 0.5 * Math.sin(2 * theta);
+      return radiusMm / Math.sqrt(Math.PI) * Math.sqrt(Math.max(term, 0));
+    }
+    if (vehicle.noseProfile === 'power_series') return radiusMm * Math.pow(u, 0.75);
     const inside = Math.max(rho ** 2 - (nose - axial) ** 2, 0);
-    const radius = Math.sqrt(inside) + radiusMm - rho;
+    return Math.sqrt(inside) + radiusMm - rho;
+  };
+  const ogive = Array.from({ length: 41 }, (_, i) => {
+    const axial = nose * i / 40;
+    const radius = profileRadius(axial);
     return { y: top + axial * scale, half: (radius / radiusMm) * (w / 2) };
   });
   const left = ogive.map((p) => `${centerX - p.half},${p.y}`).join(' ');
@@ -45,6 +55,6 @@ export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
     <text x={x+w/2} y={yBody+bodyH*.34} className="utn-mark">UTN</text><text x={x+w/2} y={yBody+bodyH*.34+18} className="module-label">FRH · G07</text>
     <text x="300" y={top+noseH/2} className="callout">NOSE · {nose} mm</text><text x="300" y={yBay+bayH/2} className="callout">BAY · {bay} mm</text><text x="300" y={yBody+bodyH/2} className="callout">BODY · {body} mm</text>
   </svg>
-  <div className="schematic-meta"><span><i className="dot frozen"/> Ø {vehicle.diameter || '—'} mm</span><span><i className="dot provisional"/> {vehicle.airfoil}</span><span><i className="dot tbd"/> UTN G07 layout</span></div>
+  <div className="schematic-meta"><span><i className="dot frozen"/> Ø {vehicle.diameter || '—'} mm</span><span><i className="dot provisional"/> {vehicle.airfoil}</span><span><i className="dot tbd"/> {vehicle.noseProfile.replace(/_/g, " ")}</span></div>
   </div>;
 }
