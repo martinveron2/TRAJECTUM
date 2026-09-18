@@ -185,3 +185,18 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 @media(max-width:900px){.equation-grid{grid-template-columns:1fr}}
 
 .motor-consistency-note{display:block;margin-top:10px;color:#c99962;font-size:.62rem;line-height:1.4}
+
+.equations-intro{margin:8px 0 0;color:#7891ad;font-size:.72rem;line-height:1.5}
+.phase-equations-button,.equation-nav button,.phase-construction button{border:1px solid #32629a;background:#0c2340;color:#9cc6ff;border-radius:9px;padding:9px 13px;font-size:.66rem;letter-spacing:.07em;cursor:pointer}
+.phase-equations-button:hover,.equation-nav button:hover,.phase-construction button:hover{border-color:#74a8e8;color:#e7f1ff}
+.phase-equations-button.secondary{background:#091827;color:#7899bd}
+.equation-focus{margin-top:12px}
+.equation-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;color:#6f91b8;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase}
+.equation-progress strong{color:#dce8f7;font-size:.72rem;text-transform:none;letter-spacing:0}
+.focus-card{min-height:155px}
+.equation-nav{display:flex;justify-content:space-between;gap:10px;margin-top:10px}
+.equation-nav button:disabled{opacity:.35;cursor:not-allowed}
+.phase-construction{margin-top:12px;border:1px dashed #4a6482;background:#091521;border-radius:10px;padding:18px}
+.phase-construction span{display:block;color:#7697bb;font-size:.6rem;letter-spacing:.11em}
+.phase-construction strong{display:block;margin-top:6px;color:#e3edf8;font-size:.92rem}
+.phase-construction p{color:#8198b3;font-size:.7rem;line-height:1.5}
