@@ -162,7 +162,7 @@ function App() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [runToken, setRunToken] = useState(0);
   const [resetToken, setResetToken] = useState(0);
-  const [showComponentCgs, setShowComponentCgs] = useState(false);
+  const [showComponentCgs, setShowComponentCgs] = useState(true);
   const [analysisSummary, setAnalysisSummary] = useState<any>(null);
   const [componentSummary, setComponentSummary] = useState<any>(null);
 
