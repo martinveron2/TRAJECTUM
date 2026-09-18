@@ -369,11 +369,6 @@ function App() {
               <small>desde apoyo · Barrowman/profile</small>
             </article>
             <article className="metric-card">
-              <span>STATIC MARGIN</span>
-              <strong>{analysisSummary?.static_margin_calibers !== undefined ? `${analysisSummary.static_margin_calibers.toFixed(2)} cal` : '—'}</strong>
-              <small>CP − CG / D</small>
-            </article>
-            <article className="metric-card">
               <span>APOGEE</span>
               <strong>{analysisSummary?.apogee_m !== undefined ? `${analysisSummary.apogee_m.toFixed(1)} m` : '—'}</strong>
               <small>trajectory result</small>

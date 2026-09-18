@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FlightVisualizer, type MissionSample } from './FlightVisualizer';
 import { EngineeringEquations } from './EngineeringEquations';
 
@@ -71,6 +71,7 @@ export function LiveAnalysisPanel({
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState('');
   const [running, setRunning] = useState(false);
+  const lastAutoRunToken = useRef(0);
 
   useEffect(() => {
     if (resetToken > 0) {
@@ -180,7 +181,9 @@ export function LiveAnalysisPanel({
   };
 
   useEffect(() => {
-    if (runToken > 0 && componentResult) void run();
+    if (runToken <= 0 || !componentResult || lastAutoRunToken.current === runToken) return;
+    lastAutoRunToken.current = runToken;
+    void run();
   }, [runToken, componentResult]);
 
   useEffect(() => {
@@ -216,7 +219,6 @@ export function LiveAnalysisPanel({
       <div><span>CP CÁTEDRA · DESDE APOYO</span><strong>{cpCatedra !== undefined ? `${cpCatedra.toFixed(1)} mm` : '—'}</strong><small>{analysis?.cp_x_mm_from_nose !== undefined ? `interno: ${analysis.cp_x_mm_from_nose.toFixed(1)} mm desde punta` : ''}</small></div>
       <div><span>CP COFIA</span><strong>{analysis?.nose_cp_x_mm_from_support !== undefined ? `${analysis.nose_cp_x_mm_from_support.toFixed(1)} mm` : '—'}</strong><small>desde apoyo</small></div>
       <div><span>CP ALETAS</span><strong>{analysis?.fins_cp_x_mm_from_support !== undefined ? `${analysis.fins_cp_x_mm_from_support.toFixed(1)} mm` : '—'}</strong><small>desde apoyo</small></div>
-      <div><span>STATIC MARGIN</span><strong>{analysis ? `${analysis.static_margin_calibers.toFixed(2)} cal` : '—'}</strong></div>
       <div><span>APOGEE</span><strong>{analysis?.apogee_m !== undefined ? `${analysis.apogee_m.toFixed(1)} m` : '—'}</strong></div>
       <div><span>MAX Q</span><strong>{analysis?.max_q_pa !== undefined ? `${analysis.max_q_pa.toFixed(0)} Pa` : '—'}</strong></div>
       <div><span>MAX SPEED</span><strong>{analysis?.max_speed_m_s !== undefined ? `${analysis.max_speed_m_s.toFixed(1)} m/s` : '—'}</strong></div>
