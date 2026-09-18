@@ -200,3 +200,11 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .phase-construction span{display:block;color:#7697bb;font-size:.6rem;letter-spacing:.11em}
 .phase-construction strong{display:block;margin-top:6px;color:#e3edf8;font-size:.92rem}
 .phase-construction p{color:#8198b3;font-size:.7rem;line-height:1.5}
+
+.datum-rail{stroke:#4a6582;stroke-width:1;stroke-dasharray:4 5;opacity:.8}
+.datum-label{fill:#6f8dab;font-size:8px;letter-spacing:.07em}
+.datum-tick{fill:#0b1724;stroke-width:1.5}
+.cg-datum{stroke:#eef4fb}.cp-datum{stroke:#ffb35c}
+.component-cg-cross{stroke:#7eb7f5;stroke-width:1}
+.component-cg-tick{stroke:#6c9ac8;stroke-width:1.1}
+.scale-note-svg{fill:#6d89a8;font-size:8px;letter-spacing:.05em}
