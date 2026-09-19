@@ -11,6 +11,10 @@ type AnalysisMeta = {
   time_to_apogee_s?: number;
   deployment_time_s?: number | null;
   landing_time_s?: number;
+  apogee_m?: number;
+  max_speed_m_s?: number;
+  max_q_pa?: number;
+  impact_speed_m_s?: number;
 };
 
 type Props = {
@@ -177,6 +181,13 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
         <h2>{txt('Gráficos de ingeniería', 'Engineering plots')}</h2>
       </div>
       <span className="plotly-badge">PLOTLY · INTERACTIVE</span>
+    </div>
+
+    <div className="flight-results-summary">
+      <article><span>{txt('ALTURA MÁXIMA', 'MAX ALTITUDE')}</span><strong>{analysis.apogee_m != null ? analysis.apogee_m.toFixed(1) + ' m' : Math.max(...altitude).toFixed(1) + ' m'}</strong></article>
+      <article><span>{txt('VELOCIDAD MÁXIMA', 'MAX SPEED')}</span><strong>{analysis.max_speed_m_s != null ? analysis.max_speed_m_s.toFixed(1) + ' m/s' : Math.max(...speed).toFixed(1) + ' m/s'}</strong></article>
+      <article><span>MAX Q</span><strong>{analysis.max_q_pa != null ? analysis.max_q_pa.toFixed(0) + ' Pa' : (Math.max(...qKpa) * 1000).toFixed(0) + ' Pa'}</strong></article>
+      <article><span>{txt('VELOCIDAD FINAL', 'FINAL SPEED')}</span><strong>{analysis.impact_speed_m_s != null ? analysis.impact_speed_m_s.toFixed(2) + ' m/s' : samples[samples.length - 1].speed_m_s.toFixed(2) + ' m/s'}</strong></article>
     </div>
 
     <div className="telemetry-source-toggle" aria-label={txt('Fuente de datos', 'Data source')}>

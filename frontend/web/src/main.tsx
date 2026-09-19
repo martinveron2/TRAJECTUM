@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 import { LiveAnalysisPanel, initialComponentRows, type ComponentRow } from './LiveAnalysisPanel';
@@ -9,6 +9,8 @@ import { buildEngineeringChartImages } from './engineeringChartExport';
 import { MissionControl } from './MissionControl';
 import { RequirementsMatrix, deriveRequirementStatus, type RequirementStatus, type RequirementStatusOverrides } from './RequirementsMatrix';
 import { PROJECT_REQUIREMENTS } from './projectRequirements';
+
+const FlightAnalysisCharts = React.lazy(() => import('./FlightAnalysisCharts').then((module) => ({ default: module.FlightAnalysisCharts })));
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
   Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff, FileUp,
@@ -160,25 +162,39 @@ function NumericStepper({
   step?: number;
   min?: number;
 }) {
-  const bump = (direction: -1 | 1) => {
-    const current = value === '' ? min : Number(value);
-    const next = Math.max(min, current + direction * step);
-    const precision = String(step).includes('.') ? String(step).split('.')[1].length : 0;
-    onChange(Number(next.toFixed(precision)));
-  };
+  const [open, setOpen] = useState(false);
+  const listRef = React.useRef<HTMLDivElement | null>(null);
+  const current = value === '' ? min : Number(value);
+  const precision = String(step).includes('.') ? String(step).split('.')[1].length : 0;
+  const radius = 20;
+  const options = Array.from({ length: radius * 2 + 1 }, (_, index) => {
+    const raw = Math.max(min, current + (index - radius) * step);
+    return Number(raw.toFixed(precision));
+  }).filter((option, index, array) => index === 0 || option !== array[index - 1]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    window.requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>('.active')?.scrollIntoView({ block: 'center' }));
+  }, [open, current]);
+
   return (
-    <div className="numeric-stepper">
-      <button type="button" className="stepper-minus" onClick={() => bump(-1)} aria-label="Disminuir">−</button>
-      <div className="stepper-value">
-        <input
-          inputMode="decimal"
-          type="number"
-          value={value}
-          onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
-        />
+    <div className="numeric-wheel-control">
+      <button type="button" className={open ? 'numeric-wheel-trigger active' : 'numeric-wheel-trigger'} onClick={() => setOpen((v) => !v)}>
+        <span>{value === '' ? '—' : Number(value).toFixed(precision)}</span>
         {unit && <em>{unit}</em>}
-      </div>
-      <button type="button" className="stepper-plus" onClick={() => bump(1)} aria-label="Aumentar">+</button>
+        <b>↕</b>
+      </button>
+      {open && <div className="numeric-wheel-popover">
+        <div className="numeric-wheel-list" ref={listRef}>
+          {options.map((option) => <button
+            type="button"
+            key={option}
+            className={option === current ? 'active' : ''}
+            onClick={() => { onChange(option); setOpen(false); }}
+          >{option.toFixed(precision)}{unit ? ' ' + unit : ''}</button>)}
+        </div>
+        <div className="numeric-wheel-fade top"/><div className="numeric-wheel-fade bottom"/>
+      </div>}
     </div>
   );
 }
@@ -1256,8 +1272,18 @@ function App() {
             motor={motor}
             rows={componentRows}
             onRowsChange={setComponentRows}
+            onOpenFlight={() => {
+              if (analysisSummary?.mission_timeline?.length > 1) setMissionControlOpen(true);
+              else {
+                setPendingMissionLaunch(true);
+                setRunToken((value) => value + 1);
+              }
+            }}
             lang={lang}
           />
+          {mobileSection === 'plots' && analysisSummary?.mission_timeline?.length > 1 && <Suspense fallback={<div className="panel flight-analysis-loading">{txt('CARGANDO RESULTADOS DE VUELO…', 'LOADING FLIGHT RESULTS…')}</div>}>
+            <FlightAnalysisCharts samples={analysisSummary.mission_timeline} motorBurnTimeS={Number(motor.burn) || 0} analysis={analysisSummary} lang={lang}/>
+          </Suspense>}
           </div>
           <div className="panel readiness">
             <div className="panel-title compact">
@@ -1339,13 +1365,6 @@ function App() {
         motorBurnTimeS={Number(motor.burn) || 0}
         analysis={analysisSummary}
         launchAngleDeg={Number(vehicle.launchAngle) || 85}
-        onLaunchAngleChange={(angle) => {
-          update('launchAngle', angle);
-          setAnalysisSummary(null);
-          setMissionControlOpen(false);
-          setPendingMissionLaunch(true);
-          setRunToken((value) => value + 1);
-        }}
         lang={lang}
         onClose={() => setMissionControlOpen(false)}
         onViewResults={() => {

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MissionSample } from './missionTypes';
 import { EngineeringEquations } from './EngineeringEquations';
+import { Play } from 'lucide-react';
 
 type NumericField = number | '';
 type MotorLike = { designation: string; burn: NumericField; impulse: NumericField; propellantMass: NumericField; dryMass: NumericField; maxThrust: NumericField; propellant: string; officialAverageThrust?: NumericField; thrustCurve?: Array<[number, number]>; };
@@ -64,6 +65,7 @@ export function LiveAnalysisPanel({
   motor,
   rows,
   onRowsChange,
+  onOpenFlight,
   lang = 'es',
 }: {
   vehicle: VehicleLike;
@@ -73,6 +75,7 @@ export function LiveAnalysisPanel({
   motor: MotorLike;
   rows: ComponentRow[];
   onRowsChange: React.Dispatch<React.SetStateAction<ComponentRow[]>>;
+  onOpenFlight?: () => void;
   lang?: 'es' | 'en';
 }) {
   const isEs = lang === 'es';
@@ -255,8 +258,13 @@ export function LiveAnalysisPanel({
         {running && <span className="run-spinner" aria-hidden="true" />}
         <span>{running ? txt('EJECUTANDO ANÁLISIS…', 'RUNNING ANALYSIS…') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</span>
       </button></div>
-    {running && <div className="analysis-skeleton" aria-hidden="true">
-      <i /><i /><i />
+    {running && <div className="analysis-execution-live">
+      <div className="analysis-execution-orbit"><i/><i/><b>Σ</b></div>
+      <div><span>{txt('PROCESANDO MODELO', 'PROCESSING MODEL')}</span><strong>{txt('Calculando CG · CP · estabilidad…', 'Calculating CG · CP · stability…')}</strong></div>
+    </div>}
+    {analysis && !running && <div className="analysis-complete-banner">
+      <div><span>{txt('ANÁLISIS COMPLETADO', 'ANALYSIS COMPLETE')}</span><strong>CG {totalCgCatedra?.toFixed(1) ?? '—'} mm · CP {cpCatedra?.toFixed(1) ?? '—'} mm</strong><small>{txt('Los resultados estructurales están listos. Para ver la trayectoria dinámica, continuá a VUELO.', 'Structural results are ready. Continue to FLIGHT for the dynamic trajectory.')}</small></div>
+      <button type="button" onClick={onOpenFlight}><Play size={17}/><span>{txt('IR A VUELO', 'OPEN FLIGHT')}</span><b>→</b></button>
     </div>}
     <div className="module-state">
       <span className={componentResult ? 'module-on' : ''}>CG · {componentResult ? txt('LISTO', 'READY') : txt('ESPERA', 'WAIT')}</span>

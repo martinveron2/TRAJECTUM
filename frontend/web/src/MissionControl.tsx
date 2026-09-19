@@ -14,7 +14,6 @@ type Props = {
   motorBurnTimeS: number;
   analysis: AnalysisLike;
   launchAngleDeg?: number;
-  onLaunchAngleChange?: (angle: number) => void;
   lang?: 'es' | 'en';
   onClose: () => void;
   onViewResults: () => void;
@@ -22,13 +21,12 @@ type Props = {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleDeg = 85, onLaunchAngleChange, lang = 'es', onClose, onViewResults }: Props) {
+export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleDeg = 85, lang = 'es', onClose, onViewResults }: Props) {
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
   const [timeS, setTimeS] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [rate, setRate] = useState(1);
-  const [angleUnlocked, setAngleUnlocked] = useState(false);
   const frameRef = useRef<number | null>(null);
   const lastRealRef = useRef<number | null>(null);
   const endTime = samples.length ? samples[samples.length - 1].t_s : 0;
@@ -158,8 +156,6 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
               {current.phase === 'BOOST' && <path className="mission-flame" d="M-5 16 L0 38 L5 16 Z"/>}
             </g>
             <text x="16" y="35" className="mission-stage-label">{txt('APOGEO', 'APOGEE')} {maxAltitude.toFixed(1)} m</text>
-            <text x="8" y="78" className="mission-live-altitude-label">{txt('ALTURA', 'ALTITUDE')}</text>
-            <text x="8" y="106" className="mission-live-altitude-value">{current.altitude_m.toFixed(1)} m</text>
             <text x="16" y="452" className="mission-stage-label">{txt('PLATAFORMA', 'PAD')} · {launchAngleDeg.toFixed(1)}°</text>
           </svg>
         </section>
@@ -185,11 +181,6 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
       </main>
 
       <div className="mission-flight-settings">
-        <div className="mission-angle-setting">
-          <div><span>{txt('ÁNGULO DE LANZAMIENTO', 'LAUNCH ANGLE')}</span><strong>{launchAngleDeg.toFixed(1)}°</strong><small>{angleUnlocked ? txt('EDITABLE', 'EDITABLE') : txt('BLOQUEADO', 'LOCKED')}</small></div>
-          <button type="button" className={angleUnlocked ? 'active' : ''} onClick={() => setAngleUnlocked((value) => !value)}>{angleUnlocked ? txt('BLOQUEAR', 'LOCK') : txt('EDITAR', 'EDIT')}</button>
-          <input type="range" min="75" max="90" step="0.5" value={launchAngleDeg} disabled={!angleUnlocked} onChange={(event) => onLaunchAngleChange?.(Number(event.target.value))}/>
-        </div>
         <div className="mission-scrubber">
           <span>T+{timeS.toFixed(1)}s</span>
           <input type="range" min="0" max={Math.max(endTime,0)} step="0.05" value={timeS} onChange={(event) => { setPlaying(false); setTimeS(Number(event.target.value)); }}/>
