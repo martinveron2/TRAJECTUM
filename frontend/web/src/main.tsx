@@ -227,6 +227,12 @@ function App() {
     setMobileSection(target);
   };
 
+  const selectPhase = (index: number) => {
+    const phases: Array<typeof mobileSection> = ['pdr', 'cdr', 'frr', 'lrr', 'pfr'];
+    setPhaseFocusIndex(index);
+    navigateMobile(phases[index]);
+  };
+
   const movePhaseFocus = (delta: number) => {
     setPhaseFocusIndex((current) => Math.max(0, Math.min(4, current + delta)));
   };
@@ -593,11 +599,11 @@ function App() {
               if (Math.abs(delta) > 34) movePhaseFocus(delta < 0 ? 1 : -1);
             }}
           >
-            <button type="button" className={'complete ' + (phaseFocusIndex === 0 ? 'focused' : '')} onClick={() => setPhaseFocusIndex(0)}><b>01</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
-            <button type="button" className={'phase-current ' + (phaseFocusIndex === 1 ? 'focused' : '')} onClick={() => setPhaseFocusIndex(1)}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
-            <button type="button" className={phaseFocusIndex === 2 ? 'focused' : ''} onClick={() => setPhaseFocusIndex(2)}><b>03</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
-            <button type="button" className={phaseFocusIndex === 3 ? 'focused' : ''} onClick={() => setPhaseFocusIndex(3)}><b>04</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
-            <button type="button" className={'phase-wide ' + (phaseFocusIndex === 4 ? 'focused' : '')} onClick={() => setPhaseFocusIndex(4)}><b>05</b><span>PFR / MCR</span><small>{txt('Post-vuelo y cierre', 'Post-flight & closeout')}</small></button>
+            <button type="button" className={'complete ' + (phaseFocusIndex === 0 ? 'focused' : '')} onClick={() => selectPhase(0)}><b>01</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
+            <button type="button" className={'phase-current ' + (phaseFocusIndex === 1 ? 'focused' : '')} onClick={() => selectPhase(1)}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
+            <button type="button" className={phaseFocusIndex === 2 ? 'focused' : ''} onClick={() => selectPhase(2)}><b>03</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
+            <button type="button" className={phaseFocusIndex === 3 ? 'focused' : ''} onClick={() => selectPhase(3)}><b>04</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
+            <button type="button" className={'phase-wide ' + (phaseFocusIndex === 4 ? 'focused' : '')} onClick={() => selectPhase(4)}><b>05</b><span>PFR / MCR</span><small>{txt('Post-vuelo y cierre', 'Post-flight & closeout')}</small></button>
             <div className="phase-wheel-hint">{txt('DESLIZÁ PARA CAMBIAR EL FOCO', 'SWIPE TO CHANGE FOCUS')}</div>
           </div>
         </div>
