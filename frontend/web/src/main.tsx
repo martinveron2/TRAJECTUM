@@ -82,8 +82,8 @@ type MotorConfig = {
 const initialMotorConfigs: MotorConfig[] = [
   {
     id: 'motor-1',
-    label: 'CONFIGURACIÓN 1',
-    designation: 'A-100 RN (29%H)',
+    label: 'SIMULACIÓN REALISTA',
+    designation: 'A-100 RN (29%H) · curva KNDX',
     propellant: 'KNDX',
     burn: 0.5,
     impulse: 207,
@@ -95,14 +95,15 @@ const initialMotorConfigs: MotorConfig[] = [
   },
   {
     id: 'motor-2',
-    label: 'CONFIGURACIÓN 2',
-    designation: '',
-    propellant: '',
-    burn: '',
-    impulse: '',
-    maxThrust: '',
-    propellantMass: '',
-    dryMass: '',
+    label: 'REFERENCIA ANALÍTICA',
+    designation: 'A-100 RN · equivalente rectangular 414 N',
+    propellant: 'KNDX',
+    burn: 0.5,
+    impulse: 207,
+    maxThrust: 414,
+    propellantMass: 140,
+    dryMass: 350,
+    officialAverageThrust: 441,
   },
 ];
 
