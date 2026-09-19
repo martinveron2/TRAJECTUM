@@ -2346,34 +2346,29 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
 
 
 @media(max-width:820px){
-  /* Home behaves like the technical phase screens: native vertical finger scroll with momentum. */
+  /* Home scrolls naturally like CDR, without creating dead space below the fixed navigation. */
   .mobile-view-home .mobile-content-stack>.mobile-guide{
-    overflow-y:scroll!important;
+    overflow-y:auto!important;
     overflow-x:hidden!important;
     touch-action:pan-y!important;
     -webkit-overflow-scrolling:touch;
-    overscroll-behavior-y:auto!important;
+    overscroll-behavior-y:contain!important;
     scroll-behavior:smooth;
-    padding-bottom:72px!important;
+    padding-bottom:22px!important;
   }
 
-  /* Keep the shell frozen; only Home's content viewport travels vertically. */
-  .mobile-view-home .topbar,
-  .mobile-view-home .mobile-command-bar{
-    position:relative;
-    transform:none!important;
-  }
-}
-
-
-@media(max-width:820px){
-  /* Give Home enough travel for a tactile vertical gesture even when content nearly fits. */
   .mobile-view-home .mobile-content-stack>.mobile-guide::after{
-    content:"";
-    display:block;
-    height:112px;
-    width:100%;
-    pointer-events:none;
+    content:none!important;
+    display:none!important;
+  }
+
+  /* Bottom navigation stays anchored to the real viewport edge. */
+  .mobile-view-home .mobile-command-bar{
+    position:fixed!important;
+    left:10px!important;
+    right:10px!important;
+    bottom:calc(8px + env(safe-area-inset-bottom))!important;
+    transform:none!important;
   }
 }
 
