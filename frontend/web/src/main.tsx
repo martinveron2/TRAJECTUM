@@ -214,8 +214,7 @@ function App() {
   const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status' | 'cad'>('home');
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
   const [phaseFocusIndex, setPhaseFocusIndex] = useState(1);
-  const [mobileNavBusy, setMobileNavBusy] = useState(false);
-  const [mobileNavDirection, setMobileNavDirection] = useState<'forward' | 'back'>('forward');
+
   const [missionControlOpen, setMissionControlOpen] = useState(false);
   const [pendingMissionLaunch, setPendingMissionLaunch] = useState(false);
   const motor = motorConfigs.find((item) => item.id === activeMotorId) ?? motorConfigs[0];
@@ -223,11 +222,7 @@ function App() {
 
   const navigateMobile = (target: typeof mobileSection) => {
     if (target === mobileSection) return;
-    const order = ['home', 'pdr', 'vehicle', 'geometry', 'motor', 'cad', 'cdr', 'analysis', 'plots', 'model', 'status', 'frr', 'lrr', 'pfr'];
-    setMobileNavDirection(order.indexOf(target) >= order.indexOf(mobileSection) ? 'forward' : 'back');
     setMobileSection(target);
-    setMobileNavBusy(true);
-    window.setTimeout(() => setMobileNavBusy(false), 230);
   };
 
   const selectPhase = (index: number) => {
@@ -448,11 +443,7 @@ function App() {
   };
 
   return (
-    <main className={'app-shell mobile-view-' + mobileSection + (mobileNavBusy ? ' mobile-nav-busy mobile-nav-' + mobileNavDirection : '')}>
-      <div className={mobileNavBusy ? 'mobile-route-feedback active' : 'mobile-route-feedback'} aria-hidden={!mobileNavBusy}>
-        <i />
-        <span>{txt('ABRIENDO MÓDULO', 'OPENING MODULE')}</span>
-      </div>
+    <main className={'app-shell mobile-view-' + mobileSection}>
       <header className="topbar">
         <div className="brand-stack">
           <div className="brand-lockup" aria-label="TRAJECTUM">
