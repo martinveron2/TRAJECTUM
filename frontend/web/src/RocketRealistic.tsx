@@ -58,13 +58,19 @@ export function RocketRealistic({
   cpMm,
   componentCgs = [],
   showComponentCgs = true,
+  lang = 'es',
 }: {
   vehicle: VehicleLike;
   cgMm?: number | null;
   cpMm?: number | null;
   componentCgs?: ComponentCg[];
   showComponentCgs?: boolean;
+  lang?: 'es' | 'en';
 }) {
+  const isEs = lang === 'es';
+  const txt = (es: string, en: string) => isEs ? es : en;
+  const componentLabel = (name: string) => !isEs ? ({ 'Cofia':'Nose', 'Cuerpo principal':'Main body', 'Motor':'Motor', 'Paracaídas':'Parachute', 'Electrónica':'Electronics', 'Carga útil':'Payload', 'Aletas · 4 total':'Fins · 4 total' } as Record<string,string>)[name] ?? name : name;
+  const noseProfileLabel = vehicle.noseProfile === 'tangent_ogive' ? txt('ojiva tangente','tangent ogive') : vehicle.noseProfile === 'von_karman' ? 'Von Kármán' : vehicle.noseProfile === 'power_series' ? txt('serie de potencias','power series') : vehicle.noseProfile.replace(/_/g,' ');
   const total = Number(vehicle.totalLength) || 860;
   const diameter = Number(vehicle.diameter) || 63;
   const nose = Number(vehicle.noseLength) || 180;
@@ -146,7 +152,7 @@ export function RocketRealistic({
   );
 
   return <div className="schematic realistic">
-    <svg viewBox="0 0 720 590" role="img" aria-label="Rocket technical side view to geometric scale">
+    <svg viewBox="0 0 720 590" role="img" aria-label={txt('Vista lateral técnica del cohete a escala geométrica', 'Rocket technical side view to geometric scale')}>
       <defs>
         <linearGradient id="shell3d" x1="0" x2="1">
           <stop offset="0%" stopColor="#596b82"/>
@@ -169,7 +175,7 @@ export function RocketRealistic({
       <line x1="31" y1={top} x2="52" y2={top} className="dimension"/>
       <line x1="31" y1={bottom} x2="52" y2={bottom} className="dimension"/>
       <text x="18" y={(top + bottom) / 2} transform={`rotate(-90 18 ${(top + bottom) / 2})`} className="dimtext">
-        TOTAL {total.toFixed(0)} mm
+        {txt('TOTAL', 'TOTAL')} {total.toFixed(0)} mm
       </text>
 
       {sectionDims.map((dim, index) => <g key={dim.label + index}>
@@ -203,18 +209,18 @@ export function RocketRealistic({
         className="nozzle"
       />
 
-      <text x={centerX} y={yBay + bayH / 2 - 3.5} className="module-label payload-label">PAYLOAD</text>
-      <text x={centerX} y={yBay + bayH / 2 + 4.5} className="module-label electronics-label">ELECTRONICS</text>
+      <text x={centerX} y={yBay + bayH / 2 - 3.5} className="module-label payload-label">{txt('CARGA ÚTIL', 'PAYLOAD')}</text>
+      <text x={centerX} y={yBay + bayH / 2 + 4.5} className="module-label electronics-label">{txt('ELECTRÓNICA', 'ELECTRONICS')}</text>
       <text x={centerX} y={yBody + bodyH * .28} className="utn-mark">UTN</text>
       <text x={centerX} y={yBody + bodyH * .28 + 12} className="module-label utn-submark">FRH · G07</text>
 
       <line x1="365" y1={top + 18} x2="365" y2={supportY} className="datum-rail"/>
-      <text x="365" y={supportY + 18} textAnchor="middle" className="datum-label">REFERENCIA R7 · 0 mm</text>
+      <text x="365" y={supportY + 18} textAnchor="middle" className="datum-label">{txt('REFERENCIA R7', 'R7 REFERENCE')} · 0 mm</text>
 
       {cgY !== null && <>
         <line x1={centerX} y1={cgY} x2="360" y2={cgY} className="projection-line cg-projection"/>
         <circle cx="365" cy={cgY} r="3.5" className="datum-tick cg-datum"/>
-        <g transform={`translate(${centerX} ${cgY})`} aria-label="CG total at exact axial station">
+        <g transform={`translate(${centerX} ${cgY})`} aria-label={txt('CG total en estación axial exacta', 'Total CG at exact axial station')}>
           <circle r="8.2" className="cg-total-ring"/>
           <path d="M 0 0 L 0 -8.2 A 8.2 8.2 0 0 1 8.2 0 Z" className="cg-total-fill"/>
           <path d="M 0 0 L 0 8.2 A 8.2 8.2 0 0 1 -8.2 0 Z" className="cg-total-fill"/>
@@ -231,7 +237,7 @@ export function RocketRealistic({
       {cpY !== null && <>
         <line x1={centerX} y1={cpY} x2="455" y2={cpY} className="projection-line cp-projection"/>
         <circle cx="455" cy={cpY} r="3.5" className="datum-tick cp-datum"/>
-        <g transform={`translate(${centerX} ${cpY})`} aria-label="CP total at exact axial station">
+        <g transform={`translate(${centerX} ${cpY})`} aria-label={txt('CP total en estación axial exacta', 'Total CP at exact axial station')}>
           <circle r="7.4" className="cp-total-ring"/>
           <circle r="2.2" className="cp-total-core"/>
           <line x1="-10" y1="0" x2="10" y2="0" className="cp-total-cross"/>
@@ -248,7 +254,7 @@ export function RocketRealistic({
         const r7 = fromSupport(component.x_cg_mm);
         const textY = component.labelY - 5;
         return <g key={component.name}>
-          <g transform={`translate(${centerX} ${component.y})`} aria-label={`${component.name} CG at exact axial station`}>
+          <g transform={`translate(${centerX} ${component.y})`} aria-label={isEs ? `CG de ${component.name} en estación axial exacta` : `${componentLabel(component.name)} CG at exact axial station`}>
             <circle r="5.2" className="component-cg-ring"/>
             <path d="M 0 0 L 0 -5.2 A 5.2 5.2 0 0 1 5.2 0 Z" className="component-cg-fill"/>
             <path d="M 0 0 L 0 5.2 A 5.2 5.2 0 0 1 -5.2 0 Z" className="component-cg-fill"/>
@@ -260,24 +266,24 @@ export function RocketRealistic({
             className="component-cg-projection"
           />
           <text x="574" y={textY} className="component-cg-label label-plate">
-            {component.name} · xCG {r7.toFixed(1)} mm R7
+            {componentLabel(component.name)} · xCG {r7.toFixed(1)} mm R7
           </text>
         </g>;
       })}
 
-      <text x={x - 16} y={top + noseH / 2} textAnchor="end" className="section-name">NOSE</text>
-      <text x={x - 16} y={yBay + bayH / 2} textAnchor="end" className="section-name">BAY</text>
-      <text x={x - 16} y={yBody + bodyH / 2} textAnchor="end" className="section-name">BODY</text>
+      <text x={x - 16} y={top + noseH / 2} textAnchor="end" className="section-name">{txt('COFIA', 'NOSE')}</text>
+      <text x={x - 16} y={yBay + bayH / 2} textAnchor="end" className="section-name">{txt('COMPART.', 'BAY')}</text>
+      <text x={x - 16} y={yBody + bodyH / 2} textAnchor="end" className="section-name">{txt('CUERPO', 'BODY')}</text>
 
       <text x="112" y={bottom + 36} className="scale-note-svg">
-        ESCALA GEOMÉTRICA ÚNICA · 1 px = {(1 / scale).toFixed(2)} mm
+        {txt('ESCALA GEOMÉTRICA ÚNICA', 'SINGLE GEOMETRIC SCALE')} · 1 px = {(1 / scale).toFixed(2)} mm
       </text>
     </svg>
     <div className="schematic-meta">
       <span><i className="dot frozen"/> Ø {diameter.toFixed(0)} mm</span>
       <span><i className="dot provisional"/> {vehicle.airfoil}</span>
-      <span><i className="dot tbd"/> {vehicle.noseProfile.replace(/_/g, ' ')}</span>
-      <span>CG/CP y aletas a escala geométrica</span>
+      <span><i className="dot tbd"/> {noseProfileLabel}</span>
+      <span>{txt('CG/CP y aletas a escala geométrica', 'CG/CP and fins at geometric scale')}</span>
     </div>
   </div>;
 }
