@@ -1160,3 +1160,25 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     width:max-content!important;max-width:90%!important;font-size:.45rem!important;letter-spacing:.075em!important;color:#6385a8!important;white-space:nowrap!important
   }
 }
+
+
+@media(max-width:820px){
+  /* Hybrid phase selector: all cards visible, but the whole deck physically follows the finger */
+  .phase-grid-selector{
+    transform:translate3d(var(--phase-drag),0,0);
+    transition:transform 180ms cubic-bezier(.25,1,.5,1)
+  }
+  .phase-grid-selector:active{transition:none}
+  .phase-grid-selector button{
+    will-change:transform,box-shadow,opacity
+  }
+  .phase-grid-selector button.focused{
+    transform:translate3d(calc(var(--phase-drag) * -.08),-1px,0) scale(.985)!important
+  }
+  .phase-grid-selector button:not(.focused){
+    transform:translate3d(calc(var(--phase-drag) * -.035),0,0)!important
+  }
+  .phase-grid-selector .phase-wheel-hint{
+    transform:translateX(calc(-50% - var(--phase-drag)))!important
+  }
+}
