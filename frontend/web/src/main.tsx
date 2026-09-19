@@ -525,6 +525,7 @@ function App() {
         </button>
       </nav>
 
+      <div className="mobile-content-stack">
       <section className="mobile-guide" aria-label={txt('Guía del proyecto', 'Project guide')}>
         <div className="mobile-guide-top">
           <div>
@@ -985,6 +986,7 @@ function App() {
           </div>
         </section>
       </section>
+      </div>
 
       {missionControlOpen && analysisSummary?.mission_timeline?.length > 1 && <MissionControl
         samples={analysisSummary.mission_timeline}
