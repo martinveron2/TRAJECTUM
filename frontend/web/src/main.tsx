@@ -1,5 +1,6 @@
 import React, { Suspense, useCallback, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { createPortal } from 'react-dom';
 import './styles.css';
 import { LiveAnalysisPanel, initialComponentRows, type ComponentRow } from './LiveAnalysisPanel';
 import { CadInteroperabilityPanel } from './CadInteroperabilityPanel';
@@ -122,30 +123,26 @@ function Field({
   unit,
   onChange,
   status,
+  step = 1,
+  min = 0,
 }: {
   label: string;
   value: NumericField;
   unit?: string;
   onChange: (value: NumericField) => void;
   status?: string;
+  step?: number;
+  min?: number;
 }) {
   const fieldState = value === '' ? 'field-empty' : Number.isFinite(Number(value)) && Number(value) >= 0 ? 'field-valid' : 'field-warning';
   return (
-    <label className={'field ' + fieldState}>
+    <div className={'field geometry-picker-field ' + fieldState}>
       <span className="field-label">
         {label}
         {status && <small>{status}</small>}
       </span>
-      <span className={'input-wrap ' + fieldState}>
-        <input
-          type="number"
-          value={value}
-          placeholder="TBD"
-          onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
-        />
-        {unit && <em>{unit}</em>}
-      </span>
-    </label>
+      <NumericStepper value={value} onChange={onChange} unit={unit} step={step} min={min}/>
+    </div>
   );
 }
 
@@ -216,36 +213,46 @@ function NumericStepper({
         <b>↕</b>
       </button>
 
-      {open && <div className="numeric-wheel-overlay" role="presentation" onPointerDown={(event) => {
-        if (event.target === event.currentTarget) closePicker();
-      }}>
-        <div className="numeric-wheel-sheet" role="dialog" aria-modal="true" aria-label="Seleccionar valor">
-          <div className="numeric-wheel-sheet-head">
-            <span>SELECCIONAR VALOR</span>
-            <strong>{draft.toFixed(precision)}{unit ? ' ' + unit : ''}</strong>
-          </div>
-          <div className="numeric-wheel-viewport">
-            <div className="numeric-wheel-list" ref={listRef} onScroll={updateDraftFromScroll}>
-              {options.map((option) => <button
-                type="button"
-                key={option}
-                data-value={option}
-                className={option === draft ? 'active' : ''}
-                onClick={() => {
-                  setDraft(option);
-                  window.requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>(`button[data-value="${option}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
-                }}
-              >{option.toFixed(precision)}{unit ? ' ' + unit : ''}</button>)}
+      {open && typeof document !== 'undefined' && createPortal(
+        <div className="numeric-wheel-overlay" role="presentation" onPointerDown={(event) => {
+          if (event.target === event.currentTarget) closePicker();
+        }}>
+          <div
+            className="numeric-wheel-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Seleccionar valor"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="numeric-wheel-sheet-head">
+              <span>SELECCIONAR VALOR</span>
             </div>
-            <div className="numeric-wheel-focus-band" aria-hidden="true"/>
-            <div className="numeric-wheel-fade top"/><div className="numeric-wheel-fade bottom"/>
+            <div className="numeric-wheel-viewport">
+              <div className="numeric-wheel-list" ref={listRef} onScroll={updateDraftFromScroll}>
+                {options.map((option) => <button
+                  type="button"
+                  key={option}
+                  data-value={option}
+                  className={option === draft ? 'active' : ''}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setDraft(option);
+                    window.requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>(`button[data-value="${option}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                  }}
+                >{option.toFixed(precision)}{unit ? ' ' + unit : ''}</button>)}
+              </div>
+              <div className="numeric-wheel-focus-band" aria-hidden="true"/>
+              <div className="numeric-wheel-fade top"/><div className="numeric-wheel-fade bottom"/>
+            </div>
+            <div className="numeric-wheel-actions">
+              <button type="button" className="cancel" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); closePicker(); }}>CANCELAR</button>
+              <button type="button" className="confirm" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); confirmPicker(); }}>✓ OK</button>
+            </div>
           </div>
-          <div className="numeric-wheel-actions">
-            <button type="button" className="cancel" onClick={closePicker}>CANCELAR</button>
-            <button type="button" className="confirm" onClick={confirmPicker}>✓ OK</button>
-          </div>
-        </div>
-      </div>}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
@@ -926,7 +933,9 @@ function App() {
             <label><span>{txt('COFIA', 'NOSE')}</span><select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}><option value="tangent_ogive">{txt('OJIVA TANGENTE', 'TANGENT OGIVE')}</option><option value="cone">{txt('CÓNICA', 'CONICAL')}</option><option value="power_series">{txt('SERIE POTENCIA', 'POWER SERIES')}</option></select></label>
             <label><span>{txt('ALETAS', 'FINS')}</span><NumericStepper value={vehicle.finCount} onChange={(value) => update('finCount', value)} unit="u" step={1} min={1}/></label>
             <label><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><NumericStepper value={vehicle.rootChord} onChange={(value) => update('rootChord', value)} unit="mm" step={1}/></label>
+            <label><span>{txt('CUERDA PUNTA', 'TIP CHORD')}</span><NumericStepper value={vehicle.tipChord} onChange={(value) => update('tipChord', value)} unit="mm" step={1}/></label>
             <label><span>{txt('ENVERGADURA', 'SPAN')}</span><NumericStepper value={vehicle.span} onChange={(value) => update('span', value)} unit="mm" step={1}/></label>
+            <label><span>{txt('FLECHA', 'SWEEP')}</span><NumericStepper value={vehicle.sweep} onChange={(value) => update('sweep', value)} unit="mm" step={1}/></label>
           </div>
           <div className="pdr-inline-actions">
             <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('mdr')}><ClipboardCheck size={17}/><span>{requirementVerified}/11 {txt('REQUERIMIENTOS VERIFICADOS', 'REQUIREMENTS VERIFIED')}</span><b>→</b></button>
