@@ -3577,3 +3577,146 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     color:#8DB9E2;
   }
 }
+
+
+@media(max-width:820px){
+  /* Header import becomes a high-value design action. */
+  .mobile-header-import{
+    border-color:#3F6E98!important;
+    background:linear-gradient(180deg,#143A5C,#0A2138)!important;
+    box-shadow:0 6px 14px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.07)!important;
+  }
+  .mobile-header-import:active{
+    transform:scale(.97)!important;
+    border-color:#00F0FF!important;
+    color:#00F0FF!important;
+    box-shadow:inset 0 3px 10px rgba(0,0,0,.34),0 0 12px rgba(0,240,255,.10)!important;
+  }
+
+  /* CDR executes calculation; playback lives only in VUELO. */
+  .cdr-execute{
+    border-color:#FFB800!important;
+    background:linear-gradient(180deg,#3B2B08,#241A05)!important;
+    box-shadow:0 9px 20px rgba(0,0,0,.24),0 0 16px rgba(255,184,0,.10),inset 0 1px 0 rgba(255,255,255,.06)!important;
+  }
+  .cdr-execute .mission-launch-icon{
+    color:#FFB800!important;
+    border-color:rgba(255,184,0,.48)!important;
+    background:rgba(255,184,0,.08)!important;
+  }
+  .cdr-execute .mission-launch-copy small{color:#D4A82C!important}
+  .cdr-execute .mission-launch-copy strong{color:#FFF5CE!important}
+  .cdr-execute:active{transform:scale(.985)!important}
+
+  /* Flight launch angle: locked at 85° by default, editable on demand. */
+  .flight-angle-control{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:8px 10px;
+    align-items:center;
+    margin:8px 0 10px;
+    padding:11px;
+    border:1px solid #31577D;
+    border-radius:13px;
+    background:linear-gradient(160deg,#0C2238,#071624);
+    box-shadow:0 7px 16px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .flight-angle-control>div span{
+    display:block;
+    font-size:.52rem;
+    letter-spacing:.07em;
+    color:#7EA4CB;
+  }
+  .flight-angle-control>div strong{
+    display:block;
+    margin-top:3px;
+    font-size:1rem;
+    color:#F4FAFF;
+  }
+  .flight-angle-control>div small{
+    display:block;
+    margin-top:3px;
+    font-size:.46rem;
+    color:#7D98B6;
+  }
+  .flight-angle-control>button{
+    min-width:72px;
+    min-height:38px;
+    padding:0 10px;
+    border-radius:10px;
+    border:1px solid #3B6388;
+    background:linear-gradient(180deg,#173A5D,#0B223A);
+    color:#C3DDF7;
+    font-size:.5rem;
+    font-weight:800;
+    box-shadow:0 5px 12px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .flight-angle-control>button.active{
+    border-color:#00F0FF;
+    color:#00F0FF;
+    background:#0F2B48;
+    box-shadow:0 0 12px rgba(0,240,255,.12),inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  .flight-angle-control>input{
+    grid-column:1 / -1;
+    width:100%;
+    accent-color:#00F0FF;
+  }
+  .flight-angle-control>input:disabled{opacity:.28}
+
+  /* Engineering graph selector: readable before selection, not a dark mystery strip. */
+  .flight-chart-picker-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin:10px 0 7px;
+    padding:8px 10px;
+    border:1px solid rgba(0,240,255,.15);
+    border-radius:10px;
+    background:#08192A;
+  }
+  .flight-chart-picker-head span{
+    font-size:.48rem;
+    letter-spacing:.08em;
+    color:#7598BE;
+  }
+  .flight-chart-picker-head strong{
+    min-width:0;
+    font-size:.68rem;
+    color:#00F0FF;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .flight-chart-tabs{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+    overflow:visible!important;
+  }
+  .flight-chart-tab{
+    min-height:44px!important;
+    padding:8px 9px!important;
+    border-radius:10px!important;
+    background:linear-gradient(180deg,#102842,#09192A)!important;
+    border:1px solid #34597E!important;
+    color:#BDD6EF!important;
+    opacity:1!important;
+    font-size:.56rem!important;
+    font-weight:800!important;
+    line-height:1.2!important;
+    box-shadow:0 5px 12px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  }
+  .flight-chart-tab.active{
+    background:linear-gradient(180deg,#17476E,#0F2B48)!important;
+    border-color:#00F0FF!important;
+    color:#fff!important;
+    box-shadow:0 0 0 1px rgba(0,240,255,.12),0 0 14px rgba(0,240,255,.12),inset 0 1px 0 rgba(255,255,255,.06)!important;
+  }
+
+  .export-action-grid>button:nth-child(2) .export-action-icon{
+    color:#B8E8FF;
+    border-color:#4F8EBB;
+  }
+}

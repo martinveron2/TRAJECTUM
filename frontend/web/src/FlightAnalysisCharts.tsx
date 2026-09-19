@@ -184,6 +184,10 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
       <button type="button" disabled title={txt('Se habilita al importar telemetría medida.', 'Enabled when measured telemetry is imported.')}>{txt('MEDIDO', 'MEASURED')} · {txt('SIN DATOS', 'NO DATA')}</button>
     </div>
 
+    <div className="flight-chart-picker-head">
+      <span>{txt('SELECCIONÁ VARIABLE', 'SELECT VARIABLE')}</span>
+      <strong>{tabs.find(([key]) => key === active)?.[1]}</strong>
+    </div>
     <div className="flight-chart-tabs" role="tablist" aria-label={txt('Variables de vuelo', 'Flight variables')}>
       {tabs.map(([key, label]) => <button
         key={key}

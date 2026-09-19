@@ -551,10 +551,20 @@ function App() {
     const motorSheet = [[header('CONFIGURACIÓN'),header('DESIGNACIÓN'),header('PROPELENTE'),header('COMBUSTIÓN [s]'),header('IMPULSO [N·s]'),header('EMPUJE MEDIO DERIVADO [N]'),header('EMPUJE MÁX [N]'),header('PROPELENTE [g]'),header('SECA [g]'),header('ACTIVA')], ...motorConfigs.map((item) => [cell(item.label),cell(item.designation),cell(item.propellant),cell(item.burn),cell(item.impulse),cell(motorAverageThrust(item)),cell(item.maxThrust),cell(item.propellantMass),cell(item.dryMass),cell(item.id === activeMotorId ? 'SI' : 'NO')])];
     const recovery = [[header('PARÁMETRO'),header('VALOR'),header('UNIDAD')],[cell('Cd paracaídas'),cell(vehicle.parachuteCd),cell('')],[cell('Área paracaídas'),cell(vehicle.parachuteArea),cell('m²')],[cell('Altitud despliegue configurada'),cell(vehicle.deployAltitude),cell('m')],[cell('Retardo despliegue'),cell(vehicle.deployDelay),cell('s')],[cell('Altitud despliegue simulada'),cell(analysisSummary?.deployment_altitude_m),cell('m')],[cell('Tiempo despliegue'),cell(analysisSummary?.deployment_time_s),cell('s')],[cell('Tiempo aterrizaje'),cell(analysisSummary?.landing_time_s),cell('s')],[cell('Velocidad impacto'),cell(analysisSummary?.impact_speed_m_s),cell('m/s')]];
     const model = [[header('MÓDULO'),header('MÉTODO / MODELO')],[cell('CG'),cell('Sumatoria de momentos de masa')],[cell('CP'),cell('Barrowman + perfil axisimétrico de cofia')],[cell('Trayectoria'),cell('Masa puntual 2D')],[cell('Integración'),cell('Runge–Kutta de cuarto orden (RK4)')],[cell('Resistencia'),cell('D = 1/2 ρ V² Cd A')],[cell('Atmósfera'),cell('ISA')],[cell('Recuperación'),cell('Modelo de descenso con paracaídas')]];
+    const requirementsSheet = [
+      [header('ID'),header('REQUERIMIENTO'),header('OBJETIVO'),header('MÉTODO'),header('ESTADO')],
+      ...PROJECT_REQUIREMENTS.map((req,index)=>[
+        cell(req.id),
+        cell(req.titleEs),
+        cell(req.targetEs),
+        cell(req.methods.join('/')),
+        cell(requirementStatuses[index] === 'verified' ? 'VERIFICADO' : requirementStatuses[index] === 'progress' ? 'EN PROCESO' : 'ABIERTO'),
+      ]),
+    ];
     const chartImages = await buildEngineeringChartImages(analysisSummary?.mission_timeline ?? [], Number(motor.burn) || 0, analysisSummary ?? {});
-    await writeXlsxFile([summary, geometry, masses, cp, trajectory, motorSheet, recovery, model], {
-      sheets: ['RESUMEN','GEOMETRIA','MASAS_CG','CP','TRAYECTORIA','MOTOR','RECUPERACION','MODELO'],
-      images: [chartImages.summary, [], [], [], chartImages.trajectory, [], [], []],
+    await writeXlsxFile([summary, geometry, masses, cp, trajectory, motorSheet, recovery, model, requirementsSheet], {
+      sheets: ['RESUMEN','GEOMETRIA','MASAS_CG','CP','TRAYECTORIA','MOTOR','RECUPERACION','MODELO','REQUERIMIENTOS'],
+      images: [chartImages.summary, [], [], [], chartImages.trajectory, [], [], [], []],
       fileName: 'TRAJECTUM_Engineering_Export.xlsx',
     });
     setShowExportMenu(false);
@@ -594,12 +604,15 @@ function App() {
               </button>
               <button
                 type="button"
-                className="mobile-header-export"
-                onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}
-                aria-expanded={showExportMenu}
+                className="mobile-header-export mobile-header-import"
+                onClick={() => {
+                  setPdrTab('geometry');
+                  setShowPdrCadImport(true);
+                  navigateMobile('pdr');
+                }}
               >
-                <Download size={14} strokeWidth={1.8} />
-                <span>{txt('EXPORTAR', 'EXPORT')}</span>
+                <FileUp size={14} strokeWidth={1.8} />
+                <span>{txt('IMPORTAR CAD', 'IMPORT CAD')}</span>
               </button>
             </div>
           </div>
@@ -943,20 +956,13 @@ function App() {
 
         <button
           type="button"
-          className={pendingMissionLaunch ? 'mission-launch-cta preparing cdr-launch' : 'mission-launch-cta cdr-launch'}
-          disabled={!ready || pendingMissionLaunch}
-          onClick={() => {
-            if (analysisSummary?.mission_timeline?.length > 1) {
-              setMissionControlOpen(true);
-              return;
-            }
-            setPendingMissionLaunch(true);
-            setRunToken((value) => value + 1);
-          }}
+          className="mission-launch-cta cdr-launch cdr-execute"
+          disabled={!ready}
+          onClick={() => setRunToken((value) => value + 1)}
         >
-          <span className="mission-launch-icon"><Rocket size={23}/></span>
-          <span className="mission-launch-copy"><small>{txt('VALIDACIÓN CDR', 'CDR VALIDATION')}</small><strong>{pendingMissionLaunch ? txt('CALCULANDO…', 'CALCULATING…') : analysisSummary ? txt('ABRIR SIMULACIÓN', 'OPEN SIMULATION') : txt('EJECUTAR ANÁLISIS', 'RUN ANALYSIS')}</strong></span>
-          {pendingMissionLaunch ? <i className="mission-launch-spinner"/> : <b>→</b>}
+          <span className="mission-launch-icon"><Sigma size={23}/></span>
+          <span className="mission-launch-copy"><small>{txt('CÁLCULO CDR', 'CDR CALCULATION')}</small><strong>{analysisSummary ? txt('RECALCULAR SIMULACIÓN', 'RECALCULATE SIMULATION') : txt('EJECUTAR SIMULACIÓN', 'RUN SIMULATION')}</strong></span>
+          <b>→</b>
         </button>
       </section>
 
@@ -1194,6 +1200,11 @@ function App() {
             motor={motor}
             rows={componentRows}
             onRowsChange={setComponentRows}
+            onLaunchAngleChange={(angle) => {
+              update('launchAngle', angle);
+              setAnalysisSummary(null);
+              setRunToken((value) => value + 1);
+            }}
             lang={lang}
           />
           </div>
@@ -1324,7 +1335,7 @@ function App() {
             <i><b /></i>
           </div> : <div className="export-action-grid">
             <button type="button" onClick={exportReportPdf}><span className="export-action-icon">PDF</span><div><strong>{txt('INFORME CÁTEDRA', 'COURSE REPORT')}</strong><small>{txt('Resumen técnico + R1–R11', 'Technical summary + R1–R11')}</small></div><b>↓</b></button>
-            <button type="button" onClick={exportRequirementsCsv}><span className="export-action-icon">CSV</span><div><strong>{txt('REQUERIMIENTOS R1–R11', 'REQUIREMENTS R1–R11')}</strong><small>{txt('Estado y método de verificación', 'Status and verification method')}</small></div><b>↓</b></button>
+            <button type="button" onClick={exportExcel}><span className="export-action-icon">XLS</span><div><strong>EXCEL TÉCNICO</strong><small>{txt('R1–R11 · masas · CG/CP · trayectoria · motor', 'R1–R11 · mass · CG/CP · trajectory · motor')}</small></div><b>↓</b></button>
             <button type="button" onClick={exportTelemetryJson}><span className="export-action-icon">{'{ }'}</span><div><strong>{txt('TELEMETRÍA JSON', 'TELEMETRY JSON')}</strong><small>{txt('Corrida completa y metadatos', 'Full run and metadata')}</small></div><b>↓</b></button>
           </div>}
         </div>

@@ -66,6 +66,7 @@ export function LiveAnalysisPanel({
   motor,
   rows,
   onRowsChange,
+  onLaunchAngleChange,
   lang = 'es',
 }: {
   vehicle: VehicleLike;
@@ -75,6 +76,7 @@ export function LiveAnalysisPanel({
   motor: MotorLike;
   rows: ComponentRow[];
   onRowsChange: React.Dispatch<React.SetStateAction<ComponentRow[]>>;
+  onLaunchAngleChange?: (angle: number) => void;
   lang?: 'es' | 'en';
 }) {
   const isEs = lang === 'es';
@@ -284,7 +286,7 @@ export function LiveAnalysisPanel({
       {metricDetail === 'apogee' && <><strong>{txt('Integración temporal RK4 · vuelo 2D', 'RK4 time integration · 2D flight')}</strong><p>{txt('El apogeo proviene de la trayectoria simulada con masa variable, empuje, gravedad y resistencia aerodinámica al ángulo real configurado.', 'Apogee comes from the simulated trajectory with variable mass, thrust, gravity and drag at the configured real launch angle.')}</p></>}
     </div>}
     {analysis?.mission_timeline && analysis.mission_timeline.length > 1 ? <>
-      <FlightVisualizer samples={analysis.mission_timeline} launchAngleDeg={Number(vehicle.launchAngle) || 85} lang={lang} />
+      <FlightVisualizer samples={analysis.mission_timeline} launchAngleDeg={Number(vehicle.launchAngle) || 85} onLaunchAngleChange={onLaunchAngleChange} lang={lang} />
       <Suspense fallback={<div className="panel flight-analysis-loading">{txt('CARGANDO GRÁFICOS DE INGENIERÍA…', 'LOADING ENGINEERING PLOTS…')}</div>}>
         <FlightAnalysisCharts samples={analysis.mission_timeline} motorBurnTimeS={Number(motor.burn) || 0} analysis={analysis} lang={lang} />
       </Suspense>

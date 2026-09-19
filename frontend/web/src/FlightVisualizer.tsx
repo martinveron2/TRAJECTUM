@@ -13,13 +13,14 @@ export type MissionSample = {
   parachute_deployed: boolean;
 };
 
-export function FlightVisualizer({ samples, launchAngleDeg = 85, lang = 'es' }: { samples: MissionSample[]; launchAngleDeg?: number; lang?: 'es' | 'en' }) {
+export function FlightVisualizer({ samples, launchAngleDeg = 85, onLaunchAngleChange, lang = 'es' }: { samples: MissionSample[]; launchAngleDeg?: number; onLaunchAngleChange?: (angle: number) => void; lang?: 'es' | 'en' }) {
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
   const phaseLabel = (phase: string) => !isEs ? phase : ({ BOOST: 'IMPULSO', COAST: 'ASCENSO LIBRE', APOGEE: 'APOGEO', DESCENT: 'DESCENSO', PARACHUTE: 'PARACAÍDAS', RECOVERY: 'RECUPERACIÓN', LANDED: 'ATERRIZADO' } as Record<string,string>)[phase] ?? phase;
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [rate, setRate] = useState(4);
+  const [angleUnlocked, setAngleUnlocked] = useState(false);
 
   useEffect(() => {
     setIndex(0);
@@ -70,6 +71,27 @@ export function FlightVisualizer({ samples, launchAngleDeg = 85, lang = 'es' }: 
     <div className="panel-title compact">
       <div><p>{txt('VISUALIZADOR DE MISIÓN', 'MISSION VISUALIZER')}</p><h2>{txt('Reproducción del vuelo segundo a segundo', 'Second-by-second flight playback')}</h2></div>
       <span className={playing ? "live-badge flight-live" : "live-badge"}>{playing ? txt('REPRODUCIENDO', 'PLAYING') : phaseLabel(current.phase)}</span>
+    </div>
+
+    <div className="flight-angle-control">
+      <div>
+        <span>{txt('ÁNGULO DE LANZAMIENTO', 'LAUNCH ANGLE')}</span>
+        <strong>{launchAngleDeg.toFixed(1)}°</strong>
+        <small>{angleUnlocked ? txt('EDITABLE · recalcula la corrida', 'EDITABLE · recalculates run') : txt('BLOQUEADO POR DEFECTO', 'LOCKED BY DEFAULT')}</small>
+      </div>
+      <button type="button" className={angleUnlocked ? 'active' : ''} onClick={() => setAngleUnlocked((value) => !value)}>
+        {angleUnlocked ? txt('BLOQUEAR', 'LOCK') : txt('EDITAR', 'EDIT')}
+      </button>
+      <input
+        aria-label={txt('Ángulo de lanzamiento', 'Launch angle')}
+        type="range"
+        min="75"
+        max="90"
+        step="0.5"
+        value={launchAngleDeg}
+        disabled={!angleUnlocked}
+        onChange={(event) => onLaunchAngleChange?.(Number(event.target.value))}
+      />
     </div>
 
     <div className="flight-stage">
