@@ -178,6 +178,11 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
       <span className="plotly-badge">PLOTLY · INTERACTIVE</span>
     </div>
 
+    <div className="telemetry-source-toggle" aria-label={txt('Fuente de datos', 'Data source')}>
+      <button type="button" className="active">{txt('ANALÍTICO', 'ANALYTICAL')}</button>
+      <button type="button" disabled title={txt('Se habilita al importar telemetría medida.', 'Enabled when measured telemetry is imported.')}>{txt('MEDIDO', 'MEASURED')} · {txt('SIN DATOS', 'NO DATA')}</button>
+    </div>
+
     <div className="flight-chart-tabs" role="tablist" aria-label={txt('Variables de vuelo', 'Flight variables')}>
       {tabs.map(([key, label]) => <button
         key={key}

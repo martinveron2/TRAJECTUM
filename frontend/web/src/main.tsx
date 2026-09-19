@@ -7,7 +7,8 @@ import { RocketRealistic } from './RocketRealistic';
 import { NoseProfileComparison } from './NoseProfileComparison';
 import { buildEngineeringChartImages } from './engineeringChartExport';
 import { MissionControl } from './MissionControl';
-import { RequirementsMatrix, type RequirementStatus, type RequirementStatusOverrides } from './RequirementsMatrix';
+import { RequirementsMatrix, deriveRequirementStatus, type RequirementStatus, type RequirementStatusOverrides } from './RequirementsMatrix';
+import { PROJECT_REQUIREMENTS } from './projectRequirements';
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
   Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff, FileUp,
@@ -222,6 +223,9 @@ function App() {
   const [phaseFocusIndex, setPhaseFocusIndex] = useState(2);
   const [phaseStoryDragX, setPhaseStoryDragX] = useState(0);
   const [phaseStoryDragging, setPhaseStoryDragging] = useState(false);
+  const [pdrTab, setPdrTab] = useState<'geometry' | 'schematic' | 'mass'>('geometry');
+  const [cdrTab, setCdrTab] = useState<'stability' | 'propulsion'>('stability');
+  const [exportPreparing, setExportPreparing] = useState(false);
   const [selectedRequirementId, setSelectedRequirementId] = useState('R1');
   const [requirementStatusOverrides, setRequirementStatusOverrides] = useState<RequirementStatusOverrides>(() => {
     try {
@@ -329,6 +333,24 @@ function App() {
   const ready = blockers.length === 0;
   const mobileGuideStep = !geometryConsistent ? 'vehicle' : !activeMotorReady ? 'motor' : !analysisSummary ? 'analysis' : 'results';
   const mobileGuideCompleted = analysisSummary ? 4 : activeMotorReady && geometryConsistent ? 3 : geometryConsistent ? 2 : 1;
+
+  const requirementContext = {
+    totalLengthMm: Number(vehicle.totalLength),
+    launchAngleDeg: Number(vehicle.launchAngle),
+    payloadMassG: componentSummary?.components?.find((item: any) => item.name === 'Carga útil')?.mass_g ?? 100,
+    analysis: analysisSummary,
+  };
+  const requirementStatuses = PROJECT_REQUIREMENTS.map((req) => requirementStatusOverrides[req.id] ?? deriveRequirementStatus(req.id, requirementContext));
+  const requirementVerified = requirementStatuses.filter((status) => status === 'verified').length;
+  const requirementProgress = requirementStatuses.filter((status) => status === 'progress').length;
+  const stabilityMargin = analysisSummary?.static_margin_calibers;
+  const stabilityState = stabilityMargin == null ? txt('SIN CALCULAR', 'NOT RUN') : stabilityMargin >= 1.0 ? txt('ESTABLE', 'STABLE') : txt('REVISAR', 'CHECK');
+
+  const openExportSheet = () => {
+    setShowExportMenu(true);
+    setExportPreparing(true);
+    window.setTimeout(() => setExportPreparing(false), 650);
+  };
 
   const runFromTop = () => {
     setRunToken((value) => value + 1);
@@ -506,7 +528,7 @@ function App() {
               <button
                 type="button"
                 className="mobile-header-export"
-                onClick={() => setShowExportMenu((value) => !value)}
+                onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}
                 aria-expanded={showExportMenu}
               >
                 <Download size={14} strokeWidth={1.8} />
@@ -667,6 +689,22 @@ function App() {
           <button type="button" className={geometryConsistent ? 'complete' : mobileGuideStep === 'vehicle' ? 'current' : ''} onClick={() => navigateMobile('pdr')}><b>PDR</b><span>{txt('DISEÑO', 'DESIGN')}</span><em>{geometryConsistent ? '✓' : '→'}</em></button>
           <button type="button" className={analysisSummary ? 'complete' : 'current'} onClick={() => navigateMobile('cdr')}><b>CDR</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
         </div>
+
+        <section className="mobile-home-dashboard" aria-label={txt('Resumen ejecutivo', 'Executive summary')}>
+          <div className="mobile-home-dashboard-head">
+            <div><span>{txt('ESTADO GLOBAL', 'GLOBAL STATUS')}</span><strong>{txt('Resumen del proyecto', 'Project snapshot')}</strong></div>
+            <button type="button" onClick={() => navigateMobile('mdr')}>{txt('VER MDR', 'VIEW MDR')} →</button>
+          </div>
+          <div className="mobile-home-metrics">
+            <article><span>{txt('REQUERIMIENTOS', 'REQUIREMENTS')}</span><strong>{requirementVerified}/11</strong><small>{requirementProgress} {txt('en proceso', 'in progress')}</small></article>
+            <article><span>{txt('APOGEO', 'APOGEE')}</span><strong>{analysisSummary?.apogee_m != null ? analysisSummary.apogee_m.toFixed(0) + ' m' : '—'}</strong><small>R1 ≥ 150 m</small></article>
+            <article><span>{txt('IMPACTO', 'IMPACT')}</span><strong>{analysisSummary?.impact_speed_m_s != null ? analysisSummary.impact_speed_m_s.toFixed(1) + ' m/s' : '—'}</strong><small>R2 ≤ 5 m/s</small></article>
+            <article><span>{txt('ESTABILIDAD', 'STABILITY')}</span><strong>{stabilityMargin != null ? stabilityMargin.toFixed(2) + ' cal' : '—'}</strong><small>{stabilityState}</small></article>
+          </div>
+          <button type="button" className="mobile-home-telemetry-link" onClick={() => navigateMobile('plots')}>
+            <ChartNoAxesCombined size={18}/><span>{txt('ABRIR TELEMETRÍA Y TRAYECTORIA', 'OPEN TELEMETRY & TRAJECTORY')}</span><b>→</b>
+          </button>
+        </section>
       </section>
 
       <section className="mobile-phase-screen mobile-mdr-screen" aria-label="MDR">
@@ -703,27 +741,27 @@ function App() {
           <b className="complete">✓</b>
         </div>
 
-        <details className="mobile-requirements-disclosure">
-          <summary>{txt('REQUERIMIENTOS Y CUMPLIMIENTO', 'REQUIREMENTS & COMPLIANCE')} <span>R1–R11</span></summary>
-          <RequirementsMatrix
-            lang={lang}
-            totalLengthMm={Number(vehicle.totalLength)}
-            launchAngleDeg={Number(vehicle.launchAngle)}
-            payloadMassG={componentSummary?.components?.find((item: any) => item.name === 'Carga útil')?.mass_g ?? 100}
-            analysis={analysisSummary}
-            statusOverrides={requirementStatusOverrides}
+        <div className="phase-internal-tabs pdr-tabs" role="tablist" aria-label={txt('Vistas PDR', 'PDR views')}>
+          <button type="button" className={pdrTab === 'geometry' ? 'active' : ''} onClick={() => setPdrTab('geometry')}><b>01</b><span>{txt('GEOMETRÍA', 'GEOMETRY')}</span></button>
+          <button type="button" className={pdrTab === 'schematic' ? 'active' : ''} onClick={() => setPdrTab('schematic')}><b>02</b><span>{txt('ESQUEMA', 'SCHEMATIC')}</span></button>
+          <button type="button" className={pdrTab === 'mass' ? 'active' : ''} onClick={() => setPdrTab('mass')}><b>03</b><span>{txt('MASA', 'MASS')}</span></button>
+        </div>
 
-            onStatusChange={updateRequirementStatus}
+        {pdrTab === 'geometry' && <section className="phase-process-panel pdr-geometry-panel">
+          <div className="phase-panel-head"><div><span>{txt('GEOMETRÍA Y PARÁMETROS', 'GEOMETRY & PARAMETERS')}</span><strong>{txt('Una sola fuente de verdad', 'One source of truth')}</strong></div><b className={geometryConsistent ? 'ok' : 'warn'}>{geometryConsistent ? '✓' : '!'}</b></div>
+          <div className="pdr-input-grid">
+            <label><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><div><input type="number" value={vehicle.totalLength} onChange={(e) => update('totalLength', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
+            <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><div><input type="number" value={vehicle.diameter} onChange={(e) => update('diameter', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
+            <label><span>{txt('COFIA', 'NOSE')}</span><select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}><option value="tangent_ogive">{txt('Ojiva tangente', 'Tangent ogive')}</option><option value="cone">{txt('Cónica', 'Conical')}</option><option value="power_series">{txt('Serie potencia', 'Power series')}</option></select></label>
+            <label><span>{txt('ALETAS', 'FINS')}</span><div><input type="number" value={vehicle.finCount} onChange={(e) => update('finCount', e.target.value === '' ? '' : Number(e.target.value))}/><em>u</em></div></label>
+            <label><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><div><input type="number" value={vehicle.rootChord} onChange={(e) => update('rootChord', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
+            <label><span>{txt('ENVERGADURA', 'SPAN')}</span><div><input type="number" value={vehicle.span} onChange={(e) => update('span', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
+          </div>
+          <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('mdr')}><ClipboardCheck size={17}/><span>{requirementVerified}/11 {txt('REQUERIMIENTOS VERIFICADOS', 'REQUIREMENTS VERIFIED')}</span><b>→</b></button>
+        </section>}
 
-            selectedRequirementId={selectedRequirementId}
-
-            onSelectRequirement={setSelectedRequirementId}
-
-          />
-        </details>
-
-        <div
-          className="mobile-pdr-vehicle"
+        {pdrTab === 'schematic' && <section
+          className="phase-process-panel mobile-pdr-vehicle pdr-schematic-panel"
           style={{ '--tilt-x': pdrTilt.x + 'deg', '--tilt-y': pdrTilt.y + 'deg' } as React.CSSProperties}
           onPointerMove={(event) => {
             if (event.pointerType !== 'touch' && event.buttons === 0) return;
@@ -735,28 +773,24 @@ function App() {
           onPointerLeave={() => setPdrTilt({ x: 0, y: 0 })}
           onPointerUp={() => setPdrTilt({ x: 0, y: 0 })}
         >
-          <div className="mobile-pdr-vehicle-head">
-            <div><span>{txt('VEHÍCULO INTERACTIVO', 'INTERACTIVE VEHICLE')}</span><strong>{txt('Arrastrá para explorar', 'Drag to explore')}</strong></div>
-            <Orbit size={19} strokeWidth={1.7} />
-          </div>
+          <div className="mobile-pdr-vehicle-head"><div><span>{txt('ESQUEMA 2D ÚNICO', 'SINGLE 2D SCHEMATIC')}</span><strong>{txt('Geometría sincronizada en tiempo real', 'Real-time synchronized geometry')}</strong></div><Orbit size={19}/></div>
           <div className="mobile-pdr-model">
-            <RocketRealistic
-              vehicle={vehicle}
-              cgMm={liveCgFromNose}
-              cpMm={analysisSummary?.cp_x_mm_from_nose ?? null}
-              componentCgs={componentSummary?.components ?? []}
-              showComponentCgs={false}
-              lang={lang}
-            />
+            <RocketRealistic vehicle={vehicle} cgMm={liveCgFromNose} cpMm={analysisSummary?.cp_x_mm_from_nose ?? null} componentCgs={componentSummary?.components ?? []} showComponentCgs={false} lang={lang}/>
           </div>
-        </div>
+        </section>}
 
-        <div className="mobile-pdr-dock" aria-label={txt('Herramientas PDR', 'PDR tools')}>
-          <button type="button" onClick={() => navigateMobile('geometry')}><Box size={20} strokeWidth={1.8} /><span>{txt('GEOMETRÍA', 'GEOMETRY')}</span></button>
-          <button type="button" onClick={() => navigateMobile('vehicle')}><SlidersHorizontal size={20} strokeWidth={1.8} /><span>{txt('PARÁMETROS', 'PARAMETERS')}</span></button>
-          <button type="button" onClick={() => navigateMobile('motor')}><Flame size={20} strokeWidth={1.8} /><span>MOTOR</span></button>
-          <button type="button" className="advance" onClick={() => navigateMobile('cdr')}><Gauge size={20} strokeWidth={1.8} /><span>CDR</span></button>
-        </div>
+        {pdrTab === 'mass' && <section className="phase-process-panel pdr-mass-panel">
+          <div className="phase-panel-head"><div><span>{txt('MATERIALES Y MASA', 'MATERIALS & MASS')}</span><strong>{txt('Distribución preliminar del vehículo', 'Preliminary vehicle distribution')}</strong></div><b>{componentSummary?.total_mass_g ? Math.round(componentSummary.total_mass_g) + 'g' : '—'}</b></div>
+          <div className="pdr-mass-list">
+            {(componentSummary?.components ?? []).slice(0,7).map((item: any) => <div key={item.name}><span>{item.name}</span><strong>{item.mass_g.toFixed(0)} g</strong><small>xCG {item.x_cg_mm?.toFixed?.(0) ?? '—'} mm</small></div>)}
+            {!componentSummary && <div className="phase-empty-inline"><span>{txt('MASAS AÚN NO DERIVADAS', 'MASSES NOT DERIVED YET')}</span><small>{txt('Abrí análisis una vez para calcular CG por componente.', 'Run analysis once to derive component CG.')}</small></div>}
+          </div>
+          <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('analysis')}><Sigma size={17}/><span>{txt('ABRIR CÁLCULO DE MASA Y CG', 'OPEN MASS & CG CALCULATION')}</span><b>→</b></button>
+        </section>}
+
+        <button type="button" className="phase-primary-action pdr-continue" onClick={() => navigateMobile('cdr')}>
+          <Gauge size={19}/><span>{txt('CONTINUAR A CDR', 'CONTINUE TO CDR')}</span><b>→</b>
+        </button>
       </section>
 
       <section className="mobile-phase-screen mobile-cdr-screen" aria-label="CDR">
@@ -765,15 +799,49 @@ function App() {
           <div><span>FASE 03 · {txt('ACTUAL', 'CURRENT')}</span><h2>CDR · {txt('ANÁLISIS CRÍTICO', 'CRITICAL ANALYSIS')}</h2></div>
           <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '3'}</b>
         </div>
-        <div className="mobile-cdr-status">
-          <button type="button" className={componentSummary ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>CG</span><strong>{componentSummary ? txt('LISTO', 'READY') : txt('REVISAR', 'CHECK')}</strong></button>
-          <button type="button" className={analysisSummary?.cp_x_mm_from_nose != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>CP</span><strong>{analysisSummary?.cp_x_mm_from_nose != null ? txt('LISTO', 'READY') : txt('REVISAR', 'CHECK')}</strong></button>
-          <button type="button" className={analysisSummary?.apogee_m != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>{txt('TRAYECTORIA', 'TRAJECTORY')}</span><strong>{analysisSummary?.apogee_m != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
-          <button type="button" className={analysisSummary?.landing_time_s != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>{txt('RECUPERACIÓN', 'RECOVERY')}</span><strong>{analysisSummary?.landing_time_s != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
+        <div className="phase-internal-tabs cdr-tabs" role="tablist" aria-label={txt('Vistas CDR', 'CDR views')}>
+          <button type="button" className={cdrTab === 'stability' ? 'active' : ''} onClick={() => setCdrTab('stability')}><Gauge size={16}/><span>{txt('ESTABILIDAD', 'STABILITY')}</span></button>
+          <button type="button" className={cdrTab === 'propulsion' ? 'active' : ''} onClick={() => setCdrTab('propulsion')}><Flame size={16}/><span>{txt('PROPULSIÓN', 'PROPULSION')}</span></button>
         </div>
+
+        {cdrTab === 'stability' && <section className="phase-process-panel cdr-stability-panel">
+          <div className="phase-panel-head"><div><span>{txt('AERODINÁMICA Y ESTABILIDAD', 'AERODYNAMICS & STABILITY')}</span><strong>CG ↔ CP · Barrowman</strong></div><b className={stabilityMargin != null && stabilityMargin >= 1 ? 'ok' : 'warn'}>{stabilityMargin != null ? stabilityMargin.toFixed(2) : '—'}</b></div>
+          <div className="stability-summary-grid">
+            <article><span>XCG</span><strong>{liveCgFromNose != null ? (Number(vehicle.totalLength) - liveCgFromNose).toFixed(1) + ' mm' : '—'}</strong><small>{txt('desde apoyo', 'from support')}</small></article>
+            <article><span>XCP</span><strong>{analysisSummary?.cp_x_mm_from_nose != null ? (Number(vehicle.totalLength) - analysisSummary.cp_x_mm_from_nose).toFixed(1) + ' mm' : '—'}</strong><small>{txt('desde apoyo', 'from support')}</small></article>
+            <article><span>{txt('MARGEN', 'MARGIN')}</span><strong>{stabilityMargin != null ? stabilityMargin.toFixed(2) + ' cal' : '—'}</strong><small>{stabilityState}</small></article>
+          </div>
+          <div className="stability-axis" aria-label={txt('Posición relativa de CG y CP', 'Relative CG and CP position')}>
+            <div className="stability-axis-line"/>
+            {liveCgFromNose != null && <i className="cg-marker" style={{ left: Math.max(4, Math.min(96, liveCgFromNose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CG</b></i>}
+            {analysisSummary?.cp_x_mm_from_nose != null && <i className="cp-marker" style={{ left: Math.max(4, Math.min(96, analysisSummary.cp_x_mm_from_nose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CP</b></i>}
+            <span>0</span><em>{vehicle.totalLength} mm</em>
+          </div>
+          <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('analysis')}><Sigma size={17}/><span>{txt('VER CÁLCULO DETALLADO', 'VIEW DETAILED CALCULATION')}</span><b>→</b></button>
+        </section>}
+
+        {cdrTab === 'propulsion' && <section className="phase-process-panel cdr-propulsion-panel">
+          <div className="phase-panel-head"><div><span>{txt('PERFIL PROPULSIVO', 'PROPULSIVE PROFILE')}</span><strong>{motor.designation || 'A-100 RN'} · {motor.propellant || 'KNDX'}</strong></div><b>{motor.maxThrust || '—'} N</b></div>
+          <div className="thrust-chart">
+            <svg viewBox="0 0 320 150" role="img" aria-label={txt('Curva de empuje versus tiempo', 'Thrust versus time curve')}>
+              <path className="chart-grid" d="M34 18V126H302 M34 99H302 M34 72H302 M34 45H302"/>
+              <polyline className="thrust-line" points="34,126 61,18 88,27 141,31 195,36 249,54 276,117 302,126"/>
+              <line className="thrust-fill-baseline" x1="34" y1="126" x2="302" y2="126"/>
+              <text x="8" y="22">600</text><text x="11" y="75">300</text><text x="18" y="130">0</text>
+              <text x="31" y="145">0.0</text><text x="275" y="145">0.5 s</text>
+            </svg>
+          </div>
+          <div className="propulsion-metrics">
+            <div><span>{txt('IMPULSO', 'IMPULSE')}</span><strong>{motor.impulse} N·s</strong></div>
+            <div><span>{txt('PROMEDIO', 'AVERAGE')}</span><strong>{averageThrust?.toFixed(0) ?? '—'} N</strong></div>
+            <div><span>{txt('COMBUSTIÓN', 'BURN')}</span><strong>{motor.burn} s</strong></div>
+          </div>
+          <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('motor')}><Flame size={17}/><span>{txt('CONFIGURAR MOTOR', 'CONFIGURE MOTOR')}</span><b>→</b></button>
+        </section>}
+
         <button
           type="button"
-          className={pendingMissionLaunch ? 'mission-launch-cta preparing' : 'mission-launch-cta'}
+          className={pendingMissionLaunch ? 'mission-launch-cta preparing cdr-launch' : 'mission-launch-cta cdr-launch'}
           disabled={!ready || pendingMissionLaunch}
           onClick={() => {
             if (analysisSummary?.mission_timeline?.length > 1) {
@@ -784,19 +852,10 @@ function App() {
             setRunToken((value) => value + 1);
           }}
         >
-          <span className="mission-launch-icon"><Rocket size={24} strokeWidth={1.8} /></span>
-          <span className="mission-launch-copy">
-            <small>{txt('CENTRO DE CONTROL DE VUELO', 'FLIGHT CONTROL CENTER')}</small>
-            <strong>{pendingMissionLaunch ? txt('PREPARANDO SIMULACIÓN…', 'PREPARING SIMULATION…') : txt('DESPEGAR / INICIAR SIMULACIÓN', 'LAUNCH / START SIMULATION')}</strong>
-          </span>
-          {pendingMissionLaunch ? <i className="mission-launch-spinner" /> : <b>→</b>}
+          <span className="mission-launch-icon"><Rocket size={23}/></span>
+          <span className="mission-launch-copy"><small>{txt('VALIDACIÓN CDR', 'CDR VALIDATION')}</small><strong>{pendingMissionLaunch ? txt('CALCULANDO…', 'CALCULATING…') : analysisSummary ? txt('ABRIR SIMULACIÓN', 'OPEN SIMULATION') : txt('EJECUTAR ANÁLISIS', 'RUN ANALYSIS')}</strong></span>
+          {pendingMissionLaunch ? <i className="mission-launch-spinner"/> : <b>→</b>}
         </button>
-        <div className="mobile-action-list">
-          <button type="button" onClick={() => { navigateMobile('analysis'); if (!analysisSummary && ready) setRunToken((value) => value + 1); }}><span><Play size={18} strokeWidth={1.8} /></span><div><strong>{analysisSummary ? txt('RESULTADOS DEL CDR', 'CDR RESULTS') : txt('EJECUTAR CDR', 'RUN CDR')}</strong><small>{txt('CG · CP · trayectoria · recuperación', 'CG · CP · trajectory · recovery')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('plots')}><span><ChartNoAxesCombined size={18} strokeWidth={1.8} /></span><div><strong>{txt('GRÁFICOS', 'PLOTS')}</strong><small>{txt('Análisis de vuelo interactivo', 'Interactive flight analysis')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('model')}><span><Sigma size={18} strokeWidth={1.8} /></span><div><strong>{txt('MODELO MATEMÁTICO', 'MATHEMATICAL MODEL')}</strong><small>{txt('Ecuaciones y métodos', 'Equations and methods')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('status')}><span><ClipboardCheck size={18} strokeWidth={1.8} /></span><div><strong>{txt('ESTADO DEL CDR', 'CDR STATUS')}</strong><small>{txt('Trazabilidad y bloqueos', 'Traceability and blockers')}</small></div><b>→</b></button>
-        </div>
       </section>
 
       <section className="mobile-phase-screen mobile-frr-screen" aria-label="FRR">
@@ -871,7 +930,7 @@ function App() {
         <div className="mobile-action-list">
           <button type="button" onClick={() => navigateMobile('plots')}><span><ChartNoAxesCombined size={18}/></span><div><strong>{txt('TELEMETRÍA Y GRÁFICOS', 'TELEMETRY & PLOTS')}</strong><small>{txt('Altitud · velocidad · Mach · Max Q', 'Altitude · speed · Mach · Max Q')}</small></div><b>→</b></button>
           <button type="button" onClick={() => navigateMobile('analysis')}><span><FileChartColumn size={18}/></span><div><strong>{txt('RESULTADOS COMPLETOS', 'FULL RESULTS')}</strong><small>{txt('CG · CP · estabilidad · recuperación', 'CG · CP · stability · recovery')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => setShowExportMenu(true)}><span><Download size={18}/></span><div><strong>{txt('EXPORTAR MISIÓN', 'EXPORT MISSION')}</strong><small>Excel · PNG · JSON · CSV</small></div><b>→</b></button>
+          <button type="button" onClick={openExportSheet}><span><Download size={18}/></span><div><strong>{txt('EXPORTAR MISIÓN', 'EXPORT MISSION')}</strong><small>Excel · PNG · JSON · CSV</small></div><b>→</b></button>
         </div>
       </section>
 
@@ -1155,12 +1214,18 @@ function App() {
         <div className="mobile-export-sheet" onClick={(event) => event.stopPropagation()}>
           <div className="mobile-export-head">
             <div><span>{txt('SALIDA', 'OUTPUT')}</span><strong>{txt('EXPORTAR RESULTADOS', 'EXPORT RESULTS')}</strong></div>
-            <button type="button" onClick={() => { setShowExportMenu(false);  }} aria-label={txt('Cerrar', 'Close')}>×</button>
+            <button type="button" onClick={() => { setShowExportMenu(false); setExportPreparing(false); }} aria-label={txt('Cerrar', 'Close')}>×</button>
           </div>
-          <button type="button" onClick={exportExcel}><strong>EXCEL TÉCNICO</strong><small>.XLSX · 8 HOJAS + GRÁFICOS</small></button>
-          <button type="button" onClick={exportChartsZip}><strong>{txt('GRÁFICOS PNG', 'PNG PLOTS')}</strong><small>{txt('5 ARCHIVOS · ALTA RESOLUCIÓN', '5 FILES · HIGH RES')}</small></button>
-          <button type="button" onClick={exportJson}><strong>JSON</strong><small>{txt('PROYECTO REPRODUCIBLE / SOFTWARE', 'REPRODUCIBLE PROJECT / SOFTWARE')}</small></button>
-          <button type="button" onClick={exportTrajectoryCsv}><strong>CSV</strong><small>{txt('TRAYECTORIA TABULAR', 'TABULAR TRAJECTORY')}</small></button>
+          {exportPreparing ? <div className="mobile-export-preparing">
+            <span>{txt('COMPILANDO DATOS UTN-FRH-G07', 'COMPILING UTN-FRH-G07 DATA')}</span>
+            <strong>{txt('Preparando paquete técnico…', 'Preparing technical package…')}</strong>
+            <i><b /></i>
+          </div> : <>
+            <button type="button" onClick={exportExcel}><strong>EXCEL TÉCNICO</strong><small>.XLSX · 8 HOJAS + GRÁFICOS</small></button>
+            <button type="button" onClick={exportChartsZip}><strong>{txt('GRÁFICOS PNG', 'PNG PLOTS')}</strong><small>{txt('5 ARCHIVOS · ALTA RESOLUCIÓN', '5 FILES · HIGH RES')}</small></button>
+            <button type="button" onClick={exportJson}><strong>JSON</strong><small>{txt('PROYECTO REPRODUCIBLE / SOFTWARE', 'REPRODUCIBLE PROJECT / SOFTWARE')}</small></button>
+            <button type="button" onClick={exportTrajectoryCsv}><strong>CSV</strong><small>{txt('TRAYECTORIA TABULAR', 'TABULAR TRAJECTORY')}</small></button>
+          </>}
         </div>
       </div>}
     </main>

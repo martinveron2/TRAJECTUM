@@ -271,12 +271,20 @@ export function LiveAnalysisPanel({
       <div><span>{txt('TIEMPO DE ATERRIZAJE', 'LANDING TIME')}</span><strong>{analysis?.landing_time_s !== undefined ? `${analysis.landing_time_s.toFixed(1)} s` : '—'}</strong></div>
       <div><span>{txt('VELOCIDAD DE IMPACTO', 'IMPACT SPEED')}</span><strong>{analysis?.impact_speed_m_s !== undefined ? `${analysis.impact_speed_m_s.toFixed(2)} m/s` : '—'}</strong></div>
     </div>
-    {analysis?.mission_timeline && analysis.mission_timeline.length > 1 && <>
+    {analysis?.mission_timeline && analysis.mission_timeline.length > 1 ? <>
       <FlightVisualizer samples={analysis.mission_timeline} launchAngleDeg={Number(vehicle.launchAngle) || 85} lang={lang} />
       <Suspense fallback={<div className="panel flight-analysis-loading">{txt('CARGANDO GRÁFICOS DE INGENIERÍA…', 'LOADING ENGINEERING PLOTS…')}</div>}>
         <FlightAnalysisCharts samples={analysis.mission_timeline} motorBurnTimeS={Number(motor.burn) || 0} analysis={analysis} lang={lang} />
       </Suspense>
-    </>}
+    </> : <section className="panel flight-analysis-empty">
+      <div className="telemetry-empty-icon">⌁</div>
+      <span>{txt('CENTRO DE TELEMETRÍA', 'TELEMETRY CENTER')}</span>
+      <strong>{txt('Todavía no hay una corrida de vuelo', 'No flight run yet')}</strong>
+      <p>{txt('Ejecutá el análisis para generar Altitud h(t), Velocidad V(t), Mach, MaxQ y trayectoria X–Z. Esta pantalla nunca vuelve a quedar vacía.', 'Run the analysis to generate altitude h(t), speed V(t), Mach, MaxQ and X–Z trajectory. This screen never goes blank again.')}</p>
+      <button type="button" onClick={run} disabled={!planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}>
+        {running ? txt('GENERANDO TELEMETRÍA…', 'GENERATING TELEMETRY…') : txt('GENERAR PRIMERA CORRIDA', 'GENERATE FIRST RUN')} →
+      </button>
+    </section>}
         {analysis?.landing_time_s !== undefined && <div className="recovery-timeline">
       <div className="timeline-title"><span>{txt('SECUENCIA DE RECUPERACIÓN', 'RECOVERY SEQUENCE')}</span><strong>{txt('Vuelo → despliegue → aterrizaje', 'Flight → deployment → landing')}</strong></div>
       <div className="timeline-track">
