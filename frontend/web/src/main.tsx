@@ -1065,6 +1065,7 @@ function App() {
             {cdrPositionFocus === 'margin' && <><b>Δ CG–CP</b><span>{stabilityMargin != null ? txt('Separación equivalente: ', 'Equivalent separation: ') + (stabilityMargin * Number(vehicle.diameter)).toFixed(1) + ' mm · ' + stabilityMargin.toFixed(2) + ' cal' : txt('Ejecutá el análisis para obtener la separación y el margen.', 'Run analysis to obtain separation and margin.')}</span></>}
           </div>
           <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('analysis')}><Sigma size={17}/><span>{txt('VER DESGLOSE MATEMÁTICO', 'VIEW MATH BREAKDOWN')}</span><b>→</b></button>
+          {analysisSummary?.mission_timeline?.length > 1 && <button type="button" className="phase-secondary-link flight-entry-link" onClick={() => navigateMobile('plots')}><Play size={17}/><span>{txt('ABRIR SIMULACIÓN DE VUELO', 'OPEN FLIGHT SIMULATION')}</span><b>→</b></button>}
         </section>}
 
         {cdrTab === 'trajectory' && <section className="phase-process-panel cdr-trajectory-panel">
