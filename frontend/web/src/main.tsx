@@ -218,7 +218,12 @@ function App() {
     setAnalysisSummary(null);
   };
 
-  const activeMotorReady = [motor.burn, motor.impulse, motor.propellantMass, motor.dryMass].every((value) => value !== '' && Number(value) >= 0);
+  const activeMotorReady =
+    motor.burn !== '' && Number(motor.burn) > 0 &&
+    motor.impulse !== '' && Number(motor.impulse) > 0 &&
+    motor.propellantMass !== '' && Number(motor.propellantMass) >= 0 &&
+    motor.dryMass !== '' && Number(motor.dryMass) > 0 &&
+    motor.designation.trim().length > 0;
 
   const importCadGeometry = (geometry: { totalLength: number; diameter: number; noseLength: number | null }) => {
     setVehicle((current) => {
@@ -255,6 +260,8 @@ function App() {
     (Number(vehicle.bodyLength) || 0);
   const geometryConsistent = vehicle.totalLength !== '' && axialSum === Number(vehicle.totalLength);
   const ready = blockers.length === 0;
+  const mobileGuideStep = !geometryConsistent ? 'vehicle' : !activeMotorReady ? 'motor' : !analysisSummary ? 'analysis' : 'results';
+  const mobileGuideCompleted = analysisSummary ? 4 : activeMotorReady && geometryConsistent ? 3 : geometryConsistent ? 2 : 1;
 
   const runFromTop = () => {
     setRunToken((value) => value + 1);
@@ -263,6 +270,26 @@ function App() {
   const goToAnalysis = () => {
     setRunToken((value) => value + 1);
     document.getElementById('engineering-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const continueMobileGuide = () => {
+    if (mobileGuideStep === 'vehicle') {
+      setMobileSection('vehicle');
+      document.getElementById('vehicle-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (mobileGuideStep === 'motor') {
+      setMobileSection('vehicle');
+      document.getElementById('motor-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    if (mobileGuideStep === 'analysis') {
+      setMobileSection('analysis');
+      goToAnalysis();
+      return;
+    }
+    setMobileSection('plots');
+    document.querySelector('.flight-analysis-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const reset = () => {
@@ -434,6 +461,53 @@ function App() {
           <span>{txt('CDR NUMÉRICO', 'NUMERIC CDR')}</span><strong className={ready ? 'ok' : 'warn'}>{ready ? txt('LISTO', 'READY') : txt('BLOQUEADO', 'BLOCKED')}</strong><i>↘</i>
         </button>
       </nav>
+
+      <section className="mobile-guide" aria-label={txt('Guía del proyecto', 'Project guide')}>
+        <div className="mobile-guide-top">
+          <div>
+            <span>{txt('PROYECTO ACTIVO', 'ACTIVE PROJECT')}</span>
+            <strong>UTN-FRH-G07 / CDR</strong>
+          </div>
+          <div className="mobile-guide-score"><b>{mobileGuideCompleted}/4</b><small>{txt('ETAPAS', 'STAGES')}</small></div>
+        </div>
+
+        <div className="mobile-guide-progress" aria-hidden="true">
+          {[1,2,3,4].map((step) => <i key={step} className={step <= mobileGuideCompleted ? 'done' : step === mobileGuideCompleted + 1 ? 'current' : ''} />)}
+        </div>
+
+        <div className="mobile-guide-next">
+          <span>{txt('SIGUIENTE PASO', 'NEXT STEP')}</span>
+          <h2>{
+            mobileGuideStep === 'vehicle' ? txt('Revisar geometría del vehículo', 'Review vehicle geometry') :
+            mobileGuideStep === 'motor' ? txt('Completar configuración del motor', 'Complete motor configuration') :
+            mobileGuideStep === 'analysis' ? txt('Todo listo para simular', 'Ready to simulate') :
+            txt('Análisis completado', 'Analysis complete')
+          }</h2>
+          <p>{
+            mobileGuideStep === 'vehicle' ? txt('Confirmá las dimensiones principales antes de continuar.', 'Confirm the main dimensions before continuing.') :
+            mobileGuideStep === 'motor' ? txt('Cargá los datos mínimos del motor para habilitar la simulación.', 'Enter the minimum motor data to enable simulation.') :
+            mobileGuideStep === 'analysis' ? txt('La configuración está completa. Ejecutá el análisis y TRAJECTUM te lleva a los resultados.', 'Configuration is complete. Run the analysis and TRAJECTUM will take you to the results.') :
+            txt('Revisá resultados, gráficos y exportá el informe técnico.', 'Review results, plots and export the engineering report.')
+          }</p>
+        </div>
+
+        <button type="button" className="mobile-guide-cta" onClick={continueMobileGuide}>
+          <span>{
+            mobileGuideStep === 'vehicle' ? txt('CONTINUAR CON VEHÍCULO', 'CONTINUE WITH VEHICLE') :
+            mobileGuideStep === 'motor' ? txt('REVISAR MOTOR', 'REVIEW MOTOR') :
+            mobileGuideStep === 'analysis' ? txt('EJECUTAR ANÁLISIS', 'RUN ANALYSIS') :
+            txt('VER RESULTADOS', 'VIEW RESULTS')
+          }</span>
+          <b>→</b>
+        </button>
+
+        <div className="mobile-guide-steps">
+          <button type="button" className={geometryConsistent ? 'complete' : mobileGuideStep === 'vehicle' ? 'current' : ''} onClick={() => { setMobileSection('vehicle'); document.getElementById('vehicle-editor')?.scrollIntoView({ behavior:'smooth', block:'start' }); }}><b>01</b><span>{txt('VEHÍCULO', 'VEHICLE')}</span><em>{geometryConsistent ? '✓' : '→'}</em></button>
+          <button type="button" className={activeMotorReady ? 'complete' : mobileGuideStep === 'motor' ? 'current' : ''} onClick={() => document.getElementById('motor-panel')?.scrollIntoView({ behavior:'smooth', block:'center' })}><b>02</b><span>MOTOR</span><em>{activeMotorReady ? '✓' : '→'}</em></button>
+          <button type="button" className={analysisSummary ? 'complete' : mobileGuideStep === 'analysis' ? 'current' : ''} onClick={() => { setMobileSection('analysis'); goToAnalysis(); }}><b>03</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
+          <button type="button" className={analysisSummary ? 'current' : ''} onClick={() => document.querySelector('.flight-analysis-panel')?.scrollIntoView({ behavior:'smooth', block:'start' })}><b>04</b><span>{txt('RESULTADOS', 'RESULTS')}</span><em>{analysisSummary ? '→' : '·'}</em></button>
+        </div>
+      </section>
 
       <section className="workspace">
         <aside className="panel editor" id="vehicle-editor">
