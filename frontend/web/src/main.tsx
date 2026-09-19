@@ -240,16 +240,6 @@ function App() {
     setPhaseFocusIndex((current) => Math.max(0, Math.min(4, current + delta)));
   };
 
-  const phaseWheelClass = (index: number, extra = '') => {
-    const distance = index - phaseFocusIndex;
-    const position =
-      distance === 0 ? 'wheel-active' :
-      distance === -1 ? 'wheel-prev' :
-      distance === 1 ? 'wheel-next' :
-      distance < -1 ? 'wheel-far-prev' : 'wheel-far-next';
-    return [extra, position].filter(Boolean).join(' ');
-  };
-
   const mobileNavIndex = mobileSection === 'home'
       ? 0
       : ['pdr','vehicle','geometry','motor','cad'].includes(mobileSection)
@@ -558,7 +548,7 @@ function App() {
         </div>
 
         <div
-          className="mobile-phase-wheel"
+          className="mobile-phase-wheel phase-grid-selector"
           aria-label={txt('Explorar fases del proyecto', 'Explore project phases')}
           onTouchStart={(event) => { event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0); }}
           onTouchEnd={(event) => {
@@ -568,12 +558,12 @@ function App() {
             if (Math.abs(delta) > 34) movePhaseFocus(delta < 0 ? 1 : -1);
           }}
         >
-          <button type="button" className={phaseWheelClass(0, 'complete')} onClick={() => selectPhase(0)}><b>01</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
-          <button type="button" className={phaseWheelClass(1, 'phase-current')} onClick={() => selectPhase(1)}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
-          <button type="button" className={phaseWheelClass(2)} onClick={() => selectPhase(2)}><b>03</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
-          <button type="button" className={phaseWheelClass(3)} onClick={() => selectPhase(3)}><b>04</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
-          <button type="button" className={phaseWheelClass(4)} onClick={() => selectPhase(4)}><b>05</b><span>PFR / MCR</span><small>{txt('Post-vuelo y cierre', 'Post-flight & closeout')}</small></button>
-          <div className="phase-wheel-hint">{txt('DESLIZÁ PARA EXPLORAR · TOCÁ PARA ENTRAR', 'SWIPE TO EXPLORE · TAP TO ENTER')}</div>
+          <button type="button" className={'complete ' + (phaseFocusIndex === 0 ? 'focused' : '')} onClick={() => selectPhase(0)}><b>01</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
+          <button type="button" className={'phase-current ' + (phaseFocusIndex === 1 ? 'focused' : '')} onClick={() => selectPhase(1)}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
+          <button type="button" className={phaseFocusIndex === 2 ? 'focused' : ''} onClick={() => selectPhase(2)}><b>03</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
+          <button type="button" className={phaseFocusIndex === 3 ? 'focused' : ''} onClick={() => selectPhase(3)}><b>04</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
+          <button type="button" className={'phase-wide ' + (phaseFocusIndex === 4 ? 'focused' : '')} onClick={() => selectPhase(4)}><b>05</b><span>PFR / MCR</span><small>{txt('Post-vuelo y cierre', 'Post-flight & closeout')}</small></button>
+          <div className="phase-wheel-hint">{txt('DESLIZÁ PARA CAMBIAR EL FOCO · TOCÁ PARA ENTRAR', 'SWIPE TO CHANGE FOCUS · TAP TO ENTER')}</div>
         </div>
 
         <div className="mobile-guide-next">
