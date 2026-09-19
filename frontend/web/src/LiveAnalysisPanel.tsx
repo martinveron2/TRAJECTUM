@@ -316,6 +316,29 @@ export function LiveAnalysisPanel({
         <div><span>{txt('SEPARACIÓN CG–CP', 'CG–CP SEPARATION')}</span><strong><AnimatedValue value={cgCpSeparation} decimals={1} suffix=" mm"/></strong></div>
         <div><span>{txt('MARGEN ESTÁTICO', 'STATIC MARGIN')}</span><strong><AnimatedValue value={analysis.static_margin_calibers} decimals={2} suffix=" cal"/></strong></div>
       </div>
+      <div className={
+        analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
+          ? 'stability-status stable'
+          : analysis.static_margin_calibers < 1.5
+            ? 'stability-status warning'
+            : 'stability-status review'
+      }>
+        <i />
+        <strong>{
+          analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
+            ? txt('ESTABLE', 'STABLE')
+            : analysis.static_margin_calibers < 1.5
+              ? txt('MARGEN BAJO', 'LOW MARGIN')
+              : txt('REVISAR ESTABILIDAD', 'CHECK STABILITY')
+        }</strong>
+        <span>{
+          analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
+            ? txt('Dentro del rango objetivo 1.5–2.0 cal', 'Within target range 1.5–2.0 cal')
+            : analysis.static_margin_calibers < 1.5
+              ? txt('Aumentá la separación CG–CP', 'Increase CG–CP separation')
+              : txt('Margen superior al rango objetivo', 'Margin above target range')
+        }</span>
+      </div>
 
       <div className="cdr-secondary-results">
         <article><span>{txt('MASA TOTAL', 'TOTAL MASS')}</span><strong><AnimatedValue value={totalMass} decimals={1} suffix=" g"/></strong></article>
