@@ -11,12 +11,14 @@ button:disabled{cursor:not-allowed;opacity:.45}
 .app-shell{max-width:1500px;margin:0 auto;padding:32px 34px 64px;text-transform:uppercase}
 .math-equation,.math-equation *,.katex,.katex *{text-transform:none}
 .brand-stack{display:flex;flex-direction:column;gap:9px}
-.brand-lockup{display:flex;align-items:center;gap:12px;min-height:34px}
-.brand-name{font-family:"Michroma","Space Grotesk",sans-serif;font-size:clamp(1.15rem,2.1vw,1.8rem);letter-spacing:.15em;line-height:1;color:#f2f6ff;text-shadow:0 0 18px rgba(96,166,255,.16)}
-.brand-version{font-size:.58rem;letter-spacing:.16em;color:#6f8fc4;white-space:nowrap}
-.brand-trajectory{width:128px;height:29px;overflow:visible}
-.brand-trajectory path{fill:none;stroke:#69bfff;stroke-width:1.4;stroke-linecap:round;filter:drop-shadow(0 0 3px rgba(74,177,255,.35))}
-.brand-trajectory circle{fill:#8ad2ff;filter:drop-shadow(0 0 4px rgba(74,177,255,.55))}
+.brand-lockup{position:relative;display:inline-flex;align-items:flex-end;gap:12px;min-height:58px;width:max-content;isolation:isolate}
+.brand-wordmark{position:relative;z-index:2;display:flex;flex-direction:column;gap:4px;padding:8px 2px 3px}
+.brand-name{font-family:"Michroma","Space Grotesk",sans-serif;font-size:clamp(1.2rem,2.15vw,1.9rem);letter-spacing:.13em;line-height:1;color:#f4f7ff;text-shadow:0 0 18px rgba(96,166,255,.16)}
+.brand-subline{font-family:"Space Grotesk",sans-serif;font-size:.48rem;letter-spacing:.23em;color:#7894bd;white-space:nowrap}
+.brand-version{position:relative;z-index:2;margin-bottom:4px;font-size:.54rem;letter-spacing:.16em;color:#6f8fc4;white-space:nowrap}
+.brand-trajectory{position:absolute;z-index:1;left:-12px;top:-8px;width:355px;height:78px;overflow:visible;pointer-events:none;opacity:.72}
+.brand-trajectory path{fill:none;stroke:#69bfff;stroke-width:1.35;stroke-linecap:round;filter:drop-shadow(0 0 3px rgba(74,177,255,.32))}
+.brand-trajectory circle{fill:#a3dcff;filter:drop-shadow(0 0 5px rgba(74,177,255,.62))}
 .topbar{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;padding:10px 0 24px;border-bottom:1px solid #1d2a42}
 .eyebrow,.panel-title p,.motor-panel p{margin:0 0 8px;letter-spacing:.16em;text-transform:uppercase;font-size:.72rem;color:#7fa4ff}
 h1{margin:0;font-size:clamp(2rem,4vw,3.2rem);letter-spacing:.015em;line-height:1.05;font-weight:700}
