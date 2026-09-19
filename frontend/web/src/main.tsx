@@ -227,6 +227,7 @@ function App() {
   const [pdrTab, setPdrTab] = useState<'geometry' | 'schematic' | 'mass'>('geometry');
   const [showPdrCadImport, setShowPdrCadImport] = useState(false);
   const [cdrTab, setCdrTab] = useState<'stability' | 'trajectory' | 'propulsion'>('stability');
+  const [cdrPositionFocus, setCdrPositionFocus] = useState<'cg' | 'cp' | 'margin'>('margin');
   const [exportPreparing, setExportPreparing] = useState(false);
   const [selectedRequirementId, setSelectedRequirementId] = useState('R1');
   const [requirementStatusOverrides, setRequirementStatusOverrides] = useState<RequirementStatusOverrides>(() => {
@@ -834,7 +835,7 @@ function App() {
           <div className="pdr-input-grid">
             <label><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><div><input type="number" value={vehicle.totalLength} onChange={(e) => update('totalLength', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
             <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><div><input type="number" value={vehicle.diameter} onChange={(e) => update('diameter', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
-            <label><span>{txt('COFIA', 'NOSE')}</span><select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}><option value="tangent_ogive">{txt('Ojiva tangente', 'Tangent ogive')}</option><option value="cone">{txt('Cónica', 'Conical')}</option><option value="power_series">{txt('Serie potencia', 'Power series')}</option></select></label>
+            <label><span>{txt('COFIA', 'NOSE')}</span><select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}><option value="tangent_ogive">{txt('OJIVA TANGENTE', 'TANGENT OGIVE')}</option><option value="cone">{txt('CÓNICA', 'CONICAL')}</option><option value="power_series">{txt('SERIE POTENCIA', 'POWER SERIES')}</option></select></label>
             <label><span>{txt('ALETAS', 'FINS')}</span><div><input type="number" value={vehicle.finCount} onChange={(e) => update('finCount', e.target.value === '' ? '' : Number(e.target.value))}/><em>u</em></div></label>
             <label><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><div><input type="number" value={vehicle.rootChord} onChange={(e) => update('rootChord', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
             <label><span>{txt('ENVERGADURA', 'SPAN')}</span><div><input type="number" value={vehicle.span} onChange={(e) => update('span', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
@@ -896,6 +897,21 @@ function App() {
           <div><span>FASE 03 · {txt('ACTUAL', 'CURRENT')}</span><h2>CDR · {txt('ANÁLISIS CRÍTICO', 'CRITICAL ANALYSIS')}</h2></div>
           <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '3'}</b>
         </div>
+        <button
+          type="button"
+          className={analysisSummary ? 'cdr-analysis-primary recalculated' : 'cdr-analysis-primary'}
+          disabled={!ready}
+          onClick={() => setRunToken((value) => value + 1)}
+        >
+          <span className="cdr-analysis-primary-icon"><Sigma size={23}/></span>
+          <span className="cdr-analysis-primary-copy">
+            <small>{txt('PASO PRINCIPAL · CDR', 'PRIMARY STEP · CDR')}</small>
+            <strong>{analysisSummary ? txt('RECALCULAR ANÁLISIS CDR', 'RECALCULATE CDR ANALYSIS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</strong>
+            <em>{txt('Calcula masa · CG · CP · margen · trayectoria', 'Calculates mass · CG · CP · margin · trajectory')}</em>
+          </span>
+          <b>→</b>
+        </button>
+
         <div className="phase-internal-tabs cdr-tabs" role="tablist" aria-label={txt('Vistas CDR', 'CDR views')}>
           <button type="button" className={cdrTab === 'stability' ? 'active' : ''} onClick={() => setCdrTab('stability')}><Gauge size={16}/><span>CG / CP</span></button>
           <button type="button" className={cdrTab === 'trajectory' ? 'active' : ''} onClick={() => setCdrTab('trajectory')}><ChartNoAxesCombined size={16}/><span>{txt('TRAYECTORIA', 'TRAJECTORY')}</span></button>
@@ -904,18 +920,35 @@ function App() {
 
         {cdrTab === 'stability' && <section className="phase-process-panel cdr-stability-panel">
           <div className="phase-panel-head"><div><span>{txt('AERODINÁMICA Y ESTABILIDAD', 'AERODYNAMICS & STABILITY')}</span><strong>CG ↔ CP · Barrowman</strong></div><b className={stabilityMargin != null && stabilityMargin >= 1 ? 'ok' : 'warn'}>{stabilityMargin != null ? stabilityMargin.toFixed(2) : '—'}</b></div>
-          <div className="stability-summary-grid">
-            <article><span>XCG</span><strong>{liveCgFromNose != null ? (Number(vehicle.totalLength) - liveCgFromNose).toFixed(1) + ' mm' : '—'}</strong><small>{txt('desde apoyo', 'from support')}</small></article>
-            <article><span>XCP</span><strong>{analysisSummary?.cp_x_mm_from_nose != null ? (Number(vehicle.totalLength) - analysisSummary.cp_x_mm_from_nose).toFixed(1) + ' mm' : '—'}</strong><small>{txt('desde apoyo', 'from support')}</small></article>
-            <article><span>{txt('MARGEN', 'MARGIN')}</span><strong>{stabilityMargin != null ? stabilityMargin.toFixed(2) + ' cal' : '—'}</strong><small>{stabilityState}</small></article>
+          <div className="stability-summary-grid cdr-result-widgets">
+            <button type="button" className={cdrPositionFocus === 'cg' ? 'active cg-widget' : 'cg-widget'} onClick={() => setCdrPositionFocus('cg')}>
+              <span>CG</span>
+              <strong>{liveCgFromNose != null ? (Number(vehicle.totalLength) - liveCgFromNose).toFixed(1) + ' mm' : '—'}</strong>
+              <small>{txt('desde apoyo · tocar para ubicar', 'from support · tap to locate')}</small>
+            </button>
+            <button type="button" className={cdrPositionFocus === 'cp' ? 'active cp-widget' : 'cp-widget'} onClick={() => setCdrPositionFocus('cp')}>
+              <span>CP</span>
+              <strong>{analysisSummary?.cp_x_mm_from_nose != null ? (Number(vehicle.totalLength) - analysisSummary.cp_x_mm_from_nose).toFixed(1) + ' mm' : '—'}</strong>
+              <small>{txt('Barrowman · tocar para ubicar', 'Barrowman · tap to locate')}</small>
+            </button>
+            <button type="button" className={cdrPositionFocus === 'margin' ? 'active margin-widget' : 'margin-widget'} onClick={() => setCdrPositionFocus('margin')}>
+              <span>{txt('MARGEN ESTÁTICO', 'STATIC MARGIN')}</span>
+              <strong>{stabilityMargin != null ? stabilityMargin.toFixed(2) + ' cal' : '—'}</strong>
+              <small>{stabilityState}</small>
+            </button>
           </div>
-          <div className="stability-axis" aria-label={txt('Posición relativa de CG y CP', 'Relative CG and CP position')}>
+          <div className={'stability-axis focus-' + cdrPositionFocus} aria-label={txt('Posición relativa de CG y CP', 'Relative CG and CP position')}>
             <div className="stability-axis-line"/>
             {liveCgFromNose != null && <i className="cg-marker" style={{ left: Math.max(4, Math.min(96, liveCgFromNose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CG</b></i>}
             {analysisSummary?.cp_x_mm_from_nose != null && <i className="cp-marker" style={{ left: Math.max(4, Math.min(96, analysisSummary.cp_x_mm_from_nose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CP</b></i>}
             <span>0</span><em>{vehicle.totalLength} mm</em>
           </div>
-          <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('analysis')}><Sigma size={17}/><span>{txt('VER CÁLCULO DETALLADO', 'VIEW DETAILED CALCULATION')}</span><b>→</b></button>
+          <div className="cdr-position-detail">
+            {cdrPositionFocus === 'cg' && <><b>CG</b><span>{txt('Centro de gravedad calculado por sumatoria de momentos de masa.', 'Center of gravity calculated from the mass-moment summation.')}</span></>}
+            {cdrPositionFocus === 'cp' && <><b>CP</b><span>{txt('Centro de presión calculado con Barrowman para cofia + aletas.', 'Center of pressure calculated with Barrowman for nose + fins.')}</span></>}
+            {cdrPositionFocus === 'margin' && <><b>Δ CG–CP</b><span>{stabilityMargin != null ? txt('Separación equivalente: ', 'Equivalent separation: ') + (stabilityMargin * Number(vehicle.diameter)).toFixed(1) + ' mm · ' + stabilityMargin.toFixed(2) + ' cal' : txt('Ejecutá el análisis para obtener la separación y el margen.', 'Run analysis to obtain separation and margin.')}</span></>}
+          </div>
+          <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('analysis')}><Sigma size={17}/><span>{txt('VER DESGLOSE MATEMÁTICO', 'VIEW MATH BREAKDOWN')}</span><b>→</b></button>
         </section>}
 
         {cdrTab === 'trajectory' && <section className="phase-process-panel cdr-trajectory-panel">
@@ -956,19 +989,6 @@ function App() {
           <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('motor')}><Flame size={17}/><span>{txt('CONFIGURAR MOTOR', 'CONFIGURE MOTOR')}</span><b>→</b></button>
         </section>}
 
-        <button
-          type="button"
-          className="mission-launch-cta cdr-launch cdr-execute"
-          disabled={!ready}
-          onClick={() => {
-            setRunToken((value) => value + 1);
-            navigateMobile('analysis');
-          }}
-        >
-          <span className="mission-launch-icon"><Sigma size={23}/></span>
-          <span className="mission-launch-copy"><small>{txt('CÁLCULO CDR', 'CDR CALCULATION')}</small><strong>{analysisSummary ? txt('RECALCULAR CG / CP', 'RECALCULATE CG / CP') : txt('CALCULAR CG / CP', 'CALCULATE CG / CP')}</strong></span>
-          <b>→</b>
-        </button>
       </section>
 
       <section className="mobile-phase-screen mobile-frr-screen" aria-label="FRR">

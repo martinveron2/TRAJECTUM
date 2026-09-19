@@ -158,8 +158,8 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
               {current.phase === 'BOOST' && <path className="mission-flame" d="M-5 16 L0 38 L5 16 Z"/>}
             </g>
             <text x="16" y="35" className="mission-stage-label">{txt('APOGEO', 'APOGEE')} {maxAltitude.toFixed(1)} m</text>
-            <text x="16" y="78" className="mission-live-altitude-label">{txt('ALTURA', 'ALTITUDE')}</text>
-            <text x="16" y="106" className="mission-live-altitude-value">{current.altitude_m.toFixed(1)} m</text>
+            <text x="8" y="78" className="mission-live-altitude-label">{txt('ALTURA', 'ALTITUDE')}</text>
+            <text x="8" y="106" className="mission-live-altitude-value">{current.altitude_m.toFixed(1)} m</text>
             <text x="16" y="452" className="mission-stage-label">{txt('PLATAFORMA', 'PAD')} · {launchAngleDeg.toFixed(1)}°</text>
           </svg>
         </section>

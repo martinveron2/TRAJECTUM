@@ -3955,3 +3955,165 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     transform:scale(.975)!important;
   }
 }
+
+
+@media(max-width:820px){
+  /* CDR hierarchy: execute first, read CG/CP immediately, then explore trajectory/motor. */
+  .cdr-analysis-primary{
+    width:100%;
+    min-height:76px;
+    flex:0 0 auto;
+    margin:8px 0 10px;
+    padding:10px 12px;
+    display:grid;
+    grid-template-columns:46px 1fr auto;
+    align-items:center;
+    gap:10px;
+    border:1px solid #2C8DFF!important;
+    border-radius:14px;
+    background:linear-gradient(180deg,#154D7C,#0B2D4D)!important;
+    color:#F4FAFF!important;
+    box-shadow:0 10px 22px rgba(0,0,0,.22),0 0 17px rgba(0,119,255,.13),inset 0 1px 0 rgba(255,255,255,.08)!important;
+  }
+  .cdr-analysis-primary:active{
+    transform:scale(.985)!important;
+    box-shadow:inset 0 4px 12px rgba(0,0,0,.32)!important;
+  }
+  .cdr-analysis-primary:disabled{opacity:.45!important}
+  .cdr-analysis-primary-icon{
+    width:44px;
+    height:44px;
+    display:grid;
+    place-items:center;
+    border:1px solid #55A9FF;
+    border-radius:11px;
+    background:linear-gradient(180deg,#1C5F94,#0C3458);
+    color:#BFE7FF;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .cdr-analysis-primary-copy{
+    min-width:0;
+    text-align:left;
+  }
+  .cdr-analysis-primary-copy small{
+    display:block;
+    font-size:.5rem;
+    letter-spacing:.08em;
+    color:#8DC8FF;
+  }
+  .cdr-analysis-primary-copy strong{
+    display:block;
+    margin-top:4px;
+    font-size:.82rem;
+    line-height:1.12;
+    color:#FFFFFF;
+  }
+  .cdr-analysis-primary-copy em{
+    display:block;
+    margin-top:4px;
+    font-size:.5rem;
+    line-height:1.25;
+    color:#A9C9E7;
+    font-style:normal;
+  }
+  .cdr-analysis-primary>b{
+    color:#8ED0FF;
+    font-size:1.05rem;
+  }
+
+  .cdr-result-widgets{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  .cdr-result-widgets>button{
+    min-width:0;
+    min-height:104px;
+    padding:11px 9px;
+    text-align:left;
+    border:1px solid #294966;
+    border-radius:12px;
+    background:linear-gradient(160deg,#0B1B2D,#071421);
+    color:#EAF4FF;
+    box-shadow:0 7px 16px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.035);
+  }
+  .cdr-result-widgets>button.margin-widget{
+    grid-column:1 / -1;
+    min-height:88px;
+  }
+  .cdr-result-widgets>button:active{transform:scale(.98)!important}
+  .cdr-result-widgets>button.active{
+    border-color:#00F0FF;
+    background:linear-gradient(160deg,#123B5B,#0F2B48);
+    box-shadow:0 0 0 1px rgba(0,240,255,.10),0 0 16px rgba(0,240,255,.10),inset 0 1px 0 rgba(255,255,255,.055);
+  }
+  .cdr-result-widgets>button span{
+    display:block;
+    font-size:.68rem!important;
+    letter-spacing:.045em;
+    color:#8FAECC;
+  }
+  .cdr-result-widgets>button strong{
+    display:block;
+    margin-top:7px;
+    font-size:1.22rem!important;
+    line-height:1;
+    color:#FFFFFF;
+  }
+  .cdr-result-widgets>button small{
+    display:block;
+    margin-top:7px;
+    font-size:.5rem!important;
+    line-height:1.25;
+    color:#7FA1C2;
+  }
+  .cdr-result-widgets>button.active strong,
+  .cdr-result-widgets>button.active span{color:#00F0FF!important}
+
+  .stability-axis.focus-cg .cg-marker{
+    width:3px!important;
+    box-shadow:0 0 13px rgba(0,240,255,.72)!important;
+  }
+  .stability-axis.focus-cp .cp-marker{
+    width:3px!important;
+    box-shadow:0 0 13px rgba(123,183,255,.68)!important;
+  }
+  .stability-axis.focus-cg .cp-marker,
+  .stability-axis.focus-cp .cg-marker{opacity:.38}
+  .stability-axis.focus-margin .cg-marker,
+  .stability-axis.focus-margin .cp-marker{opacity:1}
+
+  .cdr-position-detail{
+    min-height:55px;
+    margin-top:2px;
+    padding:9px 10px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    align-items:center;
+    gap:8px;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:10px;
+    background:#071527;
+  }
+  .cdr-position-detail b{
+    min-width:54px;
+    color:#00F0FF;
+    font-size:.64rem;
+  }
+  .cdr-position-detail span{
+    font-size:.53rem;
+    line-height:1.35;
+    color:#9AB4CF;
+  }
+
+  .pdr-input-grid select{
+    text-transform:uppercase!important;
+  }
+
+  /* Live altitude on the flight stage matches the mobile mission clock. */
+  .mission-live-altitude-label{
+    font-size:10px!important;
+  }
+  .mission-live-altitude-value{
+    font-size:22px!important;
+  }
+}
