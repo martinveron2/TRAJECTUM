@@ -384,9 +384,14 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
 @media(max-width:720px){.flight-chart-frame .js-plotly-plot{min-width:620px}.flight-chart-frame{overflow-x:auto}.flight-chart-footer{flex-direction:column}.plotly-badge{display:none}}
 
 /* Automatic desktop/mobile shell: one codebase, two layouts */
-.mobile-guide,.mobile-command-bar,.mobile-export-backdrop{display:none}
+.mobile-guide,.mobile-phase-screen,.mobile-project-phases,.mobile-context-bar,.mobile-command-bar,.mobile-export-backdrop{display:none}
 @media(max-width:820px){
-  .app-shell{padding:12px 10px 92px}
+  html,body,#root{height:100%;overflow:hidden}
+  .app-shell{height:100dvh;max-width:none;padding:10px 10px 86px;overflow:hidden;display:flex;flex-direction:column}
+  .topbar{flex:0 0 auto}
+  .mobile-guide,.mobile-phase-screen,.mobile-project-phases,.workspace{min-height:0}
+  .mobile-guide,.mobile-phase-screen,.workspace{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+  .mobile-guide::-webkit-scrollbar,.mobile-phase-screen::-webkit-scrollbar,.workspace::-webkit-scrollbar{display:none}
   .topbar{padding:7px 2px 14px;gap:10px;border-bottom-color:#203652}
   .brand-lockup{max-width:100%}
   .brand-trajectory{width:250px!important;height:auto}
@@ -499,4 +504,74 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
   .result-grid{grid-template-columns:1fr 1fr}
   .brand-trajectory{width:225px!important}
   .mobile-command-bar button small{font-size:.56rem;letter-spacing:.025em}
+}
+
+
+/* Mobile app navigation: one viewport, one task at a time */
+.mobile-phase-screen,.mobile-project-phases{display:none}
+@media(max-width:820px){
+  .mobile-guide{display:none}
+  .mobile-view-home .mobile-guide{display:block;flex:1 1 auto}
+  .mobile-view-home .mobile-project-phases{display:grid;flex:0 0 auto}
+  .mobile-view-pdr .mobile-pdr-screen,.mobile-view-cdr .mobile-cdr-screen{display:block;flex:1 1 auto}
+  .mobile-view-home .workspace,.mobile-view-pdr .workspace,.mobile-view-cdr .workspace{display:none}
+
+  .mobile-project-phases{grid-template-columns:repeat(5,1fr);gap:5px;margin:8px 0 0}
+  .mobile-project-phases button{min-width:0;min-height:55px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:11px;background:#0a1727;border-color:#243c58;transform:none!important}
+  .mobile-project-phases b{font-size:.48rem;color:#58789c}.mobile-project-phases span{font-size:.61rem;font-weight:800;color:#8ca6c7}.mobile-project-phases small{font-size:.46rem;color:#58728f}
+  .mobile-project-phases .complete{border-color:#285846;background:#0a1c1d}.mobile-project-phases .complete span{color:#74d5a5}
+  .mobile-project-phases .current{border-color:#4c80bc;background:#0d2239}.mobile-project-phases .current span{color:#b8dbff}
+  .mobile-project-phases button:disabled{opacity:.42}
+
+  .mobile-phase-screen{padding:12px 2px 8px}
+  .mobile-screen-head{display:grid;grid-template-columns:42px 1fr 38px;gap:10px;align-items:center;margin-bottom:18px}
+  .mobile-screen-head>button{width:42px;height:42px;padding:0;border-radius:12px;background:#0c1b2e;border-color:#315174;font-size:1.1rem;transform:none!important}
+  .mobile-screen-head>div{min-width:0}.mobile-screen-head span{display:block;margin-bottom:3px;font-size:.54rem;letter-spacing:.12em;color:#6e9bcf}.mobile-screen-head h2{font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-screen-head>b{width:36px;height:36px;display:grid;place-items:center;border:1px solid #385d86;border-radius:11px;background:#0c1d31;color:#91b9e7}.mobile-screen-head>b.complete{border-color:#2e6a52;color:#7de1ae;background:#0d241d}
+  .mobile-screen-copy{padding:16px;border:1px solid #294866;border-radius:17px;background:radial-gradient(circle at 100% 0%,rgba(63,125,205,.14),transparent 38%),linear-gradient(160deg,#102239,#091624)}
+  .mobile-screen-copy strong{font-size:1.05rem;color:#eef5ff}.mobile-screen-copy p{margin:7px 0 0;color:#8fa7c5;font-size:.75rem;line-height:1.5}
+  .mobile-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+  .mobile-action-grid button{position:relative;min-height:112px;padding:13px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;border-radius:16px;background:linear-gradient(150deg,#10243d,#091625);border-color:#2c4b6d;transform:none!important}
+  .mobile-action-grid button>span{position:absolute;top:11px;left:12px;font-size:.51rem;color:#6386ad}.mobile-action-grid button strong{font-size:.72rem;color:#edf5ff}.mobile-action-grid button small{margin-top:3px;font-size:.57rem;color:#7190b5}.mobile-action-grid button>b{position:absolute;right:12px;top:10px;font-size:1rem;color:#73a8df}
+  .mobile-cdr-status{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 11px}
+  .mobile-cdr-status button{min-height:78px;padding:11px;border-radius:14px;text-align:left;background:#0b192a;border-color:#294563;transform:none!important}
+  .mobile-cdr-status span{display:block;font-size:.68rem;font-weight:800;color:#dce9f8}.mobile-cdr-status strong{display:block;margin-top:7px;font-size:.54rem;letter-spacing:.07em;color:#7f96b5}
+  .mobile-cdr-status button.ready{border-color:#2d684f;background:#0b201b}.mobile-cdr-status button.ready strong{color:#73d9a6}
+  .mobile-action-list{display:grid;gap:8px}
+  .mobile-action-list>button{min-height:66px;padding:10px 12px;display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;text-align:left;border-radius:14px;background:linear-gradient(150deg,#10223a,#0a1728);border-color:#2c4a6b;transform:none!important}
+  .mobile-action-list>button>span{width:36px;height:36px;display:grid;place-items:center;border:1px solid #375b82;border-radius:11px;background:#0d2138;color:#9bc7f6;font-size:.9rem}
+  .mobile-action-list div{min-width:0}.mobile-action-list strong{display:block;font-size:.7rem;color:#edf5ff}.mobile-action-list small{display:block;margin-top:3px;font-size:.56rem;color:#7995b8}.mobile-action-list>button>b{color:#6e9ed0;font-size:1rem}
+
+  .mobile-view-vehicle .workspace,.mobile-view-geometry .workspace,.mobile-view-motor .workspace,.mobile-view-analysis .workspace,.mobile-view-plots .workspace,.mobile-view-model .workspace,.mobile-view-status .workspace{display:block;flex:1 1 auto;margin-top:8px;padding-bottom:4px}
+  .mobile-view-vehicle .right-column{display:none}
+  .mobile-view-vehicle #vehicle-editor{display:block}
+  .mobile-view-geometry #vehicle-editor,.mobile-view-motor #vehicle-editor,.mobile-view-analysis #vehicle-editor,.mobile-view-plots #vehicle-editor,.mobile-view-model #vehicle-editor,.mobile-view-status #vehicle-editor{display:none}
+  .mobile-view-geometry .right-column>*,.mobile-view-motor .right-column>*,.mobile-view-analysis .right-column>*,.mobile-view-plots .right-column>*,.mobile-view-model .right-column>*,.mobile-view-status .right-column>*{display:none!important}
+  .mobile-view-geometry #geometry-panel{display:block!important}
+  .mobile-view-motor #motor-panel{display:grid!important}
+  .mobile-view-analysis #analysis-panel,.mobile-view-plots #analysis-panel,.mobile-view-model #analysis-panel{display:block!important}
+  .mobile-view-status .readiness{display:block!important}
+  .mobile-view-plots #engineering-analysis>*{display:none!important}
+  .mobile-view-plots #engineering-analysis>.flight-analysis-panel{display:block!important}
+  .mobile-view-model #engineering-analysis>*{display:none!important}
+  .mobile-view-model #engineering-analysis>.equations-panel{display:block!important}
+  .mobile-view-analysis #engineering-analysis>.equations-panel{display:none!important}
+
+  .mobile-view-export .mobile-export-backdrop{display:flex}
+}
+
+
+@media(max-width:820px){
+  .mobile-context-bar{flex:0 0 auto;align-items:center;gap:10px;margin:8px 0 4px;padding:0 2px}
+  .mobile-view-vehicle .mobile-context-bar,.mobile-view-geometry .mobile-context-bar,.mobile-view-motor .mobile-context-bar,.mobile-view-analysis .mobile-context-bar,.mobile-view-plots .mobile-context-bar,.mobile-view-model .mobile-context-bar,.mobile-view-status .mobile-context-bar{display:flex}
+  .mobile-context-bar>button{width:40px;height:40px;padding:0;border-radius:11px;background:#0b1a2d;border-color:#2d4d70;transform:none!important}
+  .mobile-context-bar>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .mobile-context-bar span{font-size:.5rem;letter-spacing:.12em;color:#6d96c5}
+  .mobile-context-bar strong{font-size:.72rem;color:#edf5ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .mobile-view-home .topbar{display:flex}
+  .mobile-view-pdr .topbar,.mobile-view-cdr .topbar,.mobile-view-vehicle .topbar,.mobile-view-geometry .topbar,.mobile-view-motor .topbar,.mobile-view-analysis .topbar,.mobile-view-plots .topbar,.mobile-view-model .topbar,.mobile-view-status .topbar{display:none}
+
+  .mobile-view-pdr,.mobile-view-cdr,.mobile-view-vehicle,.mobile-view-geometry,.mobile-view-motor,.mobile-view-analysis,.mobile-view-plots,.mobile-view-model,.mobile-view-status{padding-top:10px}
+  .mobile-view-pdr .mobile-pdr-screen,.mobile-view-cdr .mobile-cdr-screen{padding-top:2px}
 }
