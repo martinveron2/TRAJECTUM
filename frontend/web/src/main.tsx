@@ -158,6 +158,9 @@ function RocketSchematic({ vehicle }: { vehicle: Vehicle }) {
 }
 
 function App() {
+  const [lang, setLang] = useState<'es' | 'en'>('es');
+  const isEs = lang === 'es';
+  const txt = (es: string, en: string) => isEs ? es : en;
   const [vehicle, setVehicle] = useState(initialVehicle);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [runToken, setRunToken] = useState(0);
@@ -187,12 +190,12 @@ function App() {
 
   const blockers = useMemo(() => {
     const result: string[] = [];
-    if (vehicle.tipChord === '') result.push('Fin tip chord');
-    if (vehicle.sweep === '') result.push('Fin sweep');
-    if (vehicle.finX === '') result.push('Fin axial location');
-    if (vehicle.cd === '') result.push('Drag coefficient Cd');
+    if (vehicle.tipChord === '') result.push(txt('Cuerda de punta', 'Fin tip chord'));
+    if (vehicle.sweep === '') result.push(txt('Desplazamiento del borde de ataque', 'Leading-edge offset'));
+    if (vehicle.finX === '') result.push(txt('Posición axial de la aleta', 'Fin axial location'));
+    if (vehicle.cd === '') result.push(txt('Coeficiente de resistencia aerodinámica Cd', 'Drag coefficient Cd'));
     return result;
-  }, [vehicle]);
+  }, [vehicle, lang]);
 
   const axialSum =
     (Number(vehicle.noseLength) || 0) +
@@ -241,23 +244,24 @@ function App() {
       <header className="topbar">
         <div>
           <p className="eyebrow">TRAJECTUM · v0.1.0-CDR</p>
-          <h1>Vehicle Engineering Workspace</h1>
+          <h1>{txt('Entorno de ingeniería del vehículo', 'Vehicle Engineering Workspace')}</h1>
         </div>
         <div className="top-actions">
-          <button className="ghost" onClick={reset}>Reset UTN baseline</button>
-          <button className="ghost" onClick={exportCase}>Export draft JSON</button>
+          <button className="ghost lang-toggle" onClick={() => setLang((current) => current === 'es' ? 'en' : 'es')} title={txt('Cambiar a inglés', 'Switch to Spanish')}>{isEs ? 'EN' : 'ES'}</button>
+          <button className="ghost" onClick={reset}>{txt('Restablecer caso UTN', 'Reset UTN baseline')}</button>
+          <button className="ghost" onClick={exportCase}>{txt('Exportar borrador JSON', 'Export draft JSON')}</button>
           <button className="run" onClick={ready ? runFromTop : goToAnalysis}>
-            {ready ? 'RUN · UPDATE CG/CP' : `OPEN ANALYSIS · ${blockers.length} INPUTS`}
+            {ready ? txt('EJECUTAR · ACTUALIZAR CG/CP', 'RUN · UPDATE CG/CP') : `${txt('ABRIR ANÁLISIS', 'OPEN ANALYSIS')} · ${blockers.length} ${txt('ENTRADAS', 'INPUTS')}`}
           </button>
         </div>
       </header>
 
       <section className="status-strip">
-        <div><span>CASE</span><strong>UTN-FRH-G07 / CDR</strong></div>
-        <div><span>GEOMETRY</span><strong className={geometryConsistent ? 'ok' : 'bad'}>{geometryConsistent ? 'CONSISTENT' : 'CHECK LENGTHS'}</strong></div>
-        <div><span>AIRFOIL</span><strong>{vehicle.airfoil}</strong></div>
+        <div><span>{txt('CASO', 'CASE')}</span><strong>UTN-FRH-G07 / CDR</strong></div>
+        <div><span>{txt('GEOMETRÍA', 'GEOMETRY')}</span><strong className={geometryConsistent ? 'ok' : 'bad'}>{geometryConsistent ? txt('CONSISTENTE', 'CONSISTENT') : txt('REVISAR LONGITUDES', 'CHECK LENGTHS')}</strong></div>
+        <div><span>{txt('PERFIL', 'AIRFOIL')}</span><strong>{vehicle.airfoil}</strong></div>
         <div><span>MOTOR</span><strong>{motor.designation}</strong></div>
-        <div><span>NUMERIC CDR</span><strong className={ready ? 'ok' : 'warn'}>{ready ? 'READY' : 'BLOCKED'}</strong></div>
+        <div><span>{txt('CDR NUMÉRICO', 'NUMERIC CDR')}</span><strong className={ready ? 'ok' : 'warn'}>{ready ? txt('LISTO', 'READY') : txt('BLOQUEADO', 'BLOCKED')}</strong></div>
       </section>
 
       <section className="workspace">
