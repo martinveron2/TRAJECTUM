@@ -3,6 +3,7 @@ import { FlightVisualizer, type MissionSample } from './FlightVisualizer';
 import { EngineeringEquations } from './EngineeringEquations';
 
 type NumericField = number | '';
+type MotorLike = { designation: string; burn: NumericField; impulse: NumericField; propellantMass: NumericField; dryMass: NumericField; maxThrust: NumericField; propellant: string; };
 type VehicleLike = {
   totalLength: NumericField; diameter: NumericField; noseLength: NumericField; bayLength: NumericField; bodyLength: NumericField; finCount: NumericField;
   rootChord: NumericField; tipChord: NumericField; span: NumericField;
@@ -60,12 +61,14 @@ export function LiveAnalysisPanel({
   runToken = 0,
   resetToken = 0,
   onAnalysisUpdate,
+  motor,
   lang = 'es',
 }: {
   vehicle: VehicleLike;
   runToken?: number;
   resetToken?: number;
   onAnalysisUpdate?: (analysis: Analysis | null, components: ComponentResponse | null) => void;
+  motor: MotorLike;
   lang?: 'es' | 'en';
 }) {
   const isEs = lang === 'es';
@@ -106,7 +109,14 @@ export function LiveAnalysisPanel({
     }
   }, [resetToken]);
 
+  useEffect(() => {
+    const motorMass = motor.propellantMass === '' || motor.dryMass === '' ? '' : Number(motor.propellantMass) + Number(motor.dryMass);
+    setRows((current) => current.map((row) => row.kind === 'motor' ? { ...row, massG: motorMass, note: 'motor mass derived from active configuration' } : row));
+    setAnalysis(null);
+  }, [motor.propellantMass, motor.dryMass, motor.designation]);
+
   const planformReady = [vehicle.tipChord, vehicle.sweep, vehicle.finX].every((v) => v !== '');
+  const motorReady = motor.burn !== '' && Number(motor.burn) > 0 && motor.impulse !== '' && Number(motor.impulse) > 0 && motor.propellantMass !== '' && Number(motor.propellantMass) >= 0 && motor.dryMass !== '' && Number(motor.dryMass) > 0;
   const massesReady = rows.every((row) => row.massG !== '');
   const componentPayload = useMemo<ComponentPayload[]>(() => rows.flatMap<ComponentPayload>((row) => {
     const common = { name: row.name, mass_g: Number(row.massG) };
@@ -166,10 +176,10 @@ export function LiveAnalysisPanel({
         components: componentPayload,
         launch_angle_deg: Number(vehicle.launchAngle),
         cd: Number(vehicle.cd),
-        motor_burn_time_s: 0.5,
-        motor_total_impulse_n_s: 207.0,
-        motor_propellant_mass_g: 140.0,
-        motor_dry_mass_g: 350.0,
+        motor_burn_time_s: Number(motor.burn),
+        motor_total_impulse_n_s: Number(motor.impulse),
+        motor_propellant_mass_g: Number(motor.propellantMass),
+        motor_dry_mass_g: Number(motor.dryMass),
         parachute_cd: Number(vehicle.parachuteCd),
         parachute_area_m2: Number(vehicle.parachuteArea),
         deploy_altitude_m: vehicle.deployAltitude === '' ? null : Number(vehicle.deployAltitude),
@@ -227,10 +237,10 @@ export function LiveAnalysisPanel({
     <div className="panel-title compact"><div><p>{txt('PROPIEDADES DE MASA DERIVADAS DE LA GEOMETRÍA', 'GEOMETRY-DERIVED MASS PROPERTIES')}</p><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
       <button
         className="run"
-        disabled={!planformReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
+        disabled={!planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
         onClick={run}
       >
-        {running ? txt('EJECUTANDO…', 'RUNNING…') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}
+        {running ? txt('EJECUTANDO…', 'RUNNING…') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}
       </button></div>
     <div className="module-state">
       <span className={componentResult ? 'module-on' : ''}>CG · {componentResult ? txt('LISTO', 'READY') : txt('ESPERA', 'WAIT')}</span>
@@ -270,7 +280,7 @@ export function LiveAnalysisPanel({
       const computed = componentResult?.components.find((item) => item.name === row.name);
       return <div className="mass-row-wrap" key={row.id}><div className="mass-row derived">
         <span>{componentName(row)}</span>
-        <input type="number" value={row.massG} onChange={(e) => updateMass(row.id, e.target.value === '' ? '' : Number(e.target.value))}/>
+        <input type="number" value={row.massG} disabled={row.kind === 'motor'} title={row.kind === 'motor' ? txt('La masa del motor se deriva de la configuración activa.', 'Motor mass is derived from the active configuration.') : undefined} onChange={(e) => updateMass(row.id, e.target.value === '' ? '' : Number(e.target.value))}/>
         <output>{computed ? (totalLengthMm - computed.x_cg_mm).toFixed(1) : txt('POR DEFINIR', 'TBD')}</output>
       </div><small>{computed ? displaySource(computed.source) : displayNote(row)}</small></div>;
     })}</div>
