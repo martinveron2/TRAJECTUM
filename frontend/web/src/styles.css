@@ -2128,3 +2128,218 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     letter-spacing:.045em;
   }
 }
+
+
+@media(max-width:820px){
+  /* Requirements UX v2: story-style selector on top + full visible matrix below. */
+  .requirements-story-card{
+    overflow:hidden;
+    border:1px solid #315478;
+    border-radius:14px;
+    background:#0A1929;
+    padding:10px 10px 9px;
+    touch-action:pan-y;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  .requirements-story-progress{
+    display:grid;
+    grid-template-columns:repeat(11,1fr);
+    gap:3px;
+    margin-bottom:8px;
+  }
+  .requirements-story-progress i{
+    height:3px;
+    border-radius:99px;
+    background:#18304A;
+  }
+  .requirements-story-progress i.past{
+    background:#0077FF;
+    box-shadow:0 0 6px rgba(0,119,255,.26);
+  }
+  .requirements-story-progress i.active{
+    background:#00F0FF;
+    box-shadow:0 0 9px rgba(0,240,255,.52);
+  }
+
+  .requirements-story-viewport{
+    width:100%;
+    overflow:hidden;
+  }
+  .requirements-story-track{
+    display:flex;
+    width:1100%;
+    will-change:transform;
+    transition:transform 185ms cubic-bezier(.22,.9,.3,1);
+  }
+  .requirements-story-track.dragging{transition:none}
+  .requirements-story-slide{
+    flex:0 0 calc(100% / 11);
+    width:calc(100% / 11);
+    min-width:0;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .requirements-story-copy{
+    min-width:0;
+    flex:1 1 auto;
+  }
+  .requirements-story-copy>span{
+    display:block;
+    font-size:.48rem;
+    letter-spacing:.08em;
+    color:#75A7D8;
+  }
+  .requirements-story-copy>strong{
+    display:block;
+    margin-top:3px;
+    font-size:.68rem;
+    line-height:1.18;
+    color:#F0F8FF;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .requirements-story-copy>small{
+    display:block;
+    margin-top:3px;
+    font-size:.5rem;
+    line-height:1.2;
+    color:rgba(255,255,255,.70);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .requirements-story-counter{
+    flex:0 0 auto;
+    min-width:66px;
+    min-height:48px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #355A81;
+    border-radius:11px;
+    background:#0B1D31;
+    box-shadow:inset 0 0 0 1px rgba(0,240,255,.025);
+  }
+  .requirements-story-counter b{
+    font-size:.82rem;
+    line-height:1;
+    color:#F4FBFF;
+    letter-spacing:.02em;
+  }
+  .requirements-story-counter small{
+    margin-top:4px;
+    font-size:.42rem;
+    line-height:1;
+    letter-spacing:.07em;
+    color:#00F0FF;
+  }
+
+  .requirements-story-footer{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:center;
+    margin-top:8px;
+    padding-top:7px;
+    border-top:1px solid rgba(255,255,255,.06);
+  }
+  .requirements-story-footer span{
+    min-width:0;
+    font-size:.41rem;
+    letter-spacing:.055em;
+    color:rgba(255,255,255,.58);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .requirements-story-footer b{
+    flex:0 0 auto;
+    font-size:.48rem;
+    color:#00F0FF;
+  }
+
+  /* Restore all 11 cards simultaneously. */
+  .requirements-grid{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+  }
+
+  .requirements-grid .requirement-card{
+    min-height:132px;
+    cursor:pointer;
+    transition:border-color 100ms ease,box-shadow 100ms ease,background 100ms ease,transform 80ms ease;
+  }
+  .requirements-grid .requirement-card:active{
+    transform:scale(.985);
+  }
+  .requirements-grid .requirement-card.selected{
+    border-color:#00F0FF;
+    box-shadow:0 0 0 1px rgba(0,240,255,.12),0 0 14px rgba(0,240,255,.09);
+  }
+
+  /* Status is now a read-only indicator; the whole card is the control. */
+  .requirement-status{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:24px;
+    padding:4px 6px;
+    border-radius:7px;
+    font-weight:800;
+    border:1px solid transparent;
+  }
+  .requirement-status.open{
+    color:#FF7777!important;
+    border-color:rgba(255,75,75,.28);
+    background:rgba(255,75,75,.055);
+  }
+  .requirement-status.progress{
+    color:#FFB800!important;
+    border-color:rgba(255,184,0,.44);
+    background:rgba(255,184,0,.07);
+  }
+  .requirement-status.verified{
+    color:#00F0FF!important;
+    border-color:#00F0FF;
+    background:#0F2B48;
+    box-shadow:0 0 10px rgba(0,240,255,.12);
+  }
+
+  .requirements-tap-hint{
+    padding:1px 3px 4px;
+    text-align:center;
+    font-size:.42rem;
+    letter-spacing:.065em;
+    color:rgba(255,255,255,.56);
+  }
+
+  /* Previous horizontal-card carousel is no longer used. */
+  .requirements-carousel,
+  .requirements-swipe-hint,
+  .requirements-progress{
+    display:none!important;
+  }
+}
+
+@media(max-width:390px){
+  .requirements-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .requirements-grid .requirement-card{
+    min-height:136px;
+    padding:9px;
+  }
+  .requirements-story-counter{
+    min-width:70px;
+    min-height:50px;
+  }
+  .requirements-story-counter b{font-size:.86rem}
+}
