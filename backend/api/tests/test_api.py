@@ -143,6 +143,17 @@ def test_unified_full_analysis_derives_components_and_support_reference():
             "fin_leading_edge_x_mm": 760,
             "launch_angle_deg": 85,
             "cd": 0.55,
+            "motor_official_average_thrust_n": 441,
+            "motor_thrust_curve": [
+                {"time_s": 0.00, "thrust_n": 0},
+                {"time_s": 0.05, "thrust_n": 600},
+                {"time_s": 0.10, "thrust_n": 550},
+                {"time_s": 0.20, "thrust_n": 530},
+                {"time_s": 0.30, "thrust_n": 500},
+                {"time_s": 0.40, "thrust_n": 400},
+                {"time_s": 0.45, "thrust_n": 50},
+                {"time_s": 0.50, "thrust_n": 0},
+            ],
             "components": [
                 {"name": "Cofia", "kind": "profile_shell", "mass_g": 100, "length_mm": 180, "base_radius_mm": 31.5, "profile": "tangent_ogive"},
                 {"name": "Cuerpo principal", "kind": "axial_uniform", "mass_g": 330, "x_start_mm": 180, "x_end_mm": 860},

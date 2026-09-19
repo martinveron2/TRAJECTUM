@@ -7,6 +7,7 @@ import { RocketRealistic } from './RocketRealistic';
 import { NoseProfileComparison } from './NoseProfileComparison';
 import { buildEngineeringChartImages } from './engineeringChartExport';
 import { MissionControl } from './MissionControl';
+import { RequirementsMatrix } from './RequirementsMatrix';
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
   Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff, FileUp,
@@ -70,6 +71,8 @@ type MotorConfig = {
   maxThrust: NumericField;
   propellantMass: NumericField;
   dryMass: NumericField;
+  officialAverageThrust?: NumericField;
+  thrustCurve?: Array<[number, number]>;
 };
 
 const initialMotorConfigs: MotorConfig[] = [
@@ -83,6 +86,8 @@ const initialMotorConfigs: MotorConfig[] = [
     maxThrust: 600,
     propellantMass: 140,
     dryMass: 350,
+    officialAverageThrust: 441,
+    thrustCurve: [[0.00,0],[0.05,600],[0.10,550],[0.20,530],[0.30,500],[0.40,400],[0.45,50],[0.50,0]],
   },
   {
     id: 'motor-2',
@@ -98,6 +103,7 @@ const initialMotorConfigs: MotorConfig[] = [
 ];
 
 const motorAverageThrust = (motor: MotorConfig) => {
+  if (motor.officialAverageThrust !== undefined && motor.officialAverageThrust !== '') return Number(motor.officialAverageThrust);
   const burn = Number(motor.burn);
   const impulse = Number(motor.impulse);
   return burn > 0 && Number.isFinite(impulse) ? impulse / burn : null;
@@ -211,9 +217,9 @@ function App() {
   const [activeMotorId, setActiveMotorId] = useState('motor-1');
   const [showMotorEditor, setShowMotorEditor] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status' | 'cad'>('home');
+  const [mobileSection, setMobileSection] = useState<'home' | 'mdr' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status' | 'cad'>('home');
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
-  const [phaseFocusIndex, setPhaseFocusIndex] = useState(1);
+  const [phaseFocusIndex, setPhaseFocusIndex] = useState(2);
   const [phaseStoryDragX, setPhaseStoryDragX] = useState(0);
   const [phaseStoryDragging, setPhaseStoryDragging] = useState(false);
 
@@ -228,18 +234,18 @@ function App() {
   };
 
   const selectPhase = (index: number) => {
-    const phases: Array<typeof mobileSection> = ['pdr', 'cdr', 'frr', 'lrr', 'pfr'];
+    const phases: Array<typeof mobileSection> = ['mdr', 'pdr', 'cdr', 'frr', 'lrr', 'pfr'];
     setPhaseFocusIndex(index);
     navigateMobile(phases[index]);
   };
 
   const movePhaseFocus = (delta: number) => {
-    setPhaseFocusIndex((current) => Math.max(0, Math.min(4, current + delta)));
+    setPhaseFocusIndex((current) => Math.max(0, Math.min(5, current + delta)));
   };
 
   const mobileNavIndex = mobileSection === 'home'
       ? 0
-      : ['pdr','vehicle','geometry','motor','cad'].includes(mobileSection)
+      : ['mdr','pdr','vehicle','geometry','motor','cad'].includes(mobileSection)
         ? 1
         : ['cdr','analysis','model','status','frr'].includes(mobileSection)
           ? 2
@@ -462,7 +468,7 @@ function App() {
             </svg>
             <div className="brand-wordmark">
               <span className="brand-name">TRAJECTUM</span>
-              <span className="brand-subline">{txt('INGENIERÍA DEL VEHÍCULO · SIMULACIÓN · ANÁLISIS', 'VEHICLE ENGINEERING · SIMULATION · ANALYSIS')}</span>
+              <span className="brand-subline">{txt('INGENIERÍA · SIMULACIÓN · ANÁLISIS', 'ENGINEERING · SIMULATION · ANALYSIS')}</span>
             </div>
             <span className="brand-version">V0.1.0-CDR</span>
             <div className="mobile-header-tools">
@@ -555,19 +561,20 @@ function App() {
           }}
         >
           <div className="mobile-phase-progress story-progress" aria-hidden="true">
-            {[0,1,2,3,4].map((index) => <i key={index} className={index === phaseFocusIndex ? 'active' : index < phaseFocusIndex ? 'past' : ''} />)}
+            {[0,1,2,3,4,5].map((index) => <i key={index} className={index === phaseFocusIndex ? 'active' : index < phaseFocusIndex ? 'past' : ''} />)}
           </div>
 
           <div className="mobile-project-story-viewport">
             <div
               className={phaseStoryDragging ? 'mobile-project-story-track dragging' : 'mobile-project-story-track'}
-              style={{ transform: `translate3d(calc(-${phaseFocusIndex * 20}% + ${phaseStoryDragX}px),0,0)` }}
+              style={{ transform: `translate3d(calc(-${phaseFocusIndex * (100 / 6)}% + ${phaseStoryDragX}px),0,0)` }}
             >
               {[
+                { code: 'MDR', titleEs: 'DISEÑO DE MISIÓN / REQUERIMIENTOS', titleEn: 'MISSION DESIGN / REQUIREMENTS' },
                 { code: 'PDR', titleEs: 'DISEÑO PRELIMINAR', titleEn: 'PRELIMINARY DESIGN' },
                 { code: 'CDR', titleEs: 'DISEÑO CRÍTICO', titleEn: 'CRITICAL DESIGN' },
-                { code: 'FRR', titleEs: 'PREPARACIÓN DE VUELO', titleEn: 'FLIGHT READINESS' },
-                { code: 'LRR', titleEs: 'PREPARACIÓN DE LANZAMIENTO', titleEn: 'LAUNCH READINESS' },
+                { code: 'FRR', titleEs: 'LISTO PARA VUELO', titleEn: 'FLIGHT READINESS' },
+                { code: 'LRR', titleEs: 'LISTO PARA LANZAMIENTO', titleEn: 'LAUNCH READINESS' },
                 { code: 'PFR / MCR', titleEs: 'POST-VUELO Y CIERRE', titleEn: 'POST-FLIGHT & CLOSEOUT' },
               ].map((phase, index) => (
                 <div className="mobile-project-story-slide" key={phase.code} aria-hidden={index !== phaseFocusIndex}>
@@ -577,7 +584,7 @@ function App() {
                       <strong>UTN-FRH-G07</strong>
                       <small className="mobile-phase-focus-title">{phase.code} · {txt(phase.titleEs, phase.titleEn)}</small>
                     </div>
-                    <div className="mobile-guide-score"><b>{String(index + 1).padStart(2, '0')}/05</b><small>{txt('FASE EN FOCO', 'FOCUSED PHASE')}</small></div>
+                    <div className="mobile-guide-score"><b>{String(index + 1).padStart(2, '0')}/06</b><small>{txt('FASE ACTIVA', 'ACTIVE PHASE')}</small></div>
                   </div>
                 </div>
               ))}
@@ -599,12 +606,13 @@ function App() {
               if (Math.abs(delta) > 34) movePhaseFocus(delta < 0 ? 1 : -1);
             }}
           >
-            <button type="button" className={phaseFocusIndex === 0 ? 'focused' : ''} onClick={() => selectPhase(0)}><b>01</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
-            <button type="button" className={phaseFocusIndex === 1 ? 'focused' : ''} onClick={() => selectPhase(1)}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
-            <button type="button" className={phaseFocusIndex === 2 ? 'focused' : ''} onClick={() => selectPhase(2)}><b>03</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
-            <button type="button" className={phaseFocusIndex === 3 ? 'focused' : ''} onClick={() => selectPhase(3)}><b>04</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
-            <button type="button" className={phaseFocusIndex === 4 ? 'focused' : ''} onClick={() => selectPhase(4)}><b>05</b><span>PFR</span><small>{txt('PFR / MCR · reportes', 'PFR / MCR · reports')}</small></button>
-            <div className="phase-wheel-hint">{txt('DESLIZÁ PARA CAMBIAR EL FOCO', 'SWIPE TO CHANGE FOCUS')}</div>
+            <button type="button" className={phaseFocusIndex === 0 ? 'focused' : ''} onClick={() => selectPhase(0)}><b>01</b><span>MDR</span><small>{txt('Misión / requisitos', 'Mission / requirements')}</small></button>
+            <button type="button" className={phaseFocusIndex === 1 ? 'focused' : ''} onClick={() => selectPhase(1)}><b>02</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
+            <button type="button" className={phaseFocusIndex === 2 ? 'focused' : ''} onClick={() => selectPhase(2)}><b>03</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
+            <button type="button" className={phaseFocusIndex === 3 ? 'focused' : ''} onClick={() => selectPhase(3)}><b>04</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
+            <button type="button" className={phaseFocusIndex === 4 ? 'focused' : ''} onClick={() => selectPhase(4)}><b>05</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
+            <button type="button" className={phaseFocusIndex === 5 ? 'focused' : ''} onClick={() => selectPhase(5)}><b>06</b><span>PFR</span><small>{txt('Post-vuelo / MCR', 'Post-flight / MCR')}</small></button>
+            <div className="phase-wheel-hint">{txt('DESLIZÁ PARA CAMBIAR DE FASE', 'SWIPE TO CHANGE PHASE')}</div>
           </div>
         </div>
 
@@ -640,12 +648,42 @@ function App() {
         </div>
       </section>
 
+      <section className="mobile-phase-screen mobile-mdr-screen" aria-label="MDR">
+        <div className="mobile-screen-head">
+          <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
+          <div><span>FASE 01 · KOM / MDR</span><h2>MDR · {txt('DISEÑO DE MISIÓN Y REQUERIMIENTOS', 'MISSION DESIGN & REQUIREMENTS')}</h2></div>
+          <b className="current">1</b>
+        </div>
+        <div className="mobile-screen-copy">
+          <strong>{txt('Definición de misión, restricciones y trazabilidad', 'Mission definition, constraints and traceability')}</strong>
+          <p>{txt('La matriz R1–R11 es la fuente de verdad para verificar diseño, ensayo, inspección y análisis durante todo el ciclo.', 'The R1–R11 matrix is the source of truth for design, test, inspection and analysis across the lifecycle.')}</p>
+        </div>
+        <RequirementsMatrix
+          lang={lang}
+          totalLengthMm={Number(vehicle.totalLength)}
+          launchAngleDeg={Number(vehicle.launchAngle)}
+          payloadMassG={componentSummary?.components?.find((item: any) => item.name === 'Carga útil')?.mass_g ?? 100}
+          analysis={analysisSummary}
+        />
+      </section>
+
       <section className="mobile-phase-screen mobile-pdr-screen" aria-label="PDR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 01</span><h2>PDR · {txt('DISEÑO DEL VEHÍCULO', 'VEHICLE DESIGN')}</h2></div>
+          <div><span>FASE 02</span><h2>PDR · {txt('DISEÑO DEL VEHÍCULO', 'VEHICLE DESIGN')}</h2></div>
           <b className="complete">✓</b>
         </div>
+
+        <details className="mobile-requirements-disclosure">
+          <summary>{txt('REQUERIMIENTOS Y CUMPLIMIENTO', 'REQUIREMENTS & COMPLIANCE')} <span>R1–R11</span></summary>
+          <RequirementsMatrix
+            lang={lang}
+            totalLengthMm={Number(vehicle.totalLength)}
+            launchAngleDeg={Number(vehicle.launchAngle)}
+            payloadMassG={componentSummary?.components?.find((item: any) => item.name === 'Carga útil')?.mass_g ?? 100}
+            analysis={analysisSummary}
+          />
+        </details>
 
         <div
           className="mobile-pdr-vehicle"
@@ -687,8 +725,8 @@ function App() {
       <section className="mobile-phase-screen mobile-cdr-screen" aria-label="CDR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 02 · {txt('ACTUAL', 'CURRENT')}</span><h2>CDR · {txt('ANÁLISIS CRÍTICO', 'CRITICAL ANALYSIS')}</h2></div>
-          <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '2'}</b>
+          <div><span>FASE 03 · {txt('ACTUAL', 'CURRENT')}</span><h2>CDR · {txt('ANÁLISIS CRÍTICO', 'CRITICAL ANALYSIS')}</h2></div>
+          <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '3'}</b>
         </div>
         <div className="mobile-cdr-status">
           <button type="button" className={componentSummary ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>CG</span><strong>{componentSummary ? txt('LISTO', 'READY') : txt('REVISAR', 'CHECK')}</strong></button>
@@ -727,8 +765,8 @@ function App() {
       <section className="mobile-phase-screen mobile-frr-screen" aria-label="FRR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 03</span><h2>FRR · {txt('VERIFICACIÓN Y MOTOR', 'VERIFICATION & MOTOR')}</h2></div>
-          <b className={analysisSummary && ready ? 'complete' : 'current'}>{analysisSummary && ready ? '✓' : '3'}</b>
+          <div><span>FASE 04</span><h2>FRR · {txt('VERIFICACIÓN Y MOTOR', 'VERIFICATION & MOTOR')}</h2></div>
+          <b className={analysisSummary && ready ? 'complete' : 'current'}>{analysisSummary && ready ? '✓' : '4'}</b>
         </div>
         <div className="mobile-screen-copy">
           <strong>{txt('Verificación final antes del lanzamiento', 'Final verification before flight')}</strong>
@@ -748,8 +786,8 @@ function App() {
       <section className="mobile-phase-screen mobile-lrr-screen" aria-label="LRR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 04</span><h2>LRR · {txt('SIMULACIÓN DE VUELO EN TIEMPO REAL', 'REAL-TIME FLIGHT SIMULATION')}</h2></div>
-          <b className="current">4</b>
+          <div><span>FASE 05</span><h2>LRR · {txt('SIMULACIÓN DE VUELO EN TIEMPO REAL', 'REAL-TIME FLIGHT SIMULATION')}</h2></div>
+          <b className="current">5</b>
         </div>
         <div className="mobile-screen-copy">
           <strong>{txt('Centro de misión listo', 'Mission control ready')}</strong>
@@ -786,8 +824,8 @@ function App() {
       <section className="mobile-phase-screen mobile-pfr-screen" aria-label="PFR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 05</span><h2>PFR / MCR · {txt('REPORTES Y EXPORTACIÓN', 'REPORTS & EXPORT')}</h2></div>
-          <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '5'}</b>
+          <div><span>FASE 06</span><h2>PFR / MCR · {txt('REPORTES Y EXPORTACIÓN', 'REPORTS & EXPORT')}</h2></div>
+          <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '6'}</b>
         </div>
         <div className="mobile-screen-copy">
           <strong>{txt('Telemetría, resultados y cierre técnico', 'Telemetry, results and technical closeout')}</strong>
@@ -1007,13 +1045,13 @@ function App() {
               <dl>
                 <div><dt>{txt('Combustión', 'Burn')}</dt><dd>{motor.burn === '' ? '—' : String(motor.burn) + ' s'}</dd></div>
                 <div><dt>{txt('Impulso', 'Impulse')}</dt><dd>{motor.impulse === '' ? '—' : String(motor.impulse) + ' N·s'}</dd></div>
-                <div><dt>{txt('Empuje medio', 'Avg thrust')}</dt><dd>{averageThrust == null ? '—' : averageThrust.toFixed(1) + ' N'}</dd></div>
+                <div><dt>{txt('Empuje medio oficial', 'Official avg thrust')}</dt><dd>{averageThrust == null ? '—' : averageThrust.toFixed(1) + ' N'}</dd></div>
                 <div><dt>{txt('Empuje máximo', 'Max thrust')}</dt><dd>{motor.maxThrust === '' ? '—' : String(motor.maxThrust) + ' N'}</dd></div>
                 <div><dt>{txt('Propelente', 'Propellant')}</dt><dd>{motor.propellantMass === '' ? '—' : String(motor.propellantMass) + ' g'}</dd></div>
                 <div><dt>{txt('Masa seca', 'Dry')}</dt><dd>{motor.dryMass === '' ? '—' : String(motor.dryMass) + ' g'}</dd></div>
               </dl>
               {!activeMotorReady && <small className="motor-consistency-note motor-warning">{txt('Completá tiempo de combustión, impulso, masa de propelente y masa seca para habilitar esta configuración.', 'Complete burn time, impulse, propellant mass and dry mass to enable this configuration.')}</small>}
-              {activeMotorReady && <small className="motor-consistency-note">{txt('El empuje medio usado por la simulación rectangular se deriva automáticamente como I/t.', 'Average thrust for the rectangular-thrust simulation is derived automatically as I/t.')}</small>}
+              {activeMotorReady && <small className="motor-consistency-note">{motor.thrustCurve?.length ? txt('La simulación usa la curva Empuje–Tiempo A-100 RN punto a punto; el promedio oficial se conserva como dato de referencia.', 'Simulation uses the A-100 RN thrust-time curve point by point; official average thrust is kept as reference data.') : txt('Sin curva cargada: la simulación usa el modelo rectangular I/t.', 'No curve loaded: simulation uses the rectangular I/t model.')}</small>}
             </div>
 
             {showMotorEditor && <div className="motor-editor">

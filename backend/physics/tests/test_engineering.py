@@ -4,6 +4,8 @@ from trajectum_physics import (
     FlightConfig,
     MassPoint,
     Motor,
+    a100_rn_kndx_motor,
+    curve_thrust,
     center_of_gravity,
     combine_cp,
     isa_troposphere,
@@ -98,3 +100,15 @@ def test_axisymmetric_profile_cp_matches_tangent_ogive_order():
         profile.append((x, y))
     contribution = axisymmetric_nose_cp_from_profile(tuple(profile), base_radius_m=radius)
     assert 0.45 * length < contribution.x_cp_m < 0.48 * length
+
+
+def test_a100_rn_kndx_uses_official_thrust_curve():
+    motor = a100_rn_kndx_motor()
+    assert motor.burn_time_s == 0.5
+    assert motor.total_impulse_n_s == 207.0
+    assert motor.propellant_mass_kg == 0.140
+    assert motor.dry_mass_kg == 0.350
+    assert motor.official_average_thrust_n == 441.0
+    assert curve_thrust(motor, 0.05) == 600.0
+    assert isclose(curve_thrust(motor, 0.15), 540.0)
+    assert curve_thrust(motor, 0.50) == 0.0

@@ -5,7 +5,7 @@ import { EngineeringEquations } from './EngineeringEquations';
 const FlightAnalysisCharts = React.lazy(() => import('./FlightAnalysisCharts').then((module) => ({ default: module.FlightAnalysisCharts })));
 
 type NumericField = number | '';
-type MotorLike = { designation: string; burn: NumericField; impulse: NumericField; propellantMass: NumericField; dryMass: NumericField; maxThrust: NumericField; propellant: string; };
+type MotorLike = { designation: string; burn: NumericField; impulse: NumericField; propellantMass: NumericField; dryMass: NumericField; maxThrust: NumericField; propellant: string; officialAverageThrust?: NumericField; thrustCurve?: Array<[number, number]>; };
 type VehicleLike = {
   totalLength: NumericField; diameter: NumericField; noseLength: NumericField; bayLength: NumericField; bodyLength: NumericField; finCount: NumericField;
   rootChord: NumericField; tipChord: NumericField; span: NumericField;
@@ -182,6 +182,8 @@ export function LiveAnalysisPanel({
         motor_total_impulse_n_s: Number(motor.impulse),
         motor_propellant_mass_g: Number(motor.propellantMass),
         motor_dry_mass_g: Number(motor.dryMass),
+        motor_official_average_thrust_n: motor.officialAverageThrust === undefined || motor.officialAverageThrust === '' ? null : Number(motor.officialAverageThrust),
+        motor_thrust_curve: motor.thrustCurve?.map(([time_s, thrust_n]) => ({ time_s, thrust_n })) ?? null,
         parachute_cd: Number(vehicle.parachuteCd),
         parachute_area_m2: Number(vehicle.parachuteArea),
         deploy_altitude_m: vehicle.deployAltitude === '' ? null : Number(vehicle.deployAltitude),

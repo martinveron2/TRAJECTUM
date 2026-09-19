@@ -116,6 +116,11 @@ class AnalysisRequest(BaseModel):
     nose_power_exponent: float = 0.75
 
 
+class ThrustPointIn(BaseModel):
+    time_s: float = Field(ge=0)
+    thrust_n: float = Field(ge=0)
+
+
 class FullAnalysisRequest(AnalysisRequest):
     launch_angle_deg: float = Field(gt=0, le=90)
     cd: float = Field(gt=0)
@@ -123,6 +128,8 @@ class FullAnalysisRequest(AnalysisRequest):
     motor_total_impulse_n_s: float = Field(default=207.0, gt=0)
     motor_propellant_mass_g: float = Field(default=140.0, gt=0)
     motor_dry_mass_g: float = Field(default=350.0, gt=0)
+    motor_official_average_thrust_n: float | None = Field(default=None, gt=0)
+    motor_thrust_curve: list[ThrustPointIn] | None = None
     parachute_cd: float = Field(default=1.5, gt=0)
     parachute_area_m2: float = Field(default=0.20, gt=0)
     deploy_altitude_m: float | None = Field(default=None, gt=0)
@@ -173,6 +180,8 @@ class UnifiedFullAnalysisRequest(BaseModel):
     motor_total_impulse_n_s: float = Field(default=207.0, gt=0)
     motor_propellant_mass_g: float = Field(default=140.0, gt=0)
     motor_dry_mass_g: float = Field(default=350.0, gt=0)
+    motor_official_average_thrust_n: float | None = Field(default=None, gt=0)
+    motor_thrust_curve: list[ThrustPointIn] | None = None
     parachute_cd: float = Field(default=1.5, gt=0)
     parachute_area_m2: float = Field(default=0.20, gt=0)
     deploy_altitude_m: float | None = Field(default=None, gt=0)
@@ -391,6 +400,8 @@ def analyze_full(request: FullAnalysisRequest) -> FullAnalysisResponse:
             request.motor_total_impulse_n_s,
             request.motor_propellant_mass_g / 1000.0,
             request.motor_dry_mass_g / 1000.0,
+            tuple((point.time_s, point.thrust_n) for point in request.motor_thrust_curve or ()),
+            request.motor_official_average_thrust_n,
         ),
         parachute_cd=request.parachute_cd,
         parachute_area_m2=request.parachute_area_m2,
@@ -478,6 +489,8 @@ def analyze_full_v2(request: UnifiedFullAnalysisRequest) -> UnifiedFullAnalysisR
             request.motor_total_impulse_n_s,
             request.motor_propellant_mass_g / 1000.0,
             request.motor_dry_mass_g / 1000.0,
+            tuple((point.time_s, point.thrust_n) for point in request.motor_thrust_curve or ()),
+            request.motor_official_average_thrust_n,
         ),
         parachute_cd=request.parachute_cd,
         parachute_area_m2=request.parachute_area_m2,

@@ -11,6 +11,7 @@ Screen-level components MUST remain mounted when the user changes sections.
 Applies to, at minimum:
 
 - Home
+- MDR / KOM
 - PDR
 - CDR
 - FRR
