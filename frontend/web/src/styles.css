@@ -575,3 +575,40 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
   .mobile-view-pdr,.mobile-view-cdr,.mobile-view-vehicle,.mobile-view-geometry,.mobile-view-motor,.mobile-view-analysis,.mobile-view-plots,.mobile-view-model,.mobile-view-status{padding-top:10px}
   .mobile-view-pdr .mobile-pdr-screen,.mobile-view-cdr .mobile-cdr-screen{padding-top:2px}
 }
+
+
+@media(max-width:820px){
+  /* Hard mobile bounds: no desktop-sized card can leak into the app viewport. */
+  .workspace,.workspace>*,
+  .editor,.right-column,.right-column>*,
+  .panel,.mass-panel,.visual,.readiness,.motor-panel,
+  .mobile-guide,.mobile-phase-screen,.mobile-context-bar{width:100%;max-width:100%;min-width:0}
+  .workspace{overflow-x:hidden}
+  .editor,.right-column,.panel{min-inline-size:0}
+  .field-grid,.result-grid,.analysis-metrics,.analysis-metrics.wide,.motor-data,.motor-editor{min-width:0}
+  .field,.metric-card,.analysis-metrics>div,.motor-data>*{min-width:0}
+
+  /* Screen changes feel like navigation, not a long web page. */
+  .mobile-guide,.mobile-phase-screen,.workspace{
+    animation:mobile-screen-in .2s cubic-bezier(.2,.75,.25,1)
+  }
+  @keyframes mobile-screen-in{
+    from{opacity:.35;transform:translateX(12px)}
+    to{opacity:1;transform:translateX(0)}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .mobile-guide,.mobile-phase-screen,.workspace{animation:none}
+  }
+
+  /* Mission-control navigation: readable labels and aerospace-shaped glyphs. */
+  .mobile-command-bar{min-height:78px;padding:9px 8px 8px;border-radius:24px}
+  .mobile-command-bar button{min-height:64px;gap:6px}
+  .mobile-command-bar button small{font-size:.67rem;font-weight:700;letter-spacing:.025em}
+  .mobile-nav-icon{width:31px;height:31px;border-radius:10px;background:linear-gradient(160deg,rgba(32,61,96,.92),rgba(18,39,67,.86))}
+  .mobile-nav-icon svg{width:20px;height:20px}
+  .mobile-command-bar button.mobile-primary{margin-top:-24px}
+  .mobile-command-bar button.mobile-primary .mobile-nav-icon{width:58px;height:58px;border-radius:19px;background:
+    radial-gradient(circle at 34% 26%,rgba(255,255,255,.2),transparent 24%),
+    linear-gradient(145deg,#347fdf,#164889)}
+  .mobile-command-bar button.mobile-primary small{font-size:.7rem;color:#eef7ff}
+}
