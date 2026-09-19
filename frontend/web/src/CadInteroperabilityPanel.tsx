@@ -39,7 +39,7 @@ type ImportedGeometry = {
   noseLength: number | null;
 };
 
-export function CadInteroperabilityPanel({ onGeometryImported, lang = 'es' }: { onGeometryImported?: (geometry: ImportedGeometry) => void; lang?: 'es' | 'en' }) {
+export function CadInteroperabilityPanel({ onGeometryImported, lang = 'es', compact = false }: { onGeometryImported?: (geometry: ImportedGeometry) => void; lang?: 'es' | 'en'; compact?: boolean }) {
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
   const localRepresentation = (value?: string) => !value || !isEs ? value : ({ '2D sketch/profile':'Croquis/perfil 2D', 'B-rep solid/surface':'Sólido/superficie B-rep', 'Native parametric':'Paramétrico nativo', 'Triangle mesh':'Malla triangular' } as Record<string,string>)[value] ?? value;
@@ -85,8 +85,8 @@ export function CadInteroperabilityPanel({ onGeometryImported, lang = 'es' }: { 
     return `${x},${y}`;
   }).join(' ') : '';
 
-  return <div className="panel cad-panel">
-    <div className="panel-title compact"><div><p>{txt('INTEROPERABILIDAD CAD', 'CAD INTEROPERABILITY')}</p><h2>{txt('Importar geometría propia', 'Bring your own geometry')}</h2></div><span className="live-badge">{txt('CAPA DE ADAPTADORES', 'ADAPTER LAYER')}</span></div>
+  return <div className={compact ? 'panel cad-panel compact-cad-panel' : 'panel cad-panel'}>
+    <div className="panel-title compact"><div><p>{txt('IMPORTAR CAD', 'IMPORT CAD')}</p><h2>{compact ? txt('Traé tu geometría al diseño', 'Bring geometry into design') : txt('Importar geometría propia', 'Bring your own geometry')}</h2></div>{!compact && <span className="live-badge">{txt('CAPA DE ADAPTADORES', 'ADAPTER LAYER')}</span>}</div>
     <div className="cad-drop">
       <input id="cad-file" type="file" accept=".dxf,.step,.stp,.f3d,.ipt,.iam,.stl" onChange={(e) => onFile(e.target.files?.[0])}/>
       <label htmlFor="cad-file"><strong>{fileName || txt('Seleccionar archivo CAD', 'Select CAD file')}</strong><span>DXF · STEP · Fusion 360 · Inventor · STL</span></label>
@@ -97,6 +97,7 @@ export function CadInteroperabilityPanel({ onGeometryImported, lang = 'es' }: { 
       <div><span>{txt('RUTA', 'PATH')}</span><strong>{localPath(info?.path) ?? txt('Exportar primero a STEP', 'Export to STEP first')}</strong></div>
     </div>}
     {preview.length > 2 && <div className="cad-preview"><svg viewBox="0 0 600 150"><polyline points={svgPoints} fill="none" stroke="currentColor" strokeWidth="2"/></svg><span>{preview.length} {txt('vértices del perfil DXF cargados', 'DXF profile vertices loaded')}</span></div>}
-    <p className="cad-note">{txt('La vista previa del perfil DXF ya es funcional. STEP, Fusion e Inventor se reconocen, pero necesitan adaptadores geométricos específicos antes de poder reemplazar automáticamente el modelo de ingeniería.', 'DXF profile preview is live now. STEP/Fusion/Inventor are recognized but need their format-specific geometry adapters before they can replace the engineering model automatically.')}</p>
+    {!compact && <p className="cad-note">{txt('La vista previa del perfil DXF ya es funcional. STEP, Fusion e Inventor se reconocen, pero necesitan adaptadores geométricos específicos antes de poder reemplazar automáticamente el modelo de ingeniería.', 'DXF profile preview is live now. STEP/Fusion/Inventor are recognized but need their format-specific geometry adapters before they can replace the engineering model automatically.')}</p>}
+    {compact && <p className="cad-note compact-note">{txt('DXF actualiza largo y diámetro automáticamente. Otros formatos quedan listos para su adaptador.', 'DXF updates length and diameter automatically. Other formats remain ready for their adapter.')}</p>}
   </div>;
 }

@@ -13,7 +13,7 @@ type VehicleLike = {
   parachuteCd: NumericField; parachuteArea: NumericField; deployAltitude: NumericField; deployDelay: NumericField;
   noseProfile: string;
 };
-type ComponentRow = { id: number; name: string; massG: NumericField; kind: string; note: string };
+export type ComponentRow = { id: number; name: string; massG: NumericField; lengthMm: NumericField; diameterMm: NumericField; kind: string; note: string };
 type ComponentOut = { name: string; mass_g: number; x_cg_mm: number; source: string };
 type UnifiedComponentOut = {
   name: string;
@@ -48,14 +48,14 @@ type Analysis = {
   mission_timeline?: MissionSample[];
 };
 
-const initialRows: ComponentRow[] = [
-  { id: 1, name: 'Cofia', massG: 100, kind: 'nose', note: 'xCG from selected nose-profile shell' },
-  { id: 2, name: 'Cuerpo principal', massG: 330, kind: 'body', note: 'xCG from axial shell envelope' },
-  { id: 3, name: 'Motor', massG: 490, kind: 'motor', note: 'xCG from motor axial envelope' },
-  { id: 4, name: 'Paracaídas', massG: 30, kind: 'parachute', note: 'upper third of modular bay · demo geometry' },
-  { id: 5, name: 'Electrónica', massG: 80, kind: 'electronics', note: 'middle third of modular bay · demo geometry' },
-  { id: 6, name: 'Carga útil', massG: 100, kind: 'payload', note: 'lower third of modular bay · demo geometry' },
-  { id: 7, name: 'Aletas · 4 total', massG: 20, kind: 'fins', note: 'xCG from trapezoidal planform' },
+export const initialComponentRows: ComponentRow[] = [
+  { id: 1, name: 'Cofia', massG: 100, lengthMm: 180, diameterMm: 63, kind: 'nose', note: 'xCG from selected nose-profile shell' },
+  { id: 2, name: 'Cuerpo principal', massG: 330, lengthMm: 500, diameterMm: 63, kind: 'body', note: 'xCG from axial shell envelope' },
+  { id: 3, name: 'Motor', massG: 490, lengthMm: 190, diameterMm: 50, kind: 'motor', note: 'xCG from motor axial envelope' },
+  { id: 4, name: 'Paracaídas', massG: 30, lengthMm: 60, diameterMm: 50, kind: 'parachute', note: 'upper third of modular bay · demo geometry' },
+  { id: 5, name: 'Electrónica', massG: 80, lengthMm: 60, diameterMm: 50, kind: 'electronics', note: 'middle third of modular bay · demo geometry' },
+  { id: 6, name: 'Carga útil', massG: 100, lengthMm: 60, diameterMm: 50, kind: 'payload', note: 'lower third of modular bay · demo geometry' },
+  { id: 7, name: 'Aletas · 4 total', massG: 20, lengthMm: 80, diameterMm: 0, kind: 'fins', note: 'xCG from trapezoidal planform' },
 ];
 
 export function LiveAnalysisPanel({
@@ -64,6 +64,8 @@ export function LiveAnalysisPanel({
   resetToken = 0,
   onAnalysisUpdate,
   motor,
+  rows,
+  onRowsChange,
   lang = 'es',
 }: {
   vehicle: VehicleLike;
@@ -71,6 +73,8 @@ export function LiveAnalysisPanel({
   resetToken?: number;
   onAnalysisUpdate?: (analysis: Analysis | null, components: ComponentResponse | null) => void;
   motor: MotorLike;
+  rows: ComponentRow[];
+  onRowsChange: React.Dispatch<React.SetStateAction<ComponentRow[]>>;
   lang?: 'es' | 'en';
 }) {
   const isEs = lang === 'es';
@@ -96,7 +100,6 @@ export function LiveAnalysisPanel({
       fins: 'xCG a partir de la planta trapezoidal de las aletas',
     } as Record<string,string>)[row.kind] ?? row.note;
   };
-  const [rows, setRows] = useState(initialRows);
   const [componentResult, setComponentResult] = useState<ComponentResponse | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState('');
@@ -107,34 +110,34 @@ export function LiveAnalysisPanel({
 
   useEffect(() => {
     if (resetToken > 0) {
-      setRows(initialRows);
+      onRowsChange(initialComponentRows);
       setAnalysis(null);
       setError('');
     }
   }, [resetToken]);
-
-  useEffect(() => {
-    const motorMass = motor.propellantMass === '' || motor.dryMass === '' ? '' : Number(motor.propellantMass) + Number(motor.dryMass);
-    setRows((current) => current.map((row) => row.kind === 'motor' ? { ...row, massG: motorMass, note: 'motor mass derived from active configuration' } : row));
-    setAnalysis(null);
-  }, [motor.propellantMass, motor.dryMass, motor.designation]);
 
   const planformReady = [vehicle.tipChord, vehicle.sweep, vehicle.finX].every((v) => v !== '');
   const motorReady = motor.burn !== '' && Number(motor.burn) > 0 && motor.impulse !== '' && Number(motor.impulse) > 0 && motor.propellantMass !== '' && Number(motor.propellantMass) >= 0 && motor.dryMass !== '' && Number(motor.dryMass) > 0;
   const massesReady = rows.every((row) => row.massG !== '');
   const componentPayload = useMemo<ComponentPayload[]>(() => rows.flatMap<ComponentPayload>((row) => {
     const common = { name: row.name, mass_g: Number(row.massG) };
-    if (row.kind === 'nose') return [{ ...common, kind: 'profile_shell', profile: vehicle.noseProfile, length_mm: Number(vehicle.noseLength), base_radius_mm: Number(vehicle.diameter) / 2, power_exponent: 0.75 }];
-    if (row.kind === 'body') return [{ ...common, kind: 'axial_uniform', x_start_mm: Number(vehicle.noseLength), x_end_mm: Number(vehicle.totalLength) }];
+    if (row.kind === 'nose') return [{ ...common, kind: 'profile_shell', profile: vehicle.noseProfile, length_mm: Number(row.lengthMm) || Number(vehicle.noseLength), base_radius_mm: (Number(row.diameterMm) || Number(vehicle.diameter)) / 2, power_exponent: 0.75 }];
+    if (row.kind === 'body') {
+      const xStart = Number(vehicle.noseLength) + Number(vehicle.bayLength);
+      return [{ ...common, kind: 'axial_uniform', x_start_mm: xStart, x_end_mm: Math.min(xStart + (Number(row.lengthMm) || Number(vehicle.bodyLength)), Number(vehicle.totalLength)) }];
+    }
     if (row.kind === 'motor') {
       const end = Number(vehicle.totalLength);
-      return [{ ...common, kind: 'axial_uniform', x_start_mm: Math.max(end - 190, 0), x_end_mm: end }];
+      return [{ ...common, kind: 'axial_uniform', x_start_mm: Math.max(end - (Number(row.lengthMm) || 190), 0), x_end_mm: end }];
     }
     const bayStart = Number(vehicle.noseLength);
-    const bayThird = Math.max(Number(vehicle.bayLength) / 3, 1);
-    if (row.kind === 'parachute') return [{ ...common, kind: 'axial_uniform', x_start_mm: bayStart, x_end_mm: bayStart + bayThird }];
-    if (row.kind === 'electronics') return [{ ...common, kind: 'axial_uniform', x_start_mm: bayStart + bayThird, x_end_mm: bayStart + 2 * bayThird }];
-    if (row.kind === 'payload') return [{ ...common, kind: 'axial_uniform', x_start_mm: bayStart + 2 * bayThird, x_end_mm: bayStart + 3 * bayThird }];
+    const bayLength = Number(vehicle.bayLength);
+    const parachuteLength = Number(rows.find((item) => item.kind === 'parachute')?.lengthMm) || bayLength / 3;
+    const electronicsLength = Number(rows.find((item) => item.kind === 'electronics')?.lengthMm) || bayLength / 3;
+    const payloadLength = Number(rows.find((item) => item.kind === 'payload')?.lengthMm) || bayLength / 3;
+    if (row.kind === 'parachute') return [{ ...common, kind: 'axial_uniform', x_start_mm: bayStart, x_end_mm: Math.min(bayStart + parachuteLength, bayStart + bayLength) }];
+    if (row.kind === 'electronics') return [{ ...common, kind: 'axial_uniform', x_start_mm: bayStart + parachuteLength, x_end_mm: Math.min(bayStart + parachuteLength + electronicsLength, bayStart + bayLength) }];
+    if (row.kind === 'payload') return [{ ...common, kind: 'axial_uniform', x_start_mm: Math.max(bayStart + bayLength - payloadLength, bayStart), x_end_mm: bayStart + bayLength }];
     if (row.kind === 'fins' && planformReady) return [{ ...common, kind: 'trapezoidal_fin_set', leading_edge_x_mm: Number(vehicle.finX), root_chord_mm: Number(vehicle.rootChord), tip_chord_mm: Number(vehicle.tipChord), span_mm: Number(vehicle.span), sweep_mm: Number(vehicle.sweep) }];
     return [];
   }), [rows, vehicle, planformReady]);
@@ -156,7 +159,7 @@ export function LiveAnalysisPanel({
   }, [componentPayload, massesReady]);
 
   const updateMass = (id: number, value: NumericField) => {
-    setRows((current) => current.map((row) => row.id === id ? { ...row, massG: value, note: 'mass edited locally; xCG remains geometry-derived' } : row));
+    onRowsChange((current) => current.map((row) => row.id === id ? { ...row, massG: value, note: 'mass edited locally; xCG remains geometry-derived' } : row));
     setAnalysis(null);
   };
 

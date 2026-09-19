@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
-import { LiveAnalysisPanel } from './LiveAnalysisPanel';
+import { LiveAnalysisPanel, initialComponentRows, type ComponentRow } from './LiveAnalysisPanel';
 import { CadInteroperabilityPanel } from './CadInteroperabilityPanel';
 import { RocketRealistic } from './RocketRealistic';
 import { NoseProfileComparison } from './NoseProfileComparison';
@@ -214,6 +214,7 @@ function App() {
   const [showComponentCgs, setShowComponentCgs] = useState(true);
   const [analysisSummary, setAnalysisSummary] = useState<any>(null);
   const [componentSummary, setComponentSummary] = useState<any>(null);
+  const [componentRows, setComponentRows] = useState<ComponentRow[]>(initialComponentRows);
   const [motorConfigs, setMotorConfigs] = useState<MotorConfig[]>(initialMotorConfigs);
   const [activeMotorId, setActiveMotorId] = useState('motor-1');
   const [showMotorEditor, setShowMotorEditor] = useState(false);
@@ -224,7 +225,8 @@ function App() {
   const [phaseStoryDragX, setPhaseStoryDragX] = useState(0);
   const [phaseStoryDragging, setPhaseStoryDragging] = useState(false);
   const [pdrTab, setPdrTab] = useState<'geometry' | 'schematic' | 'mass'>('geometry');
-  const [cdrTab, setCdrTab] = useState<'stability' | 'propulsion'>('stability');
+  const [showPdrCadImport, setShowPdrCadImport] = useState(false);
+  const [cdrTab, setCdrTab] = useState<'stability' | 'trajectory' | 'propulsion'>('stability');
   const [exportPreparing, setExportPreparing] = useState(false);
   const [selectedRequirementId, setSelectedRequirementId] = useState('R1');
   const [requirementStatusOverrides, setRequirementStatusOverrides] = useState<RequirementStatusOverrides>(() => {
@@ -282,6 +284,20 @@ function App() {
 
   const update = <K extends keyof Vehicle>(key: K, value: Vehicle[K]) => {
     setVehicle((current) => ({ ...current, [key]: value }));
+  };
+
+  const updateComponentDesign = (id: number, key: 'massG' | 'lengthMm' | 'diameterMm', value: NumericField) => {
+    setComponentRows((current) => current.map((row) => row.id === id ? { ...row, [key]: value } : row));
+    const row = componentRows.find((item) => item.id === id);
+    if (!row) return;
+    if (key === 'lengthMm' && row.kind === 'nose') update('noseLength', value);
+    if (key === 'lengthMm' && row.kind === 'body') update('bodyLength', value);
+    if (key === 'diameterMm' && (row.kind === 'nose' || row.kind === 'body') && value !== '') update('diameter', value);
+    if (key === 'massG' && row.kind === 'motor' && value !== '') {
+      const dry = Math.max(Number(value) - (Number(motor.propellantMass) || 0), 1);
+      updateMotor('dryMass', Number(dry.toFixed(1)));
+    }
+    setAnalysisSummary(null);
   };
 
   const updateMotor = <K extends keyof MotorConfig>(key: K, value: MotorConfig[K]) => {
@@ -345,6 +361,17 @@ function App() {
   const requirementProgress = requirementStatuses.filter((status) => status === 'progress').length;
   const stabilityMargin = analysisSummary?.static_margin_calibers;
   const stabilityState = stabilityMargin == null ? txt('SIN CALCULAR', 'NOT RUN') : stabilityMargin >= 1.0 ? txt('ESTABLE', 'STABLE') : txt('REVISAR', 'CHECK');
+  const cdrTrajectoryPoints = (() => {
+    const samples = analysisSummary?.mission_timeline ?? [];
+    if (samples.length < 2) return '';
+    const maxX = Math.max(...samples.map((sample: any) => Number(sample.x_m) || 0), 1);
+    const maxH = Math.max(...samples.map((sample: any) => Number(sample.altitude_m) || 0), 1);
+    return samples.map((sample: any) => {
+      const x = 28 + ((Number(sample.x_m) || 0) / maxX) * 277;
+      const y = 118 - ((Number(sample.altitude_m) || 0) / maxH) * 95;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  })();
 
   const openExportSheet = () => {
     setShowExportMenu(true);
@@ -387,6 +414,7 @@ function App() {
     setActiveMotorId('motor-1');
     setAnalysisSummary(null);
     setComponentSummary(null);
+    setComponentRows(initialComponentRows);
     setResetToken((value) => value + 1);
   };
 
@@ -411,6 +439,45 @@ function App() {
     anchor.download = filename;
     anchor.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportReportPdf = async () => {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.text('TRAJECTUM · UTN-FRH-G07', 16, 18);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text('Reporte técnico de misión / Cátedra', 16, 25);
+    const lines = [
+      ['Masa total', (analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g ?? '—') + ' g'],
+      ['CG desde apoyo', (analysisSummary?.cg_x_mm_from_support ?? (componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : '—')) + ' mm'],
+      ['CP desde apoyo', (analysisSummary?.cp_x_mm_from_support ?? '—') + ' mm'],
+      ['Margen estático', (analysisSummary?.static_margin_calibers ?? '—') + ' calibres'],
+      ['Apogeo', (analysisSummary?.apogee_m ?? '—') + ' m'],
+      ['Max Q', (analysisSummary?.max_q_pa ?? '—') + ' Pa'],
+      ['Ángulo de lanzamiento', vehicle.launchAngle + '°'],
+      ['Motor', motor.designation || '—'],
+    ];
+    let y = 38;
+    for (const [label, value] of lines) { doc.setFont('helvetica','bold'); doc.text(label + ':',16,y); doc.setFont('helvetica','normal'); doc.text(String(value),68,y); y += 7; }
+    y += 5; doc.setFont('helvetica','bold'); doc.text('Cumplimiento R1-R11',16,y); y += 7; doc.setFont('helvetica','normal');
+    PROJECT_REQUIREMENTS.forEach((req,index)=>{ const status=requirementStatuses[index]; doc.text(`${req.id} · ${req.titleEs} · ${status === 'verified' ? 'VERIFICADO' : status === 'progress' ? 'EN PROCESO' : 'ABIERTO'}`,16,y); y += 6; });
+    doc.save('TRAJECTUM_Reporte_Catedra_UTN-FRH-G07.pdf');
+    setShowExportMenu(false);
+  };
+
+  const exportRequirementsCsv = () => {
+    const headers = ['id','titulo','objetivo','metodos','estado'];
+    const rows = PROJECT_REQUIREMENTS.map((req,index)=>[
+      req.id, req.titleEs, req.targetEs, req.methods.join('/'),
+      requirementStatuses[index] === 'verified' ? 'VERIFICADO' : requirementStatuses[index] === 'progress' ? 'EN PROCESO' : 'ABIERTO'
+    ]);
+    const csv = [headers,...rows].map((row)=>row.map((value)=>'"'+String(value).replace(/"/g,'""')+'"').join(',')).join('\n');
+    downloadBlob(csv,'text/csv;charset=utf-8','TRAJECTUM_Requerimientos_R1-R11.csv');
+    setShowExportMenu(false);
+  };
+
+  const exportTelemetryJson = () => {
+    downloadBlob(JSON.stringify({ project:'UTN-FRH-G07', launchAngleDeg:Number(vehicle.launchAngle), motor:motor.designation, telemetry:analysisSummary?.mission_timeline ?? [], analysis:analysisSummary }, null, 2),'application/json','TRAJECTUM_Telemetria.json');
+    setShowExportMenu(false);
   };
 
   const exportJson = () => {
@@ -757,7 +824,11 @@ function App() {
             <label><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><div><input type="number" value={vehicle.rootChord} onChange={(e) => update('rootChord', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
             <label><span>{txt('ENVERGADURA', 'SPAN')}</span><div><input type="number" value={vehicle.span} onChange={(e) => update('span', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
           </div>
-          <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('mdr')}><ClipboardCheck size={17}/><span>{requirementVerified}/11 {txt('REQUERIMIENTOS VERIFICADOS', 'REQUIREMENTS VERIFIED')}</span><b>→</b></button>
+          <div className="pdr-inline-actions">
+            <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('mdr')}><ClipboardCheck size={17}/><span>{requirementVerified}/11 {txt('REQUERIMIENTOS VERIFICADOS', 'REQUIREMENTS VERIFIED')}</span><b>→</b></button>
+            <button type="button" className="phase-secondary-link cad-inline-trigger" onClick={() => setShowPdrCadImport((value) => !value)}><FileUp size={17}/><span>{txt('IMPORTAR CAD', 'IMPORT CAD')}</span><b>{showPdrCadImport ? '×' : '+'}</b></button>
+          </div>
+          {showPdrCadImport && <CadInteroperabilityPanel onGeometryImported={importCadGeometry} lang={lang} compact />}
         </section>}
 
         {pdrTab === 'schematic' && <section
@@ -777,15 +848,26 @@ function App() {
           <div className="mobile-pdr-model">
             <RocketRealistic vehicle={vehicle} cgMm={liveCgFromNose} cpMm={analysisSummary?.cp_x_mm_from_nose ?? null} componentCgs={componentSummary?.components ?? []} showComponentCgs={false} lang={lang}/>
           </div>
+          <div className="schematic-live-stats">
+            <span><b>{vehicle.totalLength}</b> mm {txt('LARGO', 'LENGTH')}</span>
+            <span><b>Ø{vehicle.diameter}</b> mm</span>
+            <span><b>{vehicle.finCount}</b> {txt('ALETAS', 'FINS')}</span>
+          </div>
         </section>}
 
         {pdrTab === 'mass' && <section className="phase-process-panel pdr-mass-panel">
           <div className="phase-panel-head"><div><span>{txt('MATERIALES Y MASA', 'MATERIALS & MASS')}</span><strong>{txt('Distribución preliminar del vehículo', 'Preliminary vehicle distribution')}</strong></div><b>{componentSummary?.total_mass_g ? Math.round(componentSummary.total_mass_g) + 'g' : '—'}</b></div>
-          <div className="pdr-mass-list">
-            {(componentSummary?.components ?? []).slice(0,7).map((item: any) => <div key={item.name}><span>{item.name}</span><strong>{item.mass_g.toFixed(0)} g</strong><small>xCG {item.x_cg_mm?.toFixed?.(0) ?? '—'} mm</small></div>)}
-            {!componentSummary && <div className="phase-empty-inline"><span>{txt('MASAS AÚN NO DERIVADAS', 'MASSES NOT DERIVED YET')}</span><small>{txt('Abrí análisis una vez para calcular CG por componente.', 'Run analysis once to derive component CG.')}</small></div>}
+          <div className="pdr-mass-editor">
+            {componentRows.map((row) => <article key={row.id} className="pdr-component-card">
+              <div className="pdr-component-head"><strong>{row.name}</strong><span>{componentSummary?.components?.find((item: any) => item.name === row.name)?.x_cg_mm != null ? 'xCG ' + componentSummary.components.find((item: any) => item.name === row.name).x_cg_mm.toFixed(0) + ' mm' : 'xCG —'}</span></div>
+              <div className="pdr-component-fields">
+                <label><span>{txt('MASA', 'MASS')}</span><div><input inputMode="decimal" type="number" value={row.massG} onChange={(e) => updateComponentDesign(row.id,'massG',e.target.value === '' ? '' : Number(e.target.value))}/><em>g</em></div></label>
+                <label><span>{txt('LARGO', 'LENGTH')}</span><div><input inputMode="decimal" type="number" value={row.lengthMm} onChange={(e) => updateComponentDesign(row.id,'lengthMm',e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
+                <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><div><input inputMode="decimal" type="number" value={row.diameterMm} onChange={(e) => updateComponentDesign(row.id,'diameterMm',e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
+              </div>
+            </article>)}
           </div>
-          <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('analysis')}><Sigma size={17}/><span>{txt('ABRIR CÁLCULO DE MASA Y CG', 'OPEN MASS & CG CALCULATION')}</span><b>→</b></button>
+          <div className="pdr-mass-total"><span>{txt('MASA DE DISEÑO', 'DESIGN MASS')}</span><strong>{componentRows.reduce((sum,row)=>sum+(Number(row.massG)||0),0).toFixed(0)} g</strong><small>{txt('CDR la toma automáticamente', 'CDR consumes it automatically')}</small></div>
         </section>}
 
         <button type="button" className="phase-primary-action pdr-continue" onClick={() => navigateMobile('cdr')}>
@@ -800,8 +882,9 @@ function App() {
           <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '3'}</b>
         </div>
         <div className="phase-internal-tabs cdr-tabs" role="tablist" aria-label={txt('Vistas CDR', 'CDR views')}>
-          <button type="button" className={cdrTab === 'stability' ? 'active' : ''} onClick={() => setCdrTab('stability')}><Gauge size={16}/><span>{txt('ESTABILIDAD', 'STABILITY')}</span></button>
-          <button type="button" className={cdrTab === 'propulsion' ? 'active' : ''} onClick={() => setCdrTab('propulsion')}><Flame size={16}/><span>{txt('PROPULSIÓN', 'PROPULSION')}</span></button>
+          <button type="button" className={cdrTab === 'stability' ? 'active' : ''} onClick={() => setCdrTab('stability')}><Gauge size={16}/><span>CG / CP</span></button>
+          <button type="button" className={cdrTab === 'trajectory' ? 'active' : ''} onClick={() => setCdrTab('trajectory')}><ChartNoAxesCombined size={16}/><span>{txt('TRAYECTORIA', 'TRAJECTORY')}</span></button>
+          <button type="button" className={cdrTab === 'propulsion' ? 'active' : ''} onClick={() => setCdrTab('propulsion')}><Flame size={16}/><span>{txt('MOTOR', 'MOTOR')}</span></button>
         </div>
 
         {cdrTab === 'stability' && <section className="phase-process-panel cdr-stability-panel">
@@ -818,6 +901,25 @@ function App() {
             <span>0</span><em>{vehicle.totalLength} mm</em>
           </div>
           <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('analysis')}><Sigma size={17}/><span>{txt('VER CÁLCULO DETALLADO', 'VIEW DETAILED CALCULATION')}</span><b>→</b></button>
+        </section>}
+
+        {cdrTab === 'trajectory' && <section className="phase-process-panel cdr-trajectory-panel">
+          <div className="phase-panel-head"><div><span>{txt('RESULTADO DE TRAYECTORIA', 'TRAJECTORY RESULT')}</span><strong>{txt('Cálculo, no reproducción', 'Calculation, not playback')}</strong></div><b>{analysisSummary?.apogee_m != null ? analysisSummary.apogee_m.toFixed(0) + 'm' : '—'}</b></div>
+          <div className="cdr-result-curve">
+            <svg viewBox="0 0 320 145" role="img" aria-label={txt('Curva analítica de trayectoria', 'Analytical trajectory curve')}>
+              <path className="chart-grid" d="M28 18V118H305 M28 93H305 M28 68H305 M28 43H305"/>
+              {cdrTrajectoryPoints ? <polyline className="cdr-trajectory-line" points={cdrTrajectoryPoints}/> : <path className="cdr-trajectory-line placeholder" d="M28 118 C58 40 105 18 161 25 C220 32 260 65 305 118"/>}
+              <circle cx="161" cy="25" r="4" className="cdr-apogee-dot"/>
+              <text x="145" y="15">{analysisSummary?.apogee_m != null ? analysisSummary.apogee_m.toFixed(1) + ' m' : 'APOGEO'}</text>
+              <text x="28" y="137">{vehicle.launchAngle || 85}°</text>
+            </svg>
+          </div>
+          <div className="propulsion-metrics">
+            <div><span>{txt('APOGEO', 'APOGEE')}</span><strong>{analysisSummary?.apogee_m != null ? analysisSummary.apogee_m.toFixed(1) + ' m' : '—'}</strong></div>
+            <div><span>MAX Q</span><strong>{analysisSummary?.max_q_pa != null ? analysisSummary.max_q_pa.toFixed(0) + ' Pa' : '—'}</strong></div>
+            <div><span>{txt('V MÁX', 'MAX V')}</span><strong>{analysisSummary?.max_speed_m_s != null ? analysisSummary.max_speed_m_s.toFixed(1) + ' m/s' : '—'}</strong></div>
+          </div>
+          <button type="button" className="phase-secondary-link" onClick={() => { if (!analysisSummary && ready) setRunToken((value)=>value+1); else navigateMobile('plots'); }}><Play size={17}/><span>{analysisSummary ? txt('IR AL SIMULADOR DE VUELO', 'OPEN FLIGHT SIMULATOR') : txt('EJECUTAR CÁLCULO CDR', 'RUN CDR CALCULATION')}</span><b>→</b></button>
         </section>}
 
         {cdrTab === 'propulsion' && <section className="phase-process-panel cdr-propulsion-panel">
@@ -943,7 +1045,7 @@ function App() {
             mobileSection === 'geometry' ? txt('DISEÑO DEL COHETE', 'VEHICLE DESIGN') :
             mobileSection === 'motor' ? txt('CONFIGURACIÓN DEL MOTOR', 'MOTOR CONFIGURATION') :
             mobileSection === 'cad' ? txt('IMPORTAR CAD / FUSION', 'IMPORT CAD / FUSION') :
-            mobileSection === 'plots' ? txt('GRÁFICOS DE VUELO', 'FLIGHT PLOTS') :
+            mobileSection === 'plots' ? txt('SIMULADOR DE VUELO · 85°', 'FLIGHT SIMULATOR · 85°') :
             mobileSection === 'model' ? txt('MODELO MATEMÁTICO', 'MATHEMATICAL MODEL') :
             mobileSection === 'status' ? txt('ESTADO DEL CDR', 'CDR STATUS') :
             txt('RESULTADOS DEL CDR', 'CDR RESULTS')
@@ -1090,11 +1192,11 @@ function App() {
             resetToken={resetToken}
             onAnalysisUpdate={handleAnalysisUpdate}
             motor={motor}
+            rows={componentRows}
+            onRowsChange={setComponentRows}
             lang={lang}
           />
           </div>
-          <CadInteroperabilityPanel onGeometryImported={importCadGeometry} lang={lang} />
-
           <div className="panel readiness">
             <div className="panel-title compact">
               <div>
@@ -1201,12 +1303,12 @@ function App() {
           <small>CDR</small>
         </button>
         <button type="button" className={mobileSection === 'plots' ? 'active' : ''} onClick={() => navigateMobile('plots')}>
-          <span className="mobile-nav-icon"><ChartNoAxesCombined size={20} strokeWidth={1.8} /></span>
-          <small>{txt('GRÁFICOS', 'PLOTS')}</small>
+          <span className="mobile-nav-icon"><Play size={20} strokeWidth={1.8} /></span>
+          <small>{txt('VUELO', 'FLIGHT')}</small>
         </button>
-        <button type="button" className={mobileSection === 'cad' ? 'active' : ''} onClick={() => navigateMobile('cad')}>
-          <span className="mobile-nav-icon"><FileUp size={20} strokeWidth={1.8} /></span>
-          <small>{txt('IMPORTAR', 'IMPORT')}</small>
+        <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
+          <span className="mobile-nav-icon"><Download size={20} strokeWidth={1.8} /></span>
+          <small>{txt('EXPORTAR', 'EXPORT')}</small>
         </button>
       </nav>
 
@@ -1220,12 +1322,11 @@ function App() {
             <span>{txt('COMPILANDO DATOS UTN-FRH-G07', 'COMPILING UTN-FRH-G07 DATA')}</span>
             <strong>{txt('Preparando paquete técnico…', 'Preparing technical package…')}</strong>
             <i><b /></i>
-          </div> : <>
-            <button type="button" onClick={exportExcel}><strong>EXCEL TÉCNICO</strong><small>.XLSX · 8 HOJAS + GRÁFICOS</small></button>
-            <button type="button" onClick={exportChartsZip}><strong>{txt('GRÁFICOS PNG', 'PNG PLOTS')}</strong><small>{txt('5 ARCHIVOS · ALTA RESOLUCIÓN', '5 FILES · HIGH RES')}</small></button>
-            <button type="button" onClick={exportJson}><strong>JSON</strong><small>{txt('PROYECTO REPRODUCIBLE / SOFTWARE', 'REPRODUCIBLE PROJECT / SOFTWARE')}</small></button>
-            <button type="button" onClick={exportTrajectoryCsv}><strong>CSV</strong><small>{txt('TRAYECTORIA TABULAR', 'TABULAR TRAJECTORY')}</small></button>
-          </>}
+          </div> : <div className="export-action-grid">
+            <button type="button" onClick={exportReportPdf}><span className="export-action-icon">PDF</span><div><strong>{txt('INFORME CÁTEDRA', 'COURSE REPORT')}</strong><small>{txt('Resumen técnico + R1–R11', 'Technical summary + R1–R11')}</small></div><b>↓</b></button>
+            <button type="button" onClick={exportRequirementsCsv}><span className="export-action-icon">CSV</span><div><strong>{txt('REQUERIMIENTOS R1–R11', 'REQUIREMENTS R1–R11')}</strong><small>{txt('Estado y método de verificación', 'Status and verification method')}</small></div><b>↓</b></button>
+            <button type="button" onClick={exportTelemetryJson}><span className="export-action-icon">{'{ }'}</span><div><strong>{txt('TELEMETRÍA JSON', 'TELEMETRY JSON')}</strong><small>{txt('Corrida completa y metadatos', 'Full run and metadata')}</small></div><b>↓</b></button>
+          </div>}
         </div>
       </div>}
     </main>
