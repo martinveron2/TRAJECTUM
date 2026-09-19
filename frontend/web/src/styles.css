@@ -1196,12 +1196,12 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
   }
 
   @keyframes trajectum-native-forward{
-    from{opacity:.9;transform:translate3d(10px,0,0)}
-    to{opacity:1;transform:translate3d(0,0,0)}
+    from{opacity:.94}
+    to{opacity:1}
   }
   @keyframes trajectum-native-back{
-    from{opacity:.9;transform:translate3d(-10px,0,0)}
-    to{opacity:1;transform:translate3d(0,0,0)}
+    from{opacity:.94}
+    to{opacity:1}
   }
 
   /* Keep PDR model visually stable during route changes. */
