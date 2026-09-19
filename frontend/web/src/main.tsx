@@ -603,7 +603,7 @@ function App() {
             <button type="button" className={'phase-current ' + (phaseFocusIndex === 1 ? 'focused' : '')} onClick={() => selectPhase(1)}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
             <button type="button" className={phaseFocusIndex === 2 ? 'focused' : ''} onClick={() => selectPhase(2)}><b>03</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
             <button type="button" className={phaseFocusIndex === 3 ? 'focused' : ''} onClick={() => selectPhase(3)}><b>04</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
-            <button type="button" className={'phase-wide ' + (phaseFocusIndex === 4 ? 'focused' : '')} onClick={() => selectPhase(4)}><b>05</b><span>PFR / MCR</span><small>{txt('Post-vuelo y cierre', 'Post-flight & closeout')}</small></button>
+            <button type="button" className={'phase-wide ' + (phaseFocusIndex === 4 ? 'focused' : '')} onClick={() => selectPhase(4)}><b>05</b><span>PFR</span><small>{txt('PFR / MCR · reportes', 'PFR / MCR · reports')}</small></button>
             <div className="phase-wheel-hint">{txt('DESLIZÁ PARA CAMBIAR EL FOCO', 'SWIPE TO CHANGE FOCUS')}</div>
           </div>
         </div>
@@ -643,7 +643,7 @@ function App() {
       <section className="mobile-phase-screen mobile-pdr-screen" aria-label="PDR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 01</span><h2>PDR · {txt('DISEÑO PRELIMINAR', 'PRELIMINARY DESIGN')}</h2></div>
+          <div><span>FASE 01</span><h2>PDR · {txt('DISEÑO DEL VEHÍCULO', 'VEHICLE DESIGN')}</h2></div>
           <b className="complete">✓</b>
         </div>
 
@@ -687,7 +687,7 @@ function App() {
       <section className="mobile-phase-screen mobile-cdr-screen" aria-label="CDR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 02 · {txt('ACTUAL', 'CURRENT')}</span><h2>CDR · {txt('DISEÑO CRÍTICO', 'CRITICAL DESIGN')}</h2></div>
+          <div><span>FASE 02 · {txt('ACTUAL', 'CURRENT')}</span><h2>CDR · {txt('ANÁLISIS CRÍTICO', 'CRITICAL ANALYSIS')}</h2></div>
           <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '2'}</b>
         </div>
         <div className="mobile-cdr-status">
@@ -727,7 +727,7 @@ function App() {
       <section className="mobile-phase-screen mobile-frr-screen" aria-label="FRR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 03</span><h2>FRR · {txt('PREPARACIÓN DE VUELO', 'FLIGHT READINESS')}</h2></div>
+          <div><span>FASE 03</span><h2>FRR · {txt('VERIFICACIÓN Y MOTOR', 'VERIFICATION & MOTOR')}</h2></div>
           <b className={analysisSummary && ready ? 'complete' : 'current'}>{analysisSummary && ready ? '✓' : '3'}</b>
         </div>
         <div className="mobile-screen-copy">
@@ -748,7 +748,7 @@ function App() {
       <section className="mobile-phase-screen mobile-lrr-screen" aria-label="LRR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 04</span><h2>LRR · {txt('PREPARACIÓN DE LANZAMIENTO', 'LAUNCH READINESS')}</h2></div>
+          <div><span>FASE 04</span><h2>LRR · {txt('SIMULACIÓN DE VUELO EN TIEMPO REAL', 'REAL-TIME FLIGHT SIMULATION')}</h2></div>
           <b className="current">4</b>
         </div>
         <div className="mobile-screen-copy">
@@ -786,7 +786,7 @@ function App() {
       <section className="mobile-phase-screen mobile-pfr-screen" aria-label="PFR">
         <div className="mobile-screen-head">
           <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
-          <div><span>FASE 05</span><h2>PFR / MCR · {txt('ANÁLISIS POST-VUELO', 'POST-FLIGHT REVIEW')}</h2></div>
+          <div><span>FASE 05</span><h2>PFR / MCR · {txt('REPORTES Y EXPORTACIÓN', 'REPORTS & EXPORT')}</h2></div>
           <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '5'}</b>
         </div>
         <div className="mobile-screen-copy">
