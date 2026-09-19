@@ -1461,7 +1461,7 @@ function App() {
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
-        <button type="button" className={missionControlOpen ? 'active' : ''} onClick={() => {
+        <button type="button" className={missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onClick={() => {
           if (analysisSummary?.mission_timeline?.length > 1) {
             setMissionControlOpen(true);
           } else {

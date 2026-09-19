@@ -107,6 +107,7 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
   ];
 
   const clock = 'T+' + timeS.toFixed(1).padStart(5, '0') + 's';
+  const missionCompleted = current.phase === 'LANDED' || (!playing && timeS >= Math.max(endTime - 0.05, 0));
 
   return <div className="mission-control" role="dialog" aria-modal="true" aria-label={txt('Centro de control de simulación de vuelo', 'Flight simulation control center')}>
     <div className="mission-control-shell">
@@ -194,7 +195,7 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
         <div className="mission-rate">
           {[1,2,5].map((value) => <button type="button" key={value} className={rate === value ? 'active' : ''} onClick={() => setRate(value)}>{value}×</button>)}
         </div>
-        <button type="button" className="mission-results" onClick={onViewResults}><Gauge size={18}/><span>{txt('VER RESULTADOS COMPLETOS', 'VIEW FULL RESULTS')}</span></button>
+        <button type="button" className={missionCompleted ? 'mission-results mission-complete' : 'mission-results'} onClick={onViewResults}><Gauge size={18}/><span>{txt('VER RESULTADOS COMPLETOS', 'VIEW FULL RESULTS')}</span></button>
       </footer>
     </div>
   </div>;
