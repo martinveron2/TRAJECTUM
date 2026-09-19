@@ -9,9 +9,12 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
+    "@types/plotly.js": "^3.0.13",
     "katex": "^0.18.7",
+    "plotly.js-basic-dist-min": "^4.1.1",
     "react": "latest",
     "react-dom": "latest",
+    "react-plotly.js": "^4.1.0",
     "write-excel-file": "^2.3.10"
   },
   "devDependencies": {

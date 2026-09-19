@@ -349,3 +349,19 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
 .mass-row input:disabled{opacity:.72;cursor:not-allowed;background:#0d192a;color:#8fa6c6}
 @media(max-width:980px){.motor-config-panel{grid-template-columns:1fr}.motor-editor{grid-template-columns:1fr 1fr}.export-menu{left:0;right:auto}}
 @media(max-width:620px){.motor-editor{grid-template-columns:1fr}.motor-data dl{grid-template-columns:1fr 1fr}.motor-tabs{grid-template-columns:1fr}}
+
+/* Professional Plotly flight-analysis workspace */
+.flight-analysis-panel{padding:18px 20px 20px;overflow:hidden}
+.plotly-badge{display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border:1px solid #2c4b73;border-radius:999px;background:#0a1729;color:#7ea4da;font-size:.58rem;letter-spacing:.11em;white-space:nowrap}
+.flight-chart-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 12px}
+.flight-chart-tab{padding:8px 12px;border:1px solid #263f62;background:#0a1628;color:#7892b7;border-radius:8px;font-size:.62rem;letter-spacing:.08em;transform:none!important}
+.flight-chart-tab:hover{border-color:#426ca6;background:#10223d;color:#b7d2fa}
+.flight-chart-tab.active{border-color:#5a8fe2;background:#10294b;color:#edf5ff;box-shadow:inset 0 0 20px rgba(72,137,235,.12),0 0 0 1px rgba(90,143,226,.08)}
+.flight-chart-frame{border:1px solid #203653;border-radius:12px;overflow:hidden;background:#081321;box-shadow:inset 0 0 36px rgba(40,90,160,.035)}
+.flight-chart-frame .js-plotly-plot,.flight-chart-frame .plot-container,.flight-chart-frame .svg-container{width:100%!important}
+.flight-chart-frame .modebar{right:8px!important;top:7px!important}
+.flight-chart-frame .modebar-btn path{fill:#7f9bc4!important}
+.flight-chart-frame .modebar-btn:hover path{fill:#d6e8ff!important}
+.flight-chart-footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:10px 2px 0;color:#607b9f;font-size:.56rem;letter-spacing:.07em}
+.flight-chart-footer strong{font-weight:600;color:#7695bf}
+@media(max-width:720px){.flight-chart-frame .js-plotly-plot{min-width:620px}.flight-chart-frame{overflow-x:auto}.flight-chart-footer{flex-direction:column}.plotly-badge{display:none}}

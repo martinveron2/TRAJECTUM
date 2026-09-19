@@ -21,6 +21,7 @@ class MissionSample:
     altitude_m: float
     speed_m_s: float
     vertical_speed_m_s: float
+    mach: float
     q_pa: float
     parachute_deployed: bool
 
@@ -100,6 +101,7 @@ def _build_mission_timeline(
                     altitude_m=max(point.z_m, 0.0),
                     speed_m_s=point.speed_m_s,
                     vertical_speed_m_s=point.vz_m_s,
+                    mach=point.speed_m_s / isa_troposphere(max(point.z_m, 0.0)).speed_of_sound_m_s,
                     q_pa=point.q_pa,
                     parachute_deployed=False,
                 )
@@ -119,6 +121,7 @@ def _build_mission_timeline(
                     altitude_m=max(point.altitude_m, 0.0),
                     speed_m_s=abs(point.velocity_m_s),
                     vertical_speed_m_s=point.velocity_m_s,
+                    mach=abs(point.velocity_m_s) / atmosphere.speed_of_sound_m_s,
                     q_pa=q,
                     parachute_deployed=point.parachute_deployed,
                 )
