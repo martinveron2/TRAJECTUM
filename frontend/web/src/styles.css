@@ -1160,3 +1160,53 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     width:max-content!important;max-width:90%!important;font-size:.45rem!important;letter-spacing:.075em!important;color:#6385a8!important;white-space:nowrap!important
   }
 }
+
+
+@media(max-width:820px){
+  /* Navigation cleanup: no loader pill, no double transforms, one clean native transition only. */
+  .mobile-route-feedback{display:none!important}
+
+  .mobile-nav-busy.mobile-nav-forward .mobile-guide,
+  .mobile-nav-busy.mobile-nav-forward .mobile-phase-screen,
+  .mobile-nav-busy.mobile-nav-forward .workspace,
+  .mobile-nav-busy.mobile-nav-back .mobile-guide,
+  .mobile-nav-busy.mobile-nav-back .mobile-phase-screen,
+  .mobile-nav-busy.mobile-nav-back .workspace{
+    opacity:1!important;
+    transform:none!important
+  }
+
+  .mobile-guide,.mobile-phase-screen,.workspace{
+    animation-duration:210ms!important;
+    animation-timing-function:cubic-bezier(.25,1,.5,1)!important;
+    animation-fill-mode:both!important;
+    backface-visibility:hidden;
+    -webkit-font-smoothing:antialiased
+  }
+
+  .mobile-nav-forward .mobile-guide,
+  .mobile-nav-forward .mobile-phase-screen,
+  .mobile-nav-forward .workspace{
+    animation-name:trajectum-native-forward!important
+  }
+  .mobile-nav-back .mobile-guide,
+  .mobile-nav-back .mobile-phase-screen,
+  .mobile-nav-back .workspace{
+    animation-name:trajectum-native-back!important
+  }
+
+  @keyframes trajectum-native-forward{
+    from{opacity:.9;transform:translate3d(10px,0,0)}
+    to{opacity:1;transform:translate3d(0,0,0)}
+  }
+  @keyframes trajectum-native-back{
+    from{opacity:.9;transform:translate3d(-10px,0,0)}
+    to{opacity:1;transform:translate3d(0,0,0)}
+  }
+
+  /* Keep PDR model visually stable during route changes. */
+  .mobile-pdr-model{
+    transform:none!important;
+    transition:none!important
+  }
+}
