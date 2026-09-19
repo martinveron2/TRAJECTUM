@@ -5839,3 +5839,210 @@ pre{
   0%,100%{opacity:.72;transform:scale(.92)}
   50%{opacity:1;transform:scale(1.14)}
 }
+
+
+/* RIGID GLOBAL TYPE SCALE — SPACE FAMILY */
+:root{
+  --type-caption:11px;
+  --type-label:13px;
+  --type-body:15px;
+  --type-input:19px;
+  --type-display:28px;
+  --type-display-hero:32px;
+}
+
+/* 10–11 px — metadata, phase markers, units */
+.eyebrow,
+.brand-version,
+.phase-panel-head>div>span,
+.mobile-phase-screen-head span,
+.mobile-context-bar span,
+.cdr-results-head>div>span,
+.cdr-vehicle-map-head>div>span,
+.flight-chart-picker-head span,
+.mission-clock small,
+.mission-brand span,
+.mission-statusline>span,
+.live-badge,
+.info-badge,
+.naca-chip,
+.scale-note,
+.schematic-meta,
+.field-label small,
+.pdr-mass-total small,
+.pdr-component-head span,
+.numeric-wheel-trigger em,
+.instrument em,
+.cdr-stability-rail>span,
+.cdr-stability-rail>em{
+  font-family:"Space Grotesk"!important;
+  font-size:var(--type-caption)!important;
+  font-weight:500!important;
+  line-height:1.25!important;
+  letter-spacing:.07em!important;
+}
+
+/* 12–13 px — labels and secondary controls */
+.field-label,
+.pdr-input-grid label>span,
+.pdr-component-fields label>span,
+.cdr-hero-values article span,
+.cdr-stability-summary span,
+.cdr-secondary-results span,
+.flight-results-summary span,
+.mission-instruments .instrument span,
+.phase-internal-tabs button,
+.pdr-tabs button,
+.cdr-tabs button,
+.flight-chart-tab,
+.mission-controls>button:not(.mission-results),
+.mobile-command-bar button small,
+.numeric-wheel-sheet-head span,
+.header-cad-modal-head span{
+  font-family:"Space Grotesk"!important;
+  font-size:var(--type-label)!important;
+  font-weight:600!important;
+  line-height:1.2!important;
+  letter-spacing:.06em!important;
+  text-transform:uppercase!important;
+}
+
+/* 14–16 px — regular UI copy and list/select options */
+body,
+p,
+select,
+textarea,
+.option,
+.cad-file-card,
+.cad-status-card,
+.mobile-guide-next p,
+.mobile-export-sheet small,
+.metric-detail-drawer p,
+.stability-status span{
+  font-family:"Space Grotesk"!important;
+  font-size:var(--type-body)!important;
+  font-weight:500!important;
+  line-height:1.4!important;
+}
+
+/* 18–20 px — entered engineering values and primary controls */
+input[type="number"],
+.numeric-wheel-trigger span,
+.pdr-input-grid select,
+.pdr-component-fields input,
+.pdr-component-fields output,
+.input-wrap input,
+.motor-input input,
+.pdr-mass-total strong,
+.cdr-analysis-primary,
+.mission-launch-cta .mission-launch-copy strong{
+  font-family:"Space Mono"!important;
+  font-size:var(--type-input)!important;
+  font-weight:700!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+.cdr-analysis-primary,
+.mission-launch-cta .mission-launch-copy strong{
+  font-family:"Space Grotesk"!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+}
+
+/* 24–32 px — only engineering/result displays */
+.cdr-hero-values article strong,
+.cdr-stability-summary strong,
+.cdr-secondary-results strong,
+.flight-results-summary strong,
+.mission-instruments .instrument strong,
+.mission-instruments .instrument.primary strong,
+.metric-card strong,
+.cdr-result-widgets strong{
+  font-family:"Space Mono"!important;
+  font-size:var(--type-display)!important;
+  font-weight:700!important;
+  line-height:1.05!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+.mission-clock strong{
+  font-family:"Space Mono"!important;
+  font-size:var(--type-display-hero)!important;
+  font-weight:700!important;
+  line-height:1!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+/* Primary results CTA stays intentionally one scale below display metrics. */
+.mission-controls .mission-results,
+.mission-controls .mission-results span{
+  font-family:"Space Grotesk"!important;
+  font-size:16px!important;
+  font-weight:700!important;
+  letter-spacing:1px!important;
+  line-height:1.15!important;
+  text-transform:uppercase!important;
+}
+.mission-controls .mission-results{
+  background:linear-gradient(135deg,#00F0FF 0%,#0055FF 100%)!important;
+  color:#0A0F1D!important;
+  box-shadow:0 0 18px rgba(0,240,255,.40),0 10px 24px rgba(0,85,255,.26)!important;
+}
+
+/* Flight rates are numerical controls, not text labels. */
+.mission-rate button{
+  font-family:"Space Mono"!important;
+  font-size:var(--type-label)!important;
+  font-weight:700!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+/* Mission red is state, not the design-system base. */
+.mobile-command-bar .flight-nav-button.active .mobile-nav-icon{
+  border-color:rgba(255,30,39,.72)!important;
+  background:linear-gradient(145deg,#FF1E27,#B00035)!important;
+  box-shadow:0 8px 22px rgba(255,30,39,.34),0 0 18px rgba(255,0,85,.24),inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+.mobile-command-bar .flight-nav-button.active small{
+  color:#FF7185!important;
+}
+.mission-statusline>span.live i{
+  background:#FF1E27!important;
+  box-shadow:0 0 13px rgba(255,30,39,.82),0 0 22px rgba(255,0,85,.36)!important;
+}
+
+/* Prevent metadata from collapsing below the scale on mobile. */
+@media(max-width:820px){
+  .mobile-command-bar button small{font-size:12px!important}
+  .pdr-input-grid label>span,
+  .pdr-component-fields label>span,
+  .cdr-hero-values article span,
+  .cdr-stability-summary span,
+  .cdr-secondary-results span,
+  .flight-results-summary span,
+  .mission-instruments .instrument span,
+  .flight-chart-tab,
+  .mission-controls>button:not(.mission-results){
+    font-size:13px!important;
+  }
+
+  input[type="number"],
+  .numeric-wheel-trigger span,
+  .pdr-input-grid select,
+  .input-wrap input{
+    font-size:19px!important;
+  }
+
+  .cdr-hero-values article strong,
+  .cdr-stability-summary strong,
+  .cdr-secondary-results strong,
+  .flight-results-summary strong,
+  .mission-instruments .instrument strong{
+    font-size:26px!important;
+  }
+
+  .mission-instruments .instrument.primary strong,
+  .mission-clock strong{
+    font-size:30px!important;
+  }
+}
