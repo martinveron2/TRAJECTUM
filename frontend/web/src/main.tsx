@@ -214,7 +214,6 @@ function App() {
   const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status' | 'cad'>('home');
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
   const [phaseFocusIndex, setPhaseFocusIndex] = useState(1);
-  const [phaseDragX, setPhaseDragX] = useState(0);
   const [mobileNavBusy, setMobileNavBusy] = useState(false);
   const [mobileNavDirection, setMobileNavDirection] = useState<'forward' | 'back'>('forward');
   const [missionControlOpen, setMissionControlOpen] = useState(false);
@@ -550,26 +549,16 @@ function App() {
 
         <div
           className="mobile-phase-wheel phase-grid-selector"
-          style={{ '--phase-drag': phaseDragX + 'px' } as React.CSSProperties}
           aria-label={txt('Explorar fases del proyecto', 'Explore project phases')}
           onTouchStart={(event) => {
             event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0);
-            setPhaseDragX(0);
-          }}
-          onTouchMove={(event) => {
-            const start = Number(event.currentTarget.dataset.touchX ?? 0);
-            const x = event.touches[0]?.clientX ?? start;
-            const delta = Math.max(-16, Math.min(16, (x - start) * .18));
-            setPhaseDragX(delta);
           }}
           onTouchEnd={(event) => {
             const start = Number(event.currentTarget.dataset.touchX ?? 0);
             const end = event.changedTouches[0]?.clientX ?? start;
             const delta = end - start;
             if (Math.abs(delta) > 34) movePhaseFocus(delta < 0 ? 1 : -1);
-            setPhaseDragX(0);
           }}
-          onTouchCancel={() => setPhaseDragX(0)}
         >
           <button type="button" className={'complete ' + (phaseFocusIndex === 0 ? 'focused' : '')} onClick={() => selectPhase(0)}><b>01</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
           <button type="button" className={'phase-current ' + (phaseFocusIndex === 1 ? 'focused' : '')} onClick={() => selectPhase(1)}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
