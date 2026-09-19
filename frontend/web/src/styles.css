@@ -649,3 +649,76 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     .mobile-nav-busy .mobile-guide,.mobile-nav-busy .mobile-phase-screen,.mobile-nav-busy .workspace{transform:none}
   }
 }
+
+
+/* Native-grade mobile interaction pass */
+@media(max-width:820px){
+  :root{--mobile-ease:cubic-bezier(.25,1,.5,1)}
+  .mobile-guide,.mobile-phase-screen,.workspace{
+    will-change:transform,opacity;
+    animation-duration:230ms!important;
+    animation-timing-function:var(--mobile-ease)!important;
+    animation-fill-mode:both!important
+  }
+  .mobile-nav-forward .mobile-guide,
+  .mobile-nav-forward .mobile-phase-screen,
+  .mobile-nav-forward .workspace{animation-name:trajectum-slide-left!important}
+  .mobile-nav-back .mobile-guide,
+  .mobile-nav-back .mobile-phase-screen,
+  .mobile-nav-back .workspace{animation-name:trajectum-slide-right!important}
+  @keyframes trajectum-slide-left{from{opacity:.6;transform:translate3d(18px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+  @keyframes trajectum-slide-right{from{opacity:.6;transform:translate3d(-18px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+
+  button,.mobile-action-grid button,.mobile-action-list>button,.mobile-cdr-status button,.mobile-guide-steps button{
+    transition:transform 100ms ease,opacity 100ms ease,box-shadow 160ms ease,border-color 160ms ease,background 160ms ease
+  }
+  button:active,.mobile-action-grid button:active,.mobile-action-list>button:active,.mobile-cdr-status button:active,.mobile-guide-steps button:active{
+    transform:scale(.97)!important;opacity:.92
+  }
+
+  .mobile-command-bar{position:fixed;overflow:visible}
+  .mobile-command-bar>.mobile-nav-slider{
+    position:absolute;left:8px;bottom:5px;width:calc((100% - 16px)/5);height:3px;pointer-events:none;
+    transform:translateX(calc(var(--nav-index) * 100%));
+    transition:transform 240ms var(--mobile-ease);
+  }
+  .mobile-command-bar>.mobile-nav-slider::after{
+    content:"";display:block;width:28px;height:3px;margin:0 auto;border-radius:99px;background:#80c3ff;
+    box-shadow:0 0 12px rgba(83,163,240,.5)
+  }
+  .mobile-command-bar button::after{display:none!important}
+  .mobile-command-bar button.active .mobile-nav-icon svg{
+    animation:trajectum-nav-select 240ms var(--mobile-ease)
+  }
+  @keyframes trajectum-nav-select{
+    0%{transform:scale(.9) translateY(1px)}
+    55%{transform:scale(1.12) translateY(-2px)}
+    100%{transform:scale(1) translateY(0)}
+  }
+
+  .input-wrap.field-valid{
+    border-color:rgba(68,203,147,.64);
+    box-shadow:inset 0 0 0 1px rgba(68,203,147,.05),0 0 0 0 rgba(68,203,147,0)
+  }
+  .input-wrap.field-valid:focus-within{
+    border-color:#67e2ae;box-shadow:0 0 0 2px rgba(74,221,160,.12)
+  }
+  .input-wrap.field-warning{
+    border-color:#d59b4f;background:#171508
+  }
+  .field-warning .field-label{color:#efbd78}
+  .field-empty .input-wrap{border-color:#334b69}
+
+  .analysis-running{position:relative}
+  .analysis-running .run{display:inline-flex;align-items:center;justify-content:center;gap:9px;opacity:1!important}
+  .run-spinner{width:15px;height:15px;flex:0 0 15px;border:2px solid rgba(255,255,255,.28);border-top-color:#fff;border-radius:50%;animation:trajectum-run-spin .7s linear infinite}
+  @keyframes trajectum-run-spin{to{transform:rotate(360deg)}}
+  .analysis-skeleton{display:grid;grid-template-columns:1.2fr .8fr 1fr;gap:8px;margin:2px 0 12px}
+  .analysis-skeleton i{display:block;height:6px;border-radius:99px;background:linear-gradient(90deg,#172d48 20%,#24486f 45%,#172d48 70%);background-size:220% 100%;animation:trajectum-skeleton 1.05s ease-in-out infinite}
+  .analysis-skeleton i:nth-child(2){animation-delay:.12s}.analysis-skeleton i:nth-child(3){animation-delay:.22s}
+  @keyframes trajectum-skeleton{0%{background-position:100% 0}100%{background-position:-120% 0}}
+
+  @media(prefers-reduced-motion:reduce){
+    .mobile-guide,.mobile-phase-screen,.workspace,.mobile-command-bar>.mobile-nav-slider,.mobile-command-bar button.active .mobile-nav-icon svg,.run-spinner,.analysis-skeleton i{animation:none!important;transition:none!important}
+  }
+}

@@ -6,6 +6,10 @@ import { CadInteroperabilityPanel } from './CadInteroperabilityPanel';
 import { RocketRealistic } from './RocketRealistic';
 import { NoseProfileComparison } from './NoseProfileComparison';
 import { buildEngineeringChartImages } from './engineeringChartExport';
+import {
+  Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
+  Flame, Sigma, ClipboardCheck, ArrowLeft, Play,
+} from 'lucide-react';
 
 type NumericField = number | '';
 
@@ -115,13 +119,14 @@ function Field({
   onChange: (value: NumericField) => void;
   status?: string;
 }) {
+  const fieldState = value === '' ? 'field-empty' : Number.isFinite(Number(value)) && Number(value) >= 0 ? 'field-valid' : 'field-warning';
   return (
-    <label className="field">
+    <label className={'field ' + fieldState}>
       <span className="field-label">
         {label}
         {status && <small>{status}</small>}
       </span>
-      <span className="input-wrap">
+      <span className={'input-wrap ' + fieldState}>
         <input
           type="number"
           value={value}
@@ -212,15 +217,25 @@ function App() {
   const averageThrust = motorAverageThrust(motor);
 
   const navigateMobile = (target: typeof mobileSection) => {
-    if (target === mobileSection || mobileNavBusy) return;
+    if (target === mobileSection) return;
     const order = ['home', 'pdr', 'vehicle', 'geometry', 'motor', 'cdr', 'analysis', 'plots', 'model', 'status'];
     setMobileNavDirection(order.indexOf(target) >= order.indexOf(mobileSection) ? 'forward' : 'back');
+    setMobileSection(target);
     setMobileNavBusy(true);
-    window.setTimeout(() => {
-      setMobileSection(target);
-      window.setTimeout(() => setMobileNavBusy(false), 180);
-    }, 90);
+    window.setTimeout(() => setMobileNavBusy(false), 230);
   };
+
+  const mobileNavIndex = showExportMenu
+    ? 4
+    : mobileSection === 'home'
+      ? 0
+      : ['pdr','vehicle','geometry','motor'].includes(mobileSection)
+        ? 1
+        : ['cdr','analysis','model','status'].includes(mobileSection)
+          ? 2
+          : mobileSection === 'plots'
+            ? 3
+            : 0;
 
   const update = <K extends keyof Vehicle>(key: K, value: Vehicle[K]) => {
     setVehicle((current) => ({ ...current, [key]: value }));
@@ -528,7 +543,7 @@ function App() {
 
       <section className="mobile-phase-screen mobile-pdr-screen" aria-label="PDR">
         <div className="mobile-screen-head">
-          <button type="button" onClick={() => navigateMobile('home')}>←</button>
+          <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
           <div><span>FASE 01</span><h2>PDR · {txt('DISEÑO PRELIMINAR', 'PRELIMINARY DESIGN')}</h2></div>
           <b className="complete">✓</b>
         </div>
@@ -537,16 +552,16 @@ function App() {
           <p>{txt('Geometría, perfil de cofia, aletas y configuración base. Entrá sólo al módulo que necesitás.', 'Geometry, nose profile, fins and baseline configuration. Open only the module you need.')}</p>
         </div>
         <div className="mobile-action-grid">
-          <button type="button" onClick={() => navigateMobile('geometry')}><span>01</span><strong>{txt('VER COHETE', 'VIEW VEHICLE')}</strong><small>{txt('Geometría visual', 'Visual geometry')}</small><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('vehicle')}><span>02</span><strong>{txt('PARÁMETROS', 'PARAMETERS')}</strong><small>{txt('Editor paramétrico', 'Parametric editor')}</small><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('motor')}><span>03</span><strong>MOTOR</strong><small>{txt('Seleccionar y editar', 'Select and edit')}</small><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('cdr')}><span>04</span><strong>{txt('IR A CDR', 'GO TO CDR')}</strong><small>{txt('Análisis detallado', 'Detailed analysis')}</small><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('geometry')}><span><Box size={18} strokeWidth={1.8} /></span><strong>{txt('VER COHETE', 'VIEW VEHICLE')}</strong><small>{txt('Geometría visual', 'Visual geometry')}</small><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('vehicle')}><span><SlidersHorizontal size={18} strokeWidth={1.8} /></span><strong>{txt('PARÁMETROS', 'PARAMETERS')}</strong><small>{txt('Editor paramétrico', 'Parametric editor')}</small><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('motor')}><span><Flame size={18} strokeWidth={1.8} /></span><strong>MOTOR</strong><small>{txt('Seleccionar y editar', 'Select and edit')}</small><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('cdr')}><span><Gauge size={18} strokeWidth={1.8} /></span><strong>{txt('IR A CDR', 'GO TO CDR')}</strong><small>{txt('Análisis detallado', 'Detailed analysis')}</small><b>→</b></button>
         </div>
       </section>
 
       <section className="mobile-phase-screen mobile-cdr-screen" aria-label="CDR">
         <div className="mobile-screen-head">
-          <button type="button" onClick={() => navigateMobile('home')}>←</button>
+          <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
           <div><span>FASE 02 · {txt('ACTUAL', 'CURRENT')}</span><h2>CDR · {txt('DISEÑO CRÍTICO', 'CRITICAL DESIGN')}</h2></div>
           <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '2'}</b>
         </div>
@@ -557,10 +572,10 @@ function App() {
           <button type="button" className={analysisSummary?.landing_time_s != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>{txt('RECUPERACIÓN', 'RECOVERY')}</span><strong>{analysisSummary?.landing_time_s != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
         </div>
         <div className="mobile-action-list">
-          <button type="button" onClick={() => { navigateMobile('analysis'); if (!analysisSummary && ready) setRunToken((value) => value + 1); }}><span>▶</span><div><strong>{analysisSummary ? txt('RESULTADOS DEL CDR', 'CDR RESULTS') : txt('EJECUTAR CDR', 'RUN CDR')}</strong><small>{txt('CG · CP · trayectoria · recuperación', 'CG · CP · trajectory · recovery')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('plots')}><span>⌁</span><div><strong>{txt('GRÁFICOS', 'PLOTS')}</strong><small>{txt('Análisis de vuelo interactivo', 'Interactive flight analysis')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('model')}><span>∑</span><div><strong>{txt('MODELO MATEMÁTICO', 'MATHEMATICAL MODEL')}</strong><small>{txt('Ecuaciones y métodos', 'Equations and methods')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('status')}><span>✓</span><div><strong>{txt('ESTADO DEL CDR', 'CDR STATUS')}</strong><small>{txt('Trazabilidad y bloqueos', 'Traceability and blockers')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => { navigateMobile('analysis'); if (!analysisSummary && ready) setRunToken((value) => value + 1); }}><span><Play size={18} strokeWidth={1.8} /></span><div><strong>{analysisSummary ? txt('RESULTADOS DEL CDR', 'CDR RESULTS') : txt('EJECUTAR CDR', 'RUN CDR')}</strong><small>{txt('CG · CP · trayectoria · recuperación', 'CG · CP · trajectory · recovery')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('plots')}><span><ChartNoAxesCombined size={18} strokeWidth={1.8} /></span><div><strong>{txt('GRÁFICOS', 'PLOTS')}</strong><small>{txt('Análisis de vuelo interactivo', 'Interactive flight analysis')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('model')}><span><Sigma size={18} strokeWidth={1.8} /></span><div><strong>{txt('MODELO MATEMÁTICO', 'MATHEMATICAL MODEL')}</strong><small>{txt('Ecuaciones y métodos', 'Equations and methods')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('status')}><span><ClipboardCheck size={18} strokeWidth={1.8} /></span><div><strong>{txt('ESTADO DEL CDR', 'CDR STATUS')}</strong><small>{txt('Trazabilidad y bloqueos', 'Traceability and blockers')}</small></div><b>→</b></button>
         </div>
       </section>
 
@@ -573,7 +588,7 @@ function App() {
       </section>
 
       <div className="mobile-context-bar">
-        <button type="button" onClick={() => navigateMobile(['vehicle','geometry','motor'].includes(mobileSection) ? 'pdr' : 'cdr')}>←</button>
+        <button type="button" onClick={() => navigateMobile(['vehicle','geometry','motor'].includes(mobileSection) ? 'pdr' : 'cdr')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={19} strokeWidth={1.8} /></button>
         <div>
           <span>{['vehicle','geometry','motor'].includes(mobileSection) ? 'PDR' : 'CDR'}</span>
           <strong>{
@@ -804,25 +819,30 @@ function App() {
         </section>
       </section>
 
-      <nav className="mobile-command-bar" aria-label={txt('Navegación móvil', 'Mobile navigation')}>
+      <nav
+        className="mobile-command-bar"
+        aria-label={txt('Navegación móvil', 'Mobile navigation')}
+        style={{ '--nav-index': mobileNavIndex } as React.CSSProperties}
+      >
+        <i className="mobile-nav-slider" aria-hidden="true" />
         <button type="button" className={mobileSection === 'home' ? 'active' : ''} onClick={() => navigateMobile('home')}>
-          <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5H15v-6H9v6H3.5a.5.5 0 0 1-.5-.5z"/></svg></span>
+          <span className="mobile-nav-icon"><Home size={20} strokeWidth={1.8} /></span>
           <small>{txt('INICIO', 'HOME')}</small>
         </button>
         <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onClick={() => navigateMobile('pdr')}>
-          <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 16 7v10l-4 4.5L8 17V7zM8 8H4.5v8H8m8-8h3.5v8H16"/></svg></span>
+          <span className="mobile-nav-icon"><Rocket size={20} strokeWidth={1.8} /></span>
           <small>PDR</small>
         </button>
         <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('cdr')}>
-          <span className="mobile-nav-icon primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5zM8 15l3-4 2 2 3-5"/></svg></span>
+          <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
         <button type="button" className={mobileSection === 'plots' ? 'active' : ''} onClick={() => navigateMobile('plots')}>
-          <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19.5h18M5 16l4-5 3 3 5-8 2 3"/></svg></span>
+          <span className="mobile-nav-icon"><ChartNoAxesCombined size={20} strokeWidth={1.8} /></span>
           <small>{txt('GRÁFICOS', 'PLOTS')}</small>
         </button>
         <button type="button" className={showExportMenu ? 'active' : ''} onClick={() => setShowExportMenu((value) => !value)}>
-          <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 19h14"/></svg></span>
+          <span className="mobile-nav-icon"><Download size={20} strokeWidth={1.8} /></span>
           <small>{txt('EXPORTAR', 'EXPORT')}</small>
         </button>
       </nav>
