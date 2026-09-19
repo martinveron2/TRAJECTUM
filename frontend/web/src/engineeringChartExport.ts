@@ -30,7 +30,7 @@ const plotLayout = (title: string, xTitle: string, yTitle: string, shapes: any[]
   title: { text: title, x: .03, xanchor: 'left', font: { size: 32, color: '#10233f' } },
   paper_bgcolor: '#ffffff',
   plot_bgcolor: '#ffffff',
-  font: { family: 'Arial, sans-serif', color: '#21354f', size: 20 },
+  font: { family: 'Space Grotesk', color: '#21354f', size: 20 },
   margin: { l: 126, r: 56, t: 118, b: 106 },
   showlegend: false,
   xaxis: {

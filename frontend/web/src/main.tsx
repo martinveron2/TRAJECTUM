@@ -246,8 +246,20 @@ function NumericStepper({
               <div className="numeric-wheel-fade top"/><div className="numeric-wheel-fade bottom"/>
             </div>
             <div className="numeric-wheel-actions">
-              <button type="button" className="cancel" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); closePicker(); }}>CANCELAR</button>
-              <button type="button" className="confirm" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); confirmPicker(); }}>✓ OK</button>
+              <button
+                type="button"
+                className="cancel"
+                onPointerDown={(event) => event.stopPropagation()}
+                onTouchStart={(event) => { event.preventDefault(); event.stopPropagation(); closePicker(); }}
+                onClick={(event) => { event.stopPropagation(); closePicker(); }}
+              >CANCELAR</button>
+              <button
+                type="button"
+                className="confirm"
+                onPointerDown={(event) => event.stopPropagation()}
+                onTouchStart={(event) => { event.preventDefault(); event.stopPropagation(); confirmPicker(); }}
+                onClick={(event) => { event.stopPropagation(); confirmPicker(); }}
+              >✓ OK</button>
             </div>
           </div>
         </div>,
