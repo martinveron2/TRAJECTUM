@@ -282,7 +282,7 @@ function App() {
 
   const liveCgFromNose = componentSummary?.total_cg_mm ?? analysisSummary?.cg_x_mm_from_nose ?? null;
 
-  const downloadBlob = (contents: string, type: string, filename: string) => {
+  const downloadBlob = (contents: BlobPart, type: string, filename: string) => {
     const blob = new Blob([contents], { type });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
@@ -311,6 +311,25 @@ function App() {
     const escapeCsv = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"';
     const rows = [headers.join(','), ...samples.map((sample: any) => headers.map((key) => escapeCsv(sample[key])).join(','))];
     downloadBlob(rows.join('\n'), 'text/csv;charset=utf-8', 'trajectum-trajectory.csv');
+    setShowExportMenu(false);
+  };
+
+  const exportChartsZip = async () => {
+    const samples = analysisSummary?.mission_timeline ?? [];
+    if (!samples.length) {
+      goToAnalysis();
+      setShowExportMenu(false);
+      return;
+    }
+    const [{ zipSync }, chartImages] = await Promise.all([
+      import('fflate'),
+      buildEngineeringChartImages(samples, Number(motor.burn) || 0, analysisSummary ?? {}),
+    ]);
+    const archiveEntries = Object.fromEntries(
+      chartImages.files.map((file) => [file.filename, new Uint8Array(file.buffer)]),
+    );
+    const zipped = zipSync(archiveEntries, { level: 6 });
+    downloadBlob(zipped, 'application/zip', 'TRAJECTUM_Graficos_Engineering.zip');
     setShowExportMenu(false);
   };
 
@@ -384,7 +403,8 @@ function App() {
               {txt('EXPORTAR RESULTADOS', 'EXPORT RESULTS')} <span>▾</span>
             </button>
             {showExportMenu && <div className="export-menu">
-              <button type="button" onClick={exportExcel}><strong>EXCEL TÉCNICO</strong><small>.XLSX · 8 HOJAS</small></button>
+              <button type="button" onClick={exportExcel}><strong>EXCEL TÉCNICO</strong><small>.XLSX · 8 HOJAS + GRÁFICOS</small></button>
+              <button type="button" onClick={exportChartsZip}><strong>{txt('GRÁFICOS PNG', 'PNG PLOTS')}</strong><small>{txt('5 ARCHIVOS · ALTA RESOLUCIÓN · IMPRESIÓN', '5 FILES · HIGH RES · PRINT')}</small></button>
               <button type="button" onClick={exportJson}><strong>JSON</strong><small>{txt('REPRODUCIBLE / SOFTWARE', 'REPRODUCIBLE / SOFTWARE')}</small></button>
               <button type="button" onClick={exportTrajectoryCsv}><strong>CSV</strong><small>{txt('TRAYECTORIA TABULAR', 'TABULAR TRAJECTORY')}</small></button>
             </div>}

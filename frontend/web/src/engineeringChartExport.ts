@@ -25,16 +25,28 @@ const dataUrlToArrayBuffer = (dataUrl: string) => {
 };
 
 const plotLayout = (title: string, xTitle: string, yTitle: string, shapes: any[] = [], annotations: any[] = []) => ({
-  width: 1100,
-  height: 620,
-  title: { text: title, x: .03, xanchor: 'left', font: { size: 22, color: '#dce9ff' } },
-  paper_bgcolor: '#081321',
-  plot_bgcolor: '#081321',
-  font: { family: 'Arial, sans-serif', color: '#9ab0d2', size: 14 },
-  margin: { l: 92, r: 40, t: 82, b: 78 },
+  width: 1600,
+  height: 900,
+  title: { text: title, x: .03, xanchor: 'left', font: { size: 32, color: '#10233f' } },
+  paper_bgcolor: '#ffffff',
+  plot_bgcolor: '#ffffff',
+  font: { family: 'Arial, sans-serif', color: '#21354f', size: 20 },
+  margin: { l: 126, r: 56, t: 118, b: 106 },
   showlegend: false,
-  xaxis: { title: { text: xTitle }, gridcolor: '#19304b', linecolor: '#365777', zerolinecolor: '#365777' },
-  yaxis: { title: { text: yTitle }, gridcolor: '#19304b', linecolor: '#365777', zerolinecolor: '#365777' },
+  xaxis: {
+    title: { text: xTitle, font: { size: 22, color: '#17365d' } },
+    tickfont: { size: 18, color: '#2d4058' },
+    gridcolor: '#dbe4ee',
+    linecolor: '#7d8fa5',
+    zerolinecolor: '#9aa9ba',
+  },
+  yaxis: {
+    title: { text: yTitle, font: { size: 22, color: '#17365d' } },
+    tickfont: { size: 18, color: '#2d4058' },
+    gridcolor: '#dbe4ee',
+    linecolor: '#7d8fa5',
+    zerolinecolor: '#9aa9ba',
+  },
   shapes,
   annotations,
 });
@@ -43,8 +55,8 @@ export async function buildEngineeringChartImages(
   samples: MissionSample[],
   motorBurnTimeS: number,
   analysis: AnalysisMeta,
-): Promise<{ summary: XlsxImage[]; trajectory: XlsxImage[] }> {
-  if (!samples.length) return { summary: [], trajectory: [] };
+): Promise<{ summary: XlsxImage[]; trajectory: XlsxImage[]; files: Array<{ filename: string; buffer: ArrayBuffer }> }> {
+  if (!samples.length) return { summary: [], trajectory: [], files: [] };
 
   const mod = await import('plotly.js-basic-dist-min');
   const Plotly = mod.default ?? mod;
@@ -69,11 +81,11 @@ export async function buildEngineeringChartImages(
   const shapes = eventSpecs.map((event) => ({
     type: 'line',
     x0: event.x, x1: event.x, y0: 0, y1: 1, yref: 'paper',
-    line: { width: 1.3, dash: 'dot', color: '#6f9bd6' },
+    line: { width: 2, dash: 'dot', color: '#557aa8' },
   }));
   const annotations = eventSpecs.map((event, index) => ({
     x: event.x, y: index % 2 === 0 ? 1.02 : .94, yref: 'paper',
-    text: event.label, showarrow: false, font: { size: 11, color: '#9cbbe4' }, xanchor: 'left',
+    text: event.label, showarrow: false, font: { size: 16, color: '#315f91' }, xanchor: 'left',
   }));
 
   const times = samples.map((s) => s.t_s);
@@ -93,7 +105,7 @@ export async function buildEngineeringChartImages(
         mode: 'lines',
         x: definition.x,
         y: definition.y,
-        line: { width: 3, color: '#65a6ff' },
+        line: { width: 4, color: '#145da0' },
         hoverinfo: 'skip',
       }], plotLayout(
         definition.title,
@@ -103,7 +115,7 @@ export async function buildEngineeringChartImages(
         definition.events ? annotations : [],
       ), { displayModeBar: false, responsive: false, staticPlot: true });
 
-      const dataUrl = await Plotly.toImage(root, { format: 'png', width: 1100, height: 620, scale: 1 });
+      const dataUrl = await Plotly.toImage(root, { format: 'png', width: 1600, height: 900, scale: 1 });
       rendered.push({ title: definition.title, buffer: dataUrlToArrayBuffer(dataUrl) });
     }
 
@@ -118,9 +130,11 @@ export async function buildEngineeringChartImages(
       description: 'Gráfico técnico exportado por TRAJECTUM: ' + item.title,
     });
 
+    const filenames = ['altitud-tiempo', 'velocidad-tiempo', 'mach-tiempo', 'max-q-tiempo', 'trayectoria-x-z'];
     return {
       summary: [toImage(rendered[0], 2, 4), toImage(rendered[4], 26, 4)],
       trajectory: rendered.map((item, index) => toImage(item, 2 + index * 25, 11)),
+      files: rendered.map((item, index) => ({ filename: 'TRAJECTUM_' + filenames[index] + '.png', buffer: item.buffer })),
     };
   } finally {
     try { Plotly.purge(root); } catch {}

@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import Plotly from 'plotly.js-basic-dist-min';
 import type { MissionSample } from './FlightVisualizer';
+import { buildEngineeringChartImages } from './engineeringChartExport';
 
 const Plot = createPlotlyComponent(Plotly as any);
 
@@ -131,7 +132,19 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
   };
   const autoScale = () => graphRef.current && Plotly.relayout(graphRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
   const resetView = () => graphRef.current && Plotly.relayout(graphRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true, dragmode: dragMode });
-  const savePng = () => graphRef.current && Plotly.downloadImage(graphRef.current, { format: 'png', filename: 'trajectum-' + active, width: 1600, height: 900, scale: 1 });
+  const savePng = async () => {
+    const indexByChart: Record<ChartKey, number> = { altitude: 0, speed: 1, mach: 2, q: 3, trajectory: 4 };
+    const exportSet = await buildEngineeringChartImages(samples, motorBurnTimeS, analysis);
+    const file = exportSet.files[indexByChart[active]];
+    if (!file) return;
+    const blob = new Blob([file.buffer], { type: 'image/png' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = file.filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
 
   if (!samples.length) return null;
 
