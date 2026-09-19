@@ -9,7 +9,7 @@ import { buildEngineeringChartImages } from './engineeringChartExport';
 import { MissionControl } from './MissionControl';
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
-  Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff,
+  Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff, FileUp,
 } from 'lucide-react';
 
 type NumericField = number | '';
@@ -211,7 +211,7 @@ function App() {
   const [activeMotorId, setActiveMotorId] = useState('motor-1');
   const [showMotorEditor, setShowMotorEditor] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status'>('home');
+  const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status' | 'cad'>('home');
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
   const [phaseFocusIndex, setPhaseFocusIndex] = useState(1);
   const [mobileNavBusy, setMobileNavBusy] = useState(false);
@@ -223,7 +223,7 @@ function App() {
 
   const navigateMobile = (target: typeof mobileSection) => {
     if (target === mobileSection) return;
-    const order = ['home', 'pdr', 'vehicle', 'geometry', 'motor', 'cdr', 'analysis', 'plots', 'model', 'status', 'frr', 'lrr', 'pfr'];
+    const order = ['home', 'pdr', 'vehicle', 'geometry', 'motor', 'cad', 'cdr', 'analysis', 'plots', 'model', 'status', 'frr', 'lrr', 'pfr'];
     setMobileNavDirection(order.indexOf(target) >= order.indexOf(mobileSection) ? 'forward' : 'back');
     setMobileSection(target);
     setMobileNavBusy(true);
@@ -240,11 +240,9 @@ function App() {
     setPhaseFocusIndex((current) => Math.max(0, Math.min(4, current + delta)));
   };
 
-  const mobileNavIndex = showExportMenu
-    ? 4
-    : mobileSection === 'home'
+  const mobileNavIndex = mobileSection === 'home'
       ? 0
-      : ['pdr','vehicle','geometry','motor'].includes(mobileSection)
+      : ['pdr','vehicle','geometry','motor','cad'].includes(mobileSection)
         ? 1
         : ['cdr','analysis','model','status','frr'].includes(mobileSection)
           ? 2
@@ -474,17 +472,27 @@ function App() {
               <span className="brand-subline">{txt('INGENIERÍA DEL VEHÍCULO · SIMULACIÓN · ANÁLISIS', 'VEHICLE ENGINEERING · SIMULATION · ANALYSIS')}</span>
             </div>
             <span className="brand-version">V0.1.0-CDR</span>
-            <button
-              type="button"
-              className="mobile-lang-pill"
-              onClick={() => setLang((current) => current === 'es' ? 'en' : 'es')}
-              aria-label={txt('Cambiar idioma', 'Change language')}
-            >
-              <Globe2 size={14} strokeWidth={1.8} />
-              <span>{isEs ? 'ES' : 'EN'}</span>
-              <i>|</i>
-              <b>{isEs ? 'EN' : 'ES'}</b>
-            </button>
+            <div className="mobile-header-tools">
+              <button
+                type="button"
+                className="mobile-lang-pill"
+                onClick={() => setLang((current) => current === 'es' ? 'en' : 'es')}
+                aria-label={txt('Cambiar idioma', 'Change language')}
+              >
+                <Globe2 size={14} strokeWidth={1.8} />
+                <span>{txt('IDIOMA', 'LANGUAGE')}</span>
+                <b>{isEs ? 'ES' : 'EN'}</b>
+              </button>
+              <button
+                type="button"
+                className="mobile-header-export"
+                onClick={() => setShowExportMenu((value) => !value)}
+                aria-expanded={showExportMenu}
+              >
+                <Download size={14} strokeWidth={1.8} />
+                <span>{txt('EXPORTAR', 'EXPORT')}</span>
+              </button>
+            </div>
           </div>
           <h1>{txt('Ingeniería del vehículo', 'Vehicle Engineering Workspace')}</h1>
         </div>
@@ -746,13 +754,14 @@ function App() {
       </section>
 
       <div className="mobile-context-bar">
-        <button type="button" onClick={() => navigateMobile(['vehicle','geometry','motor'].includes(mobileSection) ? 'pdr' : 'cdr')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={19} strokeWidth={1.8} /></button>
+        <button type="button" onClick={() => navigateMobile(['vehicle','geometry','motor','cad'].includes(mobileSection) ? 'pdr' : 'cdr')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={19} strokeWidth={1.8} /></button>
         <div>
-          <span>{['vehicle','geometry','motor'].includes(mobileSection) ? 'PDR' : 'CDR'}</span>
+          <span>{['vehicle','geometry','motor','cad'].includes(mobileSection) ? 'PDR' : 'CDR'}</span>
           <strong>{
             mobileSection === 'vehicle' ? txt('PARÁMETROS DEL VEHÍCULO', 'VEHICLE PARAMETERS') :
             mobileSection === 'geometry' ? txt('DISEÑO DEL COHETE', 'VEHICLE DESIGN') :
             mobileSection === 'motor' ? txt('CONFIGURACIÓN DEL MOTOR', 'MOTOR CONFIGURATION') :
+            mobileSection === 'cad' ? txt('IMPORTAR CAD / FUSION', 'IMPORT CAD / FUSION') :
             mobileSection === 'plots' ? txt('GRÁFICOS DE VUELO', 'FLIGHT PLOTS') :
             mobileSection === 'model' ? txt('MODELO MATEMÁTICO', 'MATHEMATICAL MODEL') :
             mobileSection === 'status' ? txt('ESTADO DEL CDR', 'CDR STATUS') :
@@ -1013,9 +1022,9 @@ function App() {
           <span className="mobile-nav-icon"><ChartNoAxesCombined size={20} strokeWidth={1.8} /></span>
           <small>{txt('GRÁFICOS', 'PLOTS')}</small>
         </button>
-        <button type="button" className={showExportMenu ? 'active' : ''} onClick={() => setShowExportMenu((value) => !value)}>
-          <span className="mobile-nav-icon"><Download size={20} strokeWidth={1.8} /></span>
-          <small>{txt('EXPORTAR', 'EXPORT')}</small>
+        <button type="button" className={mobileSection === 'cad' ? 'active' : ''} onClick={() => navigateMobile('cad')}>
+          <span className="mobile-nav-icon"><FileUp size={20} strokeWidth={1.8} /></span>
+          <small>{txt('IMPORTAR', 'IMPORT')}</small>
         </button>
       </nav>
 
