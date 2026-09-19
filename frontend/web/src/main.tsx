@@ -7,7 +7,7 @@ import { RocketRealistic } from './RocketRealistic';
 import { NoseProfileComparison } from './NoseProfileComparison';
 import { buildEngineeringChartImages } from './engineeringChartExport';
 import { MissionControl } from './MissionControl';
-import { RequirementsMatrix } from './RequirementsMatrix';
+import { RequirementsMatrix, type RequirementStatus, type RequirementStatusOverrides } from './RequirementsMatrix';
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
   Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff, FileUp,
@@ -222,11 +222,32 @@ function App() {
   const [phaseFocusIndex, setPhaseFocusIndex] = useState(2);
   const [phaseStoryDragX, setPhaseStoryDragX] = useState(0);
   const [phaseStoryDragging, setPhaseStoryDragging] = useState(false);
+  const [selectedRequirementId, setSelectedRequirementId] = useState('R1');
+  const [requirementStatusOverrides, setRequirementStatusOverrides] = useState<RequirementStatusOverrides>(() => {
+    try {
+      const saved = window.localStorage.getItem('trajectum.requirement-statuses.v1');
+      return saved ? JSON.parse(saved) as RequirementStatusOverrides : {};
+    } catch {
+      return {};
+    }
+  });
 
   const [missionControlOpen, setMissionControlOpen] = useState(false);
   const [pendingMissionLaunch, setPendingMissionLaunch] = useState(false);
   const motor = motorConfigs.find((item) => item.id === activeMotorId) ?? motorConfigs[0];
   const averageThrust = motorAverageThrust(motor);
+
+  const updateRequirementStatus = (id: string, status: RequirementStatus) => {
+    setRequirementStatusOverrides((current) => {
+      const next = { ...current, [id]: status };
+      try {
+        window.localStorage.setItem('trajectum.requirement-statuses.v1', JSON.stringify(next));
+      } catch {
+        // Local persistence is best-effort; in-memory state remains authoritative.
+      }
+      return next;
+    });
+  };
 
   const navigateMobile = (target: typeof mobileSection) => {
     if (target === mobileSection) return;
@@ -664,6 +685,14 @@ function App() {
           launchAngleDeg={Number(vehicle.launchAngle)}
           payloadMassG={componentSummary?.components?.find((item: any) => item.name === 'Carga útil')?.mass_g ?? 100}
           analysis={analysisSummary}
+          statusOverrides={requirementStatusOverrides}
+
+          onStatusChange={updateRequirementStatus}
+
+          selectedRequirementId={selectedRequirementId}
+
+          onSelectRequirement={setSelectedRequirementId}
+
         />
       </section>
 
@@ -682,6 +711,14 @@ function App() {
             launchAngleDeg={Number(vehicle.launchAngle)}
             payloadMassG={componentSummary?.components?.find((item: any) => item.name === 'Carga útil')?.mass_g ?? 100}
             analysis={analysisSummary}
+            statusOverrides={requirementStatusOverrides}
+
+            onStatusChange={updateRequirementStatus}
+
+            selectedRequirementId={selectedRequirementId}
+
+            onSelectRequirement={setSelectedRequirementId}
+
           />
         </details>
 
