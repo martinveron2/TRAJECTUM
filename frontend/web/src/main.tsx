@@ -5,6 +5,7 @@ import { LiveAnalysisPanel } from './LiveAnalysisPanel';
 import { CadInteroperabilityPanel } from './CadInteroperabilityPanel';
 import { RocketRealistic } from './RocketRealistic';
 import { NoseProfileComparison } from './NoseProfileComparison';
+import { buildEngineeringChartImages } from './engineeringChartExport';
 
 type NumericField = number | '';
 
@@ -343,7 +344,12 @@ function App() {
     const motorSheet = [[header('CONFIGURACIÓN'),header('DESIGNACIÓN'),header('PROPELENTE'),header('COMBUSTIÓN [s]'),header('IMPULSO [N·s]'),header('EMPUJE MEDIO DERIVADO [N]'),header('EMPUJE MÁX [N]'),header('PROPELENTE [g]'),header('SECA [g]'),header('ACTIVA')], ...motorConfigs.map((item) => [cell(item.label),cell(item.designation),cell(item.propellant),cell(item.burn),cell(item.impulse),cell(motorAverageThrust(item)),cell(item.maxThrust),cell(item.propellantMass),cell(item.dryMass),cell(item.id === activeMotorId ? 'SI' : 'NO')])];
     const recovery = [[header('PARÁMETRO'),header('VALOR'),header('UNIDAD')],[cell('Cd paracaídas'),cell(vehicle.parachuteCd),cell('')],[cell('Área paracaídas'),cell(vehicle.parachuteArea),cell('m²')],[cell('Altitud despliegue configurada'),cell(vehicle.deployAltitude),cell('m')],[cell('Retardo despliegue'),cell(vehicle.deployDelay),cell('s')],[cell('Altitud despliegue simulada'),cell(analysisSummary?.deployment_altitude_m),cell('m')],[cell('Tiempo despliegue'),cell(analysisSummary?.deployment_time_s),cell('s')],[cell('Tiempo aterrizaje'),cell(analysisSummary?.landing_time_s),cell('s')],[cell('Velocidad impacto'),cell(analysisSummary?.impact_speed_m_s),cell('m/s')]];
     const model = [[header('MÓDULO'),header('MÉTODO / MODELO')],[cell('CG'),cell('Sumatoria de momentos de masa')],[cell('CP'),cell('Barrowman + perfil axisimétrico de cofia')],[cell('Trayectoria'),cell('Masa puntual 2D')],[cell('Integración'),cell('Runge–Kutta de cuarto orden (RK4)')],[cell('Resistencia'),cell('D = 1/2 ρ V² Cd A')],[cell('Atmósfera'),cell('ISA')],[cell('Recuperación'),cell('Modelo de descenso con paracaídas')]];
-    await writeXlsxFile([summary, geometry, masses, cp, trajectory, motorSheet, recovery, model], { sheets: ['RESUMEN','GEOMETRIA','MASAS_CG','CP','TRAYECTORIA','MOTOR','RECUPERACION','MODELO'], fileName: 'TRAJECTUM_Engineering_Export.xlsx' });
+    const chartImages = await buildEngineeringChartImages(analysisSummary?.mission_timeline ?? [], Number(motor.burn) || 0, analysisSummary ?? {});
+    await writeXlsxFile([summary, geometry, masses, cp, trajectory, motorSheet, recovery, model], {
+      sheets: ['RESUMEN','GEOMETRIA','MASAS_CG','CP','TRAYECTORIA','MOTOR','RECUPERACION','MODELO'],
+      images: [chartImages.summary, [], [], [], chartImages.trajectory, [], [], []],
+      fileName: 'TRAJECTUM_Engineering_Export.xlsx',
+    });
     setShowExportMenu(false);
   };
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import Plotly from 'plotly.js-basic-dist-min';
 import type { MissionSample } from './FlightVisualizer';
@@ -22,6 +22,8 @@ type ChartKey = 'altitude' | 'speed' | 'mach' | 'q' | 'trajectory';
 
 export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang = 'es' }: Props) {
   const [active, setActive] = useState<ChartKey>('altitude');
+  const [dragMode, setDragMode] = useState<'zoom' | 'pan'>('zoom');
+  const graphRef = useRef<any>(null);
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
 
@@ -122,6 +124,15 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
     ['q', 'MAX Q'],
     ['trajectory', txt('TRAYECTORIA', 'TRAJECTORY')],
   ];
+
+  const setInteraction = (mode: 'zoom' | 'pan') => {
+    setDragMode(mode);
+    if (graphRef.current) Plotly.relayout(graphRef.current, { dragmode: mode });
+  };
+  const autoScale = () => graphRef.current && Plotly.relayout(graphRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+  const resetView = () => graphRef.current && Plotly.relayout(graphRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true, dragmode: dragMode });
+  const savePng = () => graphRef.current && Plotly.downloadImage(graphRef.current, { format: 'png', filename: 'trajectum-' + active, width: 1600, height: 900, scale: 1 });
+
   if (!samples.length) return null;
 
   return <section className="panel flight-analysis-panel">
@@ -142,6 +153,14 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
         className={active === key ? 'flight-chart-tab active' : 'flight-chart-tab'}
         onClick={() => setActive(key)}
       >{label}</button>)}
+    </div>
+
+    <div className="flight-chart-toolbar" aria-label={txt('Herramientas del gráfico', 'Chart tools')}>
+      <button type="button" className={dragMode === 'zoom' ? 'active' : ''} onClick={() => setInteraction('zoom')} title={txt('Arrastrar para ampliar una zona', 'Drag to zoom into an area')}>⌕ <span>{txt('ZOOM', 'ZOOM')}</span></button>
+      <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Arrastrar para desplazar el gráfico', 'Drag to pan the plot')}>✥ <span>PAN</span></button>
+      <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente los ejes', 'Autoscale axes')}>↔ <span>{txt('AJUSTAR', 'AUTOSCALE')}</span></button>
+      <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')}>↺ <span>{txt('RESET', 'RESET')}</span></button>
+      <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Exportar gráfico en PNG', 'Export plot as PNG')}>⇩ <span>PNG</span></button>
     </div>
 
     <div className="flight-chart-frame">
@@ -176,10 +195,11 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
         config={{
           responsive: true,
           displaylogo: false,
+          displayModeBar: false,
           scrollZoom: true,
-          toImageButtonOptions: { format: 'png', filename: 'trajectum-flight-analysis', scale: 2 },
-          modeBarButtonsToRemove: ['lasso2d', 'select2d'],
         }}
+        onInitialized={(_, graphDiv) => { graphRef.current = graphDiv; }}
+        onUpdate={(_, graphDiv) => { graphRef.current = graphDiv; }}
         useResizeHandler
         style={{ width: '100%', height: '460px' }}
       />
