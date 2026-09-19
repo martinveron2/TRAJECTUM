@@ -1466,3 +1466,74 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
   .mobile-phase-selector-card{padding:8px 8px 7px;margin-top:8px}
   .phase-grid-selector button{min-height:66px!important}
 }
+
+
+@media(max-width:820px){
+  /* Instagram Stories-like phase header: frame stays fixed, only inner story content moves. */
+  .mobile-project-header-card{
+    overflow:hidden;
+    touch-action:pan-y;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  .mobile-project-header-card .story-progress{
+    margin:0 0 10px!important;
+  }
+
+  .mobile-project-header-card .story-progress i{
+    position:relative;
+    overflow:hidden;
+    background:#18304a;
+  }
+
+  .mobile-project-header-card .story-progress i.past{
+    background:linear-gradient(90deg,#5ba8f1,#8ccaff);
+    box-shadow:0 0 8px rgba(86,170,245,.30);
+  }
+
+  .mobile-project-header-card .story-progress i.active{
+    background:linear-gradient(90deg,#7bc4ff,#b2dcff);
+    box-shadow:0 0 12px rgba(95,183,255,.55);
+  }
+
+  .mobile-project-story-viewport{
+    width:100%;
+    overflow:hidden;
+  }
+
+  .mobile-project-story-track{
+    display:flex;
+    width:500%;
+    will-change:transform;
+    transition:transform 190ms cubic-bezier(.22,.9,.3,1);
+  }
+
+  .mobile-project-story-track.dragging{
+    transition:none;
+  }
+
+  .mobile-project-story-slide{
+    width:20%;
+    flex:0 0 20%;
+    min-width:0;
+  }
+
+  .mobile-project-story-slide .mobile-guide-top{
+    width:100%;
+  }
+
+  .mobile-project-story-slide[aria-hidden="true"]{
+    pointer-events:none;
+  }
+
+  /* The lower selector remains the synchronized visual state target. */
+  .mobile-phase-selector-card .phase-grid-selector button.focused{
+    border-color:#7bc4ff!important;
+    background:linear-gradient(155deg,#11385f,#0a223d)!important;
+    box-shadow:
+      0 0 0 1px rgba(123,196,255,.22),
+      0 0 18px rgba(76,164,245,.34),
+      inset 0 0 18px rgba(78,150,226,.12)!important;
+  }
+}

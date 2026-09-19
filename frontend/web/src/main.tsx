@@ -214,6 +214,8 @@ function App() {
   const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status' | 'cad'>('home');
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
   const [phaseFocusIndex, setPhaseFocusIndex] = useState(1);
+  const [phaseStoryDragX, setPhaseStoryDragX] = useState(0);
+  const [phaseStoryDragging, setPhaseStoryDragging] = useState(false);
 
   const [missionControlOpen, setMissionControlOpen] = useState(false);
   const [pendingMissionLaunch, setPendingMissionLaunch] = useState(false);
@@ -228,14 +230,6 @@ function App() {
   const movePhaseFocus = (delta: number) => {
     setPhaseFocusIndex((current) => Math.max(0, Math.min(4, current + delta)));
   };
-
-  const phaseFocusMeta = [
-    { code: 'PDR', titleEs: 'DISEÑO PRELIMINAR', titleEn: 'PRELIMINARY DESIGN' },
-    { code: 'CDR', titleEs: 'DISEÑO CRÍTICO', titleEn: 'CRITICAL DESIGN' },
-    { code: 'FRR', titleEs: 'PREPARACIÓN DE VUELO', titleEn: 'FLIGHT READINESS' },
-    { code: 'LRR', titleEs: 'PREPARACIÓN DE LANZAMIENTO', titleEn: 'LAUNCH READINESS' },
-    { code: 'PFR / MCR', titleEs: 'POST-VUELO Y CIERRE', titleEn: 'POST-FLIGHT & CLOSEOUT' },
-  ][phaseFocusIndex];
 
   const mobileNavIndex = mobileSection === 'home'
       ? 0
@@ -529,18 +523,59 @@ function App() {
 
       <div className="mobile-content-stack">
       <section className="mobile-guide" aria-label={txt('Guía del proyecto', 'Project guide')}>
-        <div className="mobile-project-header-card">
-          <div className="mobile-guide-top">
-            <div>
-              <span>{txt('PROYECTO ACTIVO', 'ACTIVE PROJECT')}</span>
-              <strong>UTN-FRH-G07</strong>
-              <small className="mobile-phase-focus-title">{phaseFocusMeta.code} · {txt(phaseFocusMeta.titleEs, phaseFocusMeta.titleEn)}</small>
-            </div>
-            <div className="mobile-guide-score"><b>{String(phaseFocusIndex + 1).padStart(2, '0')}/05</b><small>{txt('FASE EN FOCO', 'FOCUSED PHASE')}</small></div>
+        <div
+          className="mobile-project-header-card"
+          onTouchStart={(event) => {
+            event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0);
+            setPhaseStoryDragging(true);
+            setPhaseStoryDragX(0);
+          }}
+          onTouchMove={(event) => {
+            const start = Number(event.currentTarget.dataset.touchX ?? 0);
+            const x = event.touches[0]?.clientX ?? start;
+            setPhaseStoryDragX(Math.max(-78, Math.min(78, x - start)));
+          }}
+          onTouchEnd={(event) => {
+            const start = Number(event.currentTarget.dataset.touchX ?? 0);
+            const end = event.changedTouches[0]?.clientX ?? start;
+            const delta = end - start;
+            if (Math.abs(delta) > 34) movePhaseFocus(delta < 0 ? 1 : -1);
+            setPhaseStoryDragging(false);
+            setPhaseStoryDragX(0);
+          }}
+          onTouchCancel={() => {
+            setPhaseStoryDragging(false);
+            setPhaseStoryDragX(0);
+          }}
+        >
+          <div className="mobile-phase-progress story-progress" aria-hidden="true">
+            {[0,1,2,3,4].map((index) => <i key={index} className={index === phaseFocusIndex ? 'active' : index < phaseFocusIndex ? 'past' : ''} />)}
           </div>
 
-          <div className="mobile-phase-progress" aria-hidden="true">
-            {[0,1,2,3,4].map((index) => <i key={index} className={index === phaseFocusIndex ? 'active' : index < phaseFocusIndex ? 'past' : ''} />)}
+          <div className="mobile-project-story-viewport">
+            <div
+              className={phaseStoryDragging ? 'mobile-project-story-track dragging' : 'mobile-project-story-track'}
+              style={{ transform: `translate3d(calc(-${phaseFocusIndex * 20}% + ${phaseStoryDragX}px),0,0)` }}
+            >
+              {[
+                { code: 'PDR', titleEs: 'DISEÑO PRELIMINAR', titleEn: 'PRELIMINARY DESIGN' },
+                { code: 'CDR', titleEs: 'DISEÑO CRÍTICO', titleEn: 'CRITICAL DESIGN' },
+                { code: 'FRR', titleEs: 'PREPARACIÓN DE VUELO', titleEn: 'FLIGHT READINESS' },
+                { code: 'LRR', titleEs: 'PREPARACIÓN DE LANZAMIENTO', titleEn: 'LAUNCH READINESS' },
+                { code: 'PFR / MCR', titleEs: 'POST-VUELO Y CIERRE', titleEn: 'POST-FLIGHT & CLOSEOUT' },
+              ].map((phase, index) => (
+                <div className="mobile-project-story-slide" key={phase.code} aria-hidden={index !== phaseFocusIndex}>
+                  <div className="mobile-guide-top">
+                    <div>
+                      <span>{txt('PROYECTO ACTIVO', 'ACTIVE PROJECT')}</span>
+                      <strong>UTN-FRH-G07</strong>
+                      <small className="mobile-phase-focus-title">{phase.code} · {txt(phase.titleEs, phase.titleEn)}</small>
+                    </div>
+                    <div className="mobile-guide-score"><b>{String(index + 1).padStart(2, '0')}/05</b><small>{txt('FASE EN FOCO', 'FOCUSED PHASE')}</small></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
