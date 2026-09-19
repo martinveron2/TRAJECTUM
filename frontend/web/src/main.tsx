@@ -205,9 +205,22 @@ function App() {
   const [activeMotorId, setActiveMotorId] = useState('motor-1');
   const [showMotorEditor, setShowMotorEditor] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status' | 'export'>('home');
+  const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status'>('home');
+  const [mobileNavBusy, setMobileNavBusy] = useState(false);
+  const [mobileNavDirection, setMobileNavDirection] = useState<'forward' | 'back'>('forward');
   const motor = motorConfigs.find((item) => item.id === activeMotorId) ?? motorConfigs[0];
   const averageThrust = motorAverageThrust(motor);
+
+  const navigateMobile = (target: typeof mobileSection) => {
+    if (target === mobileSection || mobileNavBusy) return;
+    const order = ['home', 'pdr', 'vehicle', 'geometry', 'motor', 'cdr', 'analysis', 'plots', 'model', 'status'];
+    setMobileNavDirection(order.indexOf(target) >= order.indexOf(mobileSection) ? 'forward' : 'back');
+    setMobileNavBusy(true);
+    window.setTimeout(() => {
+      setMobileSection(target);
+      window.setTimeout(() => setMobileNavBusy(false), 180);
+    }, 90);
+  };
 
   const update = <K extends keyof Vehicle>(key: K, value: Vehicle[K]) => {
     setVehicle((current) => ({ ...current, [key]: value }));
@@ -274,21 +287,21 @@ function App() {
 
   const continueMobileGuide = () => {
     if (mobileGuideStep === 'vehicle') {
-      setMobileSection('vehicle');
+      navigateMobile('vehicle');
       document.getElementById('vehicle-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
     if (mobileGuideStep === 'motor') {
-      setMobileSection('vehicle');
+      navigateMobile('vehicle');
       document.getElementById('motor-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     if (mobileGuideStep === 'analysis') {
-      setMobileSection('analysis');
+      navigateMobile('analysis');
       goToAnalysis();
       return;
     }
-    setMobileSection('plots');
+    navigateMobile('plots');
     document.querySelector('.flight-analysis-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -401,7 +414,11 @@ function App() {
   };
 
   return (
-    <main className={'app-shell mobile-view-' + mobileSection}>
+    <main className={'app-shell mobile-view-' + mobileSection + (mobileNavBusy ? ' mobile-nav-busy mobile-nav-' + mobileNavDirection : '')}>
+      <div className={mobileNavBusy ? 'mobile-route-feedback active' : 'mobile-route-feedback'} aria-hidden={!mobileNavBusy}>
+        <i />
+        <span>{txt('ABRIENDO MÓDULO', 'OPENING MODULE')}</span>
+      </div>
       <header className="topbar">
         <div className="brand-stack">
           <div className="brand-lockup" aria-label="TRAJECTUM">
@@ -502,16 +519,16 @@ function App() {
         </button>
 
         <div className="mobile-guide-steps">
-          <button type="button" className={geometryConsistent ? 'complete' : mobileGuideStep === 'vehicle' ? 'current' : ''} onClick={() => { setMobileSection('vehicle'); document.getElementById('vehicle-editor')?.scrollIntoView({ behavior:'smooth', block:'start' }); }}><b>01</b><span>{txt('VEHÍCULO', 'VEHICLE')}</span><em>{geometryConsistent ? '✓' : '→'}</em></button>
+          <button type="button" className={geometryConsistent ? 'complete' : mobileGuideStep === 'vehicle' ? 'current' : ''} onClick={() => { navigateMobile('vehicle'); document.getElementById('vehicle-editor')?.scrollIntoView({ behavior:'smooth', block:'start' }); }}><b>01</b><span>{txt('VEHÍCULO', 'VEHICLE')}</span><em>{geometryConsistent ? '✓' : '→'}</em></button>
           <button type="button" className={activeMotorReady ? 'complete' : mobileGuideStep === 'motor' ? 'current' : ''} onClick={() => document.getElementById('motor-panel')?.scrollIntoView({ behavior:'smooth', block:'center' })}><b>02</b><span>MOTOR</span><em>{activeMotorReady ? '✓' : '→'}</em></button>
-          <button type="button" className={analysisSummary ? 'complete' : mobileGuideStep === 'analysis' ? 'current' : ''} onClick={() => { setMobileSection('analysis'); goToAnalysis(); }}><b>03</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
+          <button type="button" className={analysisSummary ? 'complete' : mobileGuideStep === 'analysis' ? 'current' : ''} onClick={() => { navigateMobile('analysis'); goToAnalysis(); }}><b>03</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
           <button type="button" className={analysisSummary ? 'current' : ''} onClick={() => document.querySelector('.flight-analysis-panel')?.scrollIntoView({ behavior:'smooth', block:'start' })}><b>04</b><span>{txt('RESULTADOS', 'RESULTS')}</span><em>{analysisSummary ? '→' : '·'}</em></button>
         </div>
       </section>
 
       <section className="mobile-phase-screen mobile-pdr-screen" aria-label="PDR">
         <div className="mobile-screen-head">
-          <button type="button" onClick={() => setMobileSection('home')}>←</button>
+          <button type="button" onClick={() => navigateMobile('home')}>←</button>
           <div><span>FASE 01</span><h2>PDR · {txt('DISEÑO PRELIMINAR', 'PRELIMINARY DESIGN')}</h2></div>
           <b className="complete">✓</b>
         </div>
@@ -520,43 +537,43 @@ function App() {
           <p>{txt('Geometría, perfil de cofia, aletas y configuración base. Entrá sólo al módulo que necesitás.', 'Geometry, nose profile, fins and baseline configuration. Open only the module you need.')}</p>
         </div>
         <div className="mobile-action-grid">
-          <button type="button" onClick={() => setMobileSection('geometry')}><span>01</span><strong>{txt('VER COHETE', 'VIEW VEHICLE')}</strong><small>{txt('Geometría visual', 'Visual geometry')}</small><b>→</b></button>
-          <button type="button" onClick={() => setMobileSection('vehicle')}><span>02</span><strong>{txt('PARÁMETROS', 'PARAMETERS')}</strong><small>{txt('Editor paramétrico', 'Parametric editor')}</small><b>→</b></button>
-          <button type="button" onClick={() => setMobileSection('motor')}><span>03</span><strong>MOTOR</strong><small>{txt('Seleccionar y editar', 'Select and edit')}</small><b>→</b></button>
-          <button type="button" onClick={() => setMobileSection('cdr')}><span>04</span><strong>{txt('IR A CDR', 'GO TO CDR')}</strong><small>{txt('Análisis detallado', 'Detailed analysis')}</small><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('geometry')}><span>01</span><strong>{txt('VER COHETE', 'VIEW VEHICLE')}</strong><small>{txt('Geometría visual', 'Visual geometry')}</small><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('vehicle')}><span>02</span><strong>{txt('PARÁMETROS', 'PARAMETERS')}</strong><small>{txt('Editor paramétrico', 'Parametric editor')}</small><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('motor')}><span>03</span><strong>MOTOR</strong><small>{txt('Seleccionar y editar', 'Select and edit')}</small><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('cdr')}><span>04</span><strong>{txt('IR A CDR', 'GO TO CDR')}</strong><small>{txt('Análisis detallado', 'Detailed analysis')}</small><b>→</b></button>
         </div>
       </section>
 
       <section className="mobile-phase-screen mobile-cdr-screen" aria-label="CDR">
         <div className="mobile-screen-head">
-          <button type="button" onClick={() => setMobileSection('home')}>←</button>
+          <button type="button" onClick={() => navigateMobile('home')}>←</button>
           <div><span>FASE 02 · {txt('ACTUAL', 'CURRENT')}</span><h2>CDR · {txt('DISEÑO CRÍTICO', 'CRITICAL DESIGN')}</h2></div>
           <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '2'}</b>
         </div>
         <div className="mobile-cdr-status">
-          <button type="button" className={componentSummary ? 'ready' : ''} onClick={() => setMobileSection('analysis')}><span>CG</span><strong>{componentSummary ? txt('LISTO', 'READY') : txt('REVISAR', 'CHECK')}</strong></button>
-          <button type="button" className={analysisSummary?.cp_x_mm_from_nose != null ? 'ready' : ''} onClick={() => setMobileSection('analysis')}><span>CP</span><strong>{analysisSummary?.cp_x_mm_from_nose != null ? txt('LISTO', 'READY') : txt('REVISAR', 'CHECK')}</strong></button>
-          <button type="button" className={analysisSummary?.apogee_m != null ? 'ready' : ''} onClick={() => setMobileSection('analysis')}><span>{txt('TRAYECTORIA', 'TRAJECTORY')}</span><strong>{analysisSummary?.apogee_m != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
-          <button type="button" className={analysisSummary?.landing_time_s != null ? 'ready' : ''} onClick={() => setMobileSection('analysis')}><span>{txt('RECUPERACIÓN', 'RECOVERY')}</span><strong>{analysisSummary?.landing_time_s != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
+          <button type="button" className={componentSummary ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>CG</span><strong>{componentSummary ? txt('LISTO', 'READY') : txt('REVISAR', 'CHECK')}</strong></button>
+          <button type="button" className={analysisSummary?.cp_x_mm_from_nose != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>CP</span><strong>{analysisSummary?.cp_x_mm_from_nose != null ? txt('LISTO', 'READY') : txt('REVISAR', 'CHECK')}</strong></button>
+          <button type="button" className={analysisSummary?.apogee_m != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>{txt('TRAYECTORIA', 'TRAJECTORY')}</span><strong>{analysisSummary?.apogee_m != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
+          <button type="button" className={analysisSummary?.landing_time_s != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>{txt('RECUPERACIÓN', 'RECOVERY')}</span><strong>{analysisSummary?.landing_time_s != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
         </div>
         <div className="mobile-action-list">
-          <button type="button" onClick={() => { setMobileSection('analysis'); if (!analysisSummary && ready) setRunToken((value) => value + 1); }}><span>▶</span><div><strong>{analysisSummary ? txt('RESULTADOS DEL CDR', 'CDR RESULTS') : txt('EJECUTAR CDR', 'RUN CDR')}</strong><small>{txt('CG · CP · trayectoria · recuperación', 'CG · CP · trajectory · recovery')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => setMobileSection('plots')}><span>⌁</span><div><strong>{txt('GRÁFICOS', 'PLOTS')}</strong><small>{txt('Análisis de vuelo interactivo', 'Interactive flight analysis')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => setMobileSection('model')}><span>∑</span><div><strong>{txt('MODELO MATEMÁTICO', 'MATHEMATICAL MODEL')}</strong><small>{txt('Ecuaciones y métodos', 'Equations and methods')}</small></div><b>→</b></button>
-          <button type="button" onClick={() => setMobileSection('status')}><span>✓</span><div><strong>{txt('ESTADO DEL CDR', 'CDR STATUS')}</strong><small>{txt('Trazabilidad y bloqueos', 'Traceability and blockers')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => { navigateMobile('analysis'); if (!analysisSummary && ready) setRunToken((value) => value + 1); }}><span>▶</span><div><strong>{analysisSummary ? txt('RESULTADOS DEL CDR', 'CDR RESULTS') : txt('EJECUTAR CDR', 'RUN CDR')}</strong><small>{txt('CG · CP · trayectoria · recuperación', 'CG · CP · trajectory · recovery')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('plots')}><span>⌁</span><div><strong>{txt('GRÁFICOS', 'PLOTS')}</strong><small>{txt('Análisis de vuelo interactivo', 'Interactive flight analysis')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('model')}><span>∑</span><div><strong>{txt('MODELO MATEMÁTICO', 'MATHEMATICAL MODEL')}</strong><small>{txt('Ecuaciones y métodos', 'Equations and methods')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('status')}><span>✓</span><div><strong>{txt('ESTADO DEL CDR', 'CDR STATUS')}</strong><small>{txt('Trazabilidad y bloqueos', 'Traceability and blockers')}</small></div><b>→</b></button>
         </div>
       </section>
 
       <section className="mobile-project-phases" aria-label={txt('Fases del proyecto', 'Project phases')}>
-        <button type="button" className="complete" onClick={() => setMobileSection('pdr')}><b>01</b><span>PDR</span><small>{txt('Diseño', 'Design')}</small></button>
-        <button type="button" className="current" onClick={() => setMobileSection('cdr')}><b>02</b><span>CDR</span><small>{txt('Análisis', 'Analysis')}</small></button>
+        <button type="button" className="complete" onClick={() => navigateMobile('pdr')}><b>01</b><span>PDR</span><small>{txt('Diseño', 'Design')}</small></button>
+        <button type="button" className="current" onClick={() => navigateMobile('cdr')}><b>02</b><span>CDR</span><small>{txt('Análisis', 'Analysis')}</small></button>
         <button type="button" disabled><b>03</b><span>FRR</span><small>{txt('Preparación', 'Readiness')}</small></button>
         <button type="button" disabled><b>04</b><span>{txt('VUELO', 'FLIGHT')}</span><small>{txt('Misión', 'Mission')}</small></button>
         <button type="button" disabled><b>05</b><span>PFR</span><small>{txt('Cierre', 'Closeout')}</small></button>
       </section>
 
       <div className="mobile-context-bar">
-        <button type="button" onClick={() => setMobileSection(['vehicle','geometry','motor'].includes(mobileSection) ? 'pdr' : 'cdr')}>←</button>
+        <button type="button" onClick={() => navigateMobile(['vehicle','geometry','motor'].includes(mobileSection) ? 'pdr' : 'cdr')}>←</button>
         <div>
           <span>{['vehicle','geometry','motor'].includes(mobileSection) ? 'PDR' : 'CDR'}</span>
           <strong>{
@@ -788,33 +805,33 @@ function App() {
       </section>
 
       <nav className="mobile-command-bar" aria-label={txt('Navegación móvil', 'Mobile navigation')}>
-        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onClick={() => setMobileSection('home')}>
+        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onClick={() => navigateMobile('home')}>
           <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5H15v-6H9v6H3.5a.5.5 0 0 1-.5-.5z"/></svg></span>
           <small>{txt('INICIO', 'HOME')}</small>
         </button>
-        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onClick={() => setMobileSection('pdr')}>
+        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onClick={() => navigateMobile('pdr')}>
           <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 16 7v10l-4 4.5L8 17V7zM8 8H4.5v8H8m8-8h3.5v8H16"/></svg></span>
           <small>PDR</small>
         </button>
-        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => setMobileSection('cdr')}>
+        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('cdr')}>
           <span className="mobile-nav-icon primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5zM8 15l3-4 2 2 3-5"/></svg></span>
           <small>CDR</small>
         </button>
-        <button type="button" className={mobileSection === 'plots' ? 'active' : ''} onClick={() => setMobileSection('plots')}>
+        <button type="button" className={mobileSection === 'plots' ? 'active' : ''} onClick={() => navigateMobile('plots')}>
           <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19.5h18M5 16l4-5 3 3 5-8 2 3"/></svg></span>
           <small>{txt('GRÁFICOS', 'PLOTS')}</small>
         </button>
-        <button type="button" className={mobileSection === 'export' ? 'active' : ''} onClick={() => { setMobileSection('export'); setShowExportMenu(true); }}>
+        <button type="button" className={showExportMenu ? 'active' : ''} onClick={() => setShowExportMenu((value) => !value)}>
           <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 19h14"/></svg></span>
           <small>{txt('EXPORTAR', 'EXPORT')}</small>
         </button>
       </nav>
 
-      {showExportMenu && <div className="mobile-export-backdrop" onClick={() => { setShowExportMenu(false); if (mobileSection === 'export') setMobileSection('home'); }}>
+      {showExportMenu && <div className="mobile-export-backdrop" onClick={() => { setShowExportMenu(false);  }}>
         <div className="mobile-export-sheet" onClick={(event) => event.stopPropagation()}>
           <div className="mobile-export-head">
             <div><span>{txt('SALIDA', 'OUTPUT')}</span><strong>{txt('EXPORTAR RESULTADOS', 'EXPORT RESULTS')}</strong></div>
-            <button type="button" onClick={() => { setShowExportMenu(false); if (mobileSection === 'export') setMobileSection('home'); }} aria-label={txt('Cerrar', 'Close')}>×</button>
+            <button type="button" onClick={() => { setShowExportMenu(false);  }} aria-label={txt('Cerrar', 'Close')}>×</button>
           </div>
           <button type="button" onClick={exportExcel}><strong>EXCEL TÉCNICO</strong><small>.XLSX · 8 HOJAS + GRÁFICOS</small></button>
           <button type="button" onClick={exportChartsZip}><strong>{txt('GRÁFICOS PNG', 'PNG PLOTS')}</strong><small>{txt('5 ARCHIVOS · ALTA RESOLUCIÓN', '5 FILES · HIGH RES')}</small></button>

@@ -612,3 +612,40 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     linear-gradient(145deg,#347fdf,#164889)}
   .mobile-command-bar button.mobile-primary small{font-size:.7rem;color:#eef7ff}
 }
+
+
+@media(max-width:820px){
+  /* Tactile mobile feedback: every control should feel pressed, never static. */
+  button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  .mobile-guide button,.mobile-phase-screen button,.mobile-project-phases button,.mobile-context-bar button,.mobile-command-bar button,.mobile-export-sheet button{
+    transition:transform .11s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease,opacity .16s ease
+  }
+  .mobile-guide button:active,.mobile-phase-screen button:active,.mobile-project-phases button:active,.mobile-context-bar button:active,.mobile-command-bar button:active,.mobile-export-sheet button:active{
+    transform:scale(.965)!important;filter:brightness(1.08)
+  }
+
+  /* Small route feedback, similar to a native app loading cue. */
+  .mobile-route-feedback{display:flex;position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;z-index:1250;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(85,126,174,.54);border-radius:999px;background:rgba(8,19,34,.92);box-shadow:0 8px 24px rgba(0,0,0,.28);backdrop-filter:blur(12px);opacity:0;pointer-events:none;transform:translate(-50%,-8px) scale(.96);transition:opacity .13s ease,transform .16s ease}
+  .mobile-route-feedback.active{opacity:1;transform:translate(-50%,0) scale(1)}
+  .mobile-route-feedback i{width:13px;height:13px;border:2px solid #385f89;border-top-color:#84c2ff;border-radius:50%;animation:mobile-route-spin .65s linear infinite}
+  .mobile-route-feedback span{font-size:.5rem;font-weight:700;letter-spacing:.08em;color:#aac9e9;white-space:nowrap}
+  @keyframes mobile-route-spin{to{transform:rotate(360deg)}}
+
+  /* Subtle outgoing motion before the next screen is revealed. */
+  .mobile-nav-busy.mobile-nav-forward .mobile-guide,
+  .mobile-nav-busy.mobile-nav-forward .mobile-phase-screen,
+  .mobile-nav-busy.mobile-nav-forward .workspace{opacity:.76;transform:translateX(-7px)}
+  .mobile-nav-busy.mobile-nav-back .mobile-guide,
+  .mobile-nav-busy.mobile-nav-back .mobile-phase-screen,
+  .mobile-nav-busy.mobile-nav-back .workspace{opacity:.76;transform:translateX(7px)}
+
+  /* Export is a contextual action, not a route. */
+  .mobile-export-sheet{animation:mobile-popover-in .16s cubic-bezier(.2,.8,.3,1)}
+  @keyframes mobile-popover-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+  @media(prefers-reduced-motion:reduce){
+    .mobile-route-feedback i{animation:none}
+    .mobile-export-sheet{animation:none}
+    .mobile-nav-busy .mobile-guide,.mobile-nav-busy .mobile-phase-screen,.mobile-nav-busy .workspace{transform:none}
+  }
+}
