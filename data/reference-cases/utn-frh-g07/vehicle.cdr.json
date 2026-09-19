@@ -37,16 +37,16 @@
       "status": "tbd"
     },
     "airfoil": {
-      "type": "naca4-or-custom",
+      "type": "naca4",
       "designation": {
-        "value": null,
-        "status": "tbd-professor-specified"
+        "value": "NACA 0012",
+        "status": "professor-pdr-correction"
       },
       "custom_coordinates": {
         "value": null,
-        "status": "optional"
+        "status": "not-used"
       },
-      "note": "Enter a standard NACA 4-digit designation or normalized custom profile coordinates. Planform dimensions are entered separately."
+      "note": "PDR correction explicitly distinguishes trapezoidal planform from NACA 0012 cross-section."
     }
   },
   "masses": {
