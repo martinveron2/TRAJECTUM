@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 import { LiveAnalysisPanel } from './LiveAnalysisPanel';
@@ -9,7 +9,7 @@ import { buildEngineeringChartImages } from './engineeringChartExport';
 import { MissionControl } from './MissionControl';
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
-  Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit,
+  Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff,
 } from 'lucide-react';
 
 type NumericField = number | '';
@@ -213,6 +213,7 @@ function App() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status'>('home');
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
+  const phaseCarouselRef = useRef<HTMLDivElement | null>(null);
   const [mobileNavBusy, setMobileNavBusy] = useState(false);
   const [mobileNavDirection, setMobileNavDirection] = useState<'forward' | 'back'>('forward');
   const [missionControlOpen, setMissionControlOpen] = useState(false);
@@ -228,6 +229,22 @@ function App() {
     setMobileNavBusy(true);
     window.setTimeout(() => setMobileNavBusy(false), 230);
   };
+
+  const activePhaseIndex =
+    ['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 0 :
+    ['cdr','analysis','plots','model','status'].includes(mobileSection) ? 1 :
+    mobileSection === 'frr' ? 2 :
+    mobileSection === 'lrr' ? 3 :
+    mobileSection === 'pfr' ? 4 : 1;
+
+  useEffect(() => {
+    if (mobileSection !== 'home' || !phaseCarouselRef.current) return;
+    const cards = phaseCarouselRef.current.querySelectorAll('button');
+    const active = cards[activePhaseIndex] as HTMLElement | undefined;
+    if (!active) return;
+    const left = active.offsetLeft - (phaseCarouselRef.current.clientWidth - active.offsetWidth) / 2;
+    phaseCarouselRef.current.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+  }, [mobileSection, activePhaseIndex]);
 
   const handlePhaseCarouselEnd = (element: HTMLDivElement) => {
     const cards = Array.from(element.querySelectorAll('button'));
@@ -543,6 +560,7 @@ function App() {
         </div>
 
         <div
+          ref={phaseCarouselRef}
           className="mobile-phase-carousel"
           aria-label={txt('Fases del proyecto', 'Project phases')}
           onTouchStart={(event) => { event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0); }}
@@ -849,11 +867,13 @@ function App() {
               <div className="visual-tools">
                 <button
                   type="button"
-                  className={showComponentCgs ? 'technical-toggle active' : 'technical-toggle'}
+                  className={showComponentCgs ? 'technical-toggle cg-toggle active' : 'technical-toggle cg-toggle'}
                   onClick={() => setShowComponentCgs((value) => !value)}
                   aria-pressed={showComponentCgs}
+                  title={showComponentCgs ? txt('Ocultar CGs de componentes', 'Hide component CGs') : txt('Mostrar CGs de componentes', 'Show component CGs')}
                 >
-                  {showComponentCgs ? txt('OCULTAR CG DE COMPONENTES', 'HIDE COMPONENT CGs') : txt('MOSTRAR CG DE COMPONENTES', 'SHOW COMPONENT CGs')}
+                  {showComponentCgs ? <Eye size={15} strokeWidth={1.8} /> : <EyeOff size={15} strokeWidth={1.8} />}
+                  <span>{showComponentCgs ? txt('CGs VISIBLES', 'CGs VISIBLE') : txt('MOSTRAR CGs', 'SHOW CGs')}</span>
                 </button>
                 <span className="scale-note">{txt('vista técnica · dimensiones en vivo', 'technical view · live dimensions')}</span>
               </div>
