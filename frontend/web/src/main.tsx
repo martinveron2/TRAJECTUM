@@ -147,6 +147,42 @@ function Field({
   );
 }
 
+function NumericStepper({
+  value,
+  onChange,
+  unit,
+  step = 1,
+  min = 0,
+}: {
+  value: NumericField;
+  onChange: (value: NumericField) => void;
+  unit?: string;
+  step?: number;
+  min?: number;
+}) {
+  const bump = (direction: -1 | 1) => {
+    const current = value === '' ? min : Number(value);
+    const next = Math.max(min, current + direction * step);
+    const precision = String(step).includes('.') ? String(step).split('.')[1].length : 0;
+    onChange(Number(next.toFixed(precision)));
+  };
+  return (
+    <div className="numeric-stepper">
+      <button type="button" className="stepper-minus" onClick={() => bump(-1)} aria-label="Disminuir">−</button>
+      <div className="stepper-value">
+        <input
+          inputMode="decimal"
+          type="number"
+          value={value}
+          onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
+        />
+        {unit && <em>{unit}</em>}
+      </div>
+      <button type="button" className="stepper-plus" onClick={() => bump(1)} aria-label="Aumentar">+</button>
+    </div>
+  );
+}
+
 function RocketSchematic({ vehicle }: { vehicle: Vehicle }) {
   const total = Number(vehicle.totalLength) || 860;
   const nose = Number(vehicle.noseLength) || 180;
@@ -262,7 +298,7 @@ function App() {
   };
 
   const selectPhase = (index: number) => {
-    const phases: Array<typeof mobileSection> = ['mdr', 'pdr', 'cdr', 'frr', 'lrr', 'pfr'];
+    const phases: Array<typeof mobileSection> = ['mdr', 'pdr', 'analysis', 'frr', 'lrr', 'pfr'];
     setPhaseFocusIndex(index);
     navigateMobile(phases[index]);
   };
@@ -742,49 +778,34 @@ function App() {
 
         <div className="mobile-guide-next">
           <span>{txt('SIGUIENTE PASO', 'NEXT STEP')}</span>
-          <h2>{
-            mobileGuideStep === 'vehicle' ? txt('Revisar geometría del vehículo', 'Review vehicle geometry') :
-            mobileGuideStep === 'motor' ? txt('Completar configuración del motor', 'Complete motor configuration') :
-            mobileGuideStep === 'analysis' ? txt('Todo listo para simular', 'Ready to simulate') :
-            txt('Análisis completado', 'Analysis complete')
-          }</h2>
-          <p>{
-            mobileGuideStep === 'vehicle' ? txt('Confirmá las dimensiones principales antes de continuar.', 'Confirm the main dimensions before continuing.') :
-            mobileGuideStep === 'motor' ? txt('Cargá los datos mínimos del motor para habilitar la simulación.', 'Enter the minimum motor data to enable simulation.') :
-            mobileGuideStep === 'analysis' ? txt('La configuración está completa. Ejecutá el análisis y TRAJECTUM te lleva a los resultados.', 'Configuration is complete. Run the analysis and TRAJECTUM will take you to the results.') :
-            txt('Revisá resultados, gráficos y exportá el informe técnico.', 'Review results, plots and export the engineering report.')
-          }</p>
+          <h2>{txt('Diseño preliminar del vehículo', 'Preliminary vehicle design')}</h2>
+          <p>{txt('Definí geometría, esquema y distribución de masas en PDR. Cuando el diseño cierre, ejecutás el análisis completo y pasás a CDR.', 'Define geometry, schematic and mass distribution in PDR. Once the design closes, run the full analysis and move to CDR.')}</p>
         </div>
 
-        <button type="button" className="mobile-guide-cta" onClick={continueMobileGuide}>
-          <span>{
-            mobileGuideStep === 'vehicle' ? txt('CONTINUAR CON VEHÍCULO', 'CONTINUE WITH VEHICLE') :
-            mobileGuideStep === 'motor' ? txt('REVISAR MOTOR', 'REVIEW MOTOR') :
-            mobileGuideStep === 'analysis' ? txt('EJECUTAR ANÁLISIS', 'RUN ANALYSIS') :
-            txt('VER RESULTADOS', 'VIEW RESULTS')
-          }</span>
+        <button type="button" className="mobile-guide-cta home-design-cta" onClick={() => navigateMobile('pdr')}>
+          <span>{txt('ABRIR PDR · DISEÑO', 'OPEN PDR · DESIGN')}</span>
           <b>→</b>
         </button>
 
         <div className="mobile-guide-steps">
           <button type="button" className={geometryConsistent ? 'complete' : mobileGuideStep === 'vehicle' ? 'current' : ''} onClick={() => navigateMobile('pdr')}><b>PDR</b><span>{txt('DISEÑO', 'DESIGN')}</span><em>{geometryConsistent ? '✓' : '→'}</em></button>
-          <button type="button" className={analysisSummary ? 'complete' : 'current'} onClick={() => navigateMobile('cdr')}><b>CDR</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
+          <button type="button" className={analysisSummary ? 'complete' : ''} onClick={() => navigateMobile('analysis')}><b>CDR</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
         </div>
 
         <section className="mobile-home-dashboard" aria-label={txt('Resumen ejecutivo', 'Executive summary')}>
           <div className="mobile-home-dashboard-head">
-            <div><span>{txt('ESTADO GLOBAL', 'GLOBAL STATUS')}</span><strong>{txt('Resumen del proyecto', 'Project snapshot')}</strong></div>
+            <div><span>{txt('DISEÑO EN CURSO', 'DESIGN IN PROGRESS')}</span><strong>{txt('Resumen preliminar del vehículo', 'Preliminary vehicle snapshot')}</strong></div>
             <button type="button" onClick={() => navigateMobile('mdr')}>{txt('VER MDR', 'VIEW MDR')} →</button>
           </div>
-          <div className="mobile-home-metrics">
+          <div className="mobile-home-metrics design-metrics">
+            <article><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><strong>{vehicle.totalLength} mm</strong><small>R5 ≥ 800 mm</small></article>
+            <article><span>{txt('DIÁMETRO', 'DIAMETER')}</span><strong>Ø{vehicle.diameter} mm</strong><small>{txt('envolvente de diseño', 'design envelope')}</small></article>
+            <article><span>{txt('MASA DE DISEÑO', 'DESIGN MASS')}</span><strong>{componentRows.reduce((sum,row)=>sum+(Number(row.massG)||0),0).toFixed(0)} g</strong><small>{txt('editable en PDR', 'editable in PDR')}</small></article>
             <article><span>{txt('REQUERIMIENTOS', 'REQUIREMENTS')}</span><strong>{requirementVerified}/11</strong><small>{requirementProgress} {txt('en proceso', 'in progress')}</small></article>
-            <article><span>{txt('APOGEO', 'APOGEE')}</span><strong>{analysisSummary?.apogee_m != null ? analysisSummary.apogee_m.toFixed(0) + ' m' : '—'}</strong><small>R1 ≥ 150 m</small></article>
-            <article><span>{txt('IMPACTO', 'IMPACT')}</span><strong>{analysisSummary?.impact_speed_m_s != null ? analysisSummary.impact_speed_m_s.toFixed(1) + ' m/s' : '—'}</strong><small>R2 ≤ 5 m/s</small></article>
-            <article><span>{txt('ESTABILIDAD', 'STABILITY')}</span><strong>{stabilityMargin != null ? stabilityMargin.toFixed(2) + ' cal' : '—'}</strong><small>{stabilityState}</small></article>
           </div>
-          <button type="button" className={analysisSummary ? 'mobile-home-telemetry-link completed' : 'mobile-home-telemetry-link'} onClick={() => analysisSummary ? navigateMobile('analysis') : navigateMobile('cdr')}>
-            {analysisSummary ? <ClipboardCheck size={18}/> : <ChartNoAxesCombined size={18}/>}
-            <span>{analysisSummary ? txt('ANÁLISIS COMPLETADO · VER RESULTADOS', 'ANALYSIS COMPLETE · VIEW RESULTS') : txt('CONTINUAR AL ANÁLISIS CDR', 'CONTINUE TO CDR ANALYSIS')}</span>
+          <button type="button" className="mobile-home-telemetry-link design-link" onClick={() => navigateMobile('pdr')}>
+            <Rocket size={18}/>
+            <span>{txt('CONTINUAR DISEÑO · GEOMETRÍA Y MASA', 'CONTINUE DESIGN · GEOMETRY & MASS')}</span>
             <b>→</b>
           </button>
         </section>
@@ -833,12 +854,12 @@ function App() {
         {pdrTab === 'geometry' && <section className="phase-process-panel pdr-geometry-panel">
           <div className="phase-panel-head"><div><span>{txt('GEOMETRÍA Y PARÁMETROS', 'GEOMETRY & PARAMETERS')}</span><strong>{txt('Una sola fuente de verdad', 'One source of truth')}</strong></div><b className={geometryConsistent ? 'ok' : 'warn'}>{geometryConsistent ? '✓' : '!'}</b></div>
           <div className="pdr-input-grid">
-            <label><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><div><input type="number" value={vehicle.totalLength} onChange={(e) => update('totalLength', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
-            <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><div><input type="number" value={vehicle.diameter} onChange={(e) => update('diameter', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
+            <label><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><NumericStepper value={vehicle.totalLength} onChange={(value) => update('totalLength', value)} unit="mm" step={5}/></label>
+            <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><NumericStepper value={vehicle.diameter} onChange={(value) => update('diameter', value)} unit="mm" step={1}/></label>
             <label><span>{txt('COFIA', 'NOSE')}</span><select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}><option value="tangent_ogive">{txt('OJIVA TANGENTE', 'TANGENT OGIVE')}</option><option value="cone">{txt('CÓNICA', 'CONICAL')}</option><option value="power_series">{txt('SERIE POTENCIA', 'POWER SERIES')}</option></select></label>
-            <label><span>{txt('ALETAS', 'FINS')}</span><div><input type="number" value={vehicle.finCount} onChange={(e) => update('finCount', e.target.value === '' ? '' : Number(e.target.value))}/><em>u</em></div></label>
-            <label><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><div><input type="number" value={vehicle.rootChord} onChange={(e) => update('rootChord', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
-            <label><span>{txt('ENVERGADURA', 'SPAN')}</span><div><input type="number" value={vehicle.span} onChange={(e) => update('span', e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
+            <label><span>{txt('ALETAS', 'FINS')}</span><NumericStepper value={vehicle.finCount} onChange={(value) => update('finCount', value)} unit="u" step={1} min={1}/></label>
+            <label><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><NumericStepper value={vehicle.rootChord} onChange={(value) => update('rootChord', value)} unit="mm" step={1}/></label>
+            <label><span>{txt('ENVERGADURA', 'SPAN')}</span><NumericStepper value={vehicle.span} onChange={(value) => update('span', value)} unit="mm" step={1}/></label>
           </div>
           <div className="pdr-inline-actions">
             <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('mdr')}><ClipboardCheck size={17}/><span>{requirementVerified}/11 {txt('REQUERIMIENTOS VERIFICADOS', 'REQUIREMENTS VERIFIED')}</span><b>→</b></button>
@@ -877,17 +898,26 @@ function App() {
             {componentRows.map((row) => <article key={row.id} className="pdr-component-card">
               <div className="pdr-component-head"><strong>{row.name}</strong><span>{componentSummary?.components?.find((item: any) => item.name === row.name)?.x_cg_mm != null ? 'xCG ' + componentSummary.components.find((item: any) => item.name === row.name).x_cg_mm.toFixed(0) + ' mm' : 'xCG —'}</span></div>
               <div className="pdr-component-fields">
-                <label><span>{txt('MASA', 'MASS')}</span><div><input inputMode="decimal" type="number" value={row.massG} onChange={(e) => updateComponentDesign(row.id,'massG',e.target.value === '' ? '' : Number(e.target.value))}/><em>g</em></div></label>
-                <label><span>{txt('LARGO', 'LENGTH')}</span><div><input inputMode="decimal" type="number" value={row.lengthMm} onChange={(e) => updateComponentDesign(row.id,'lengthMm',e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
-                <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><div><input inputMode="decimal" type="number" value={row.diameterMm} onChange={(e) => updateComponentDesign(row.id,'diameterMm',e.target.value === '' ? '' : Number(e.target.value))}/><em>mm</em></div></label>
+                <label><span>{txt('MASA', 'MASS')}</span><NumericStepper value={row.massG} onChange={(value) => updateComponentDesign(row.id,'massG',value)} unit="g" step={5}/></label>
+                <label><span>{txt('LARGO', 'LENGTH')}</span><NumericStepper value={row.lengthMm} onChange={(value) => updateComponentDesign(row.id,'lengthMm',value)} unit="mm" step={5}/></label>
+                <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><NumericStepper value={row.diameterMm} onChange={(value) => updateComponentDesign(row.id,'diameterMm',value)} unit="mm" step={1}/></label>
               </div>
             </article>)}
           </div>
           <div className="pdr-mass-total"><span>{txt('MASA DE DISEÑO', 'DESIGN MASS')}</span><strong>{componentRows.reduce((sum,row)=>sum+(Number(row.massG)||0),0).toFixed(0)} g</strong><small>{txt('CDR la toma automáticamente', 'CDR consumes it automatically')}</small></div>
         </section>}
 
-        <button type="button" className="phase-primary-action pdr-continue" onClick={() => navigateMobile('cdr')}>
-          <Gauge size={19}/><span>{txt('CONTINUAR A CDR', 'CONTINUE TO CDR')}</span><b>→</b>
+        <button type="button" className="cdr-analysis-primary pdr-analysis-launch" disabled={!ready} onClick={() => {
+          setRunToken((value) => value + 1);
+          navigateMobile('analysis');
+        }}>
+          <span className="cdr-analysis-primary-icon"><Sigma size={23}/></span>
+          <span className="cdr-analysis-primary-copy">
+            <small>{txt('CIERRE PDR → CDR', 'PDR CLOSEOUT → CDR')}</small>
+            <strong>{txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</strong>
+            <em>{txt('Calcula masa · CG · CP · margen · trayectoria', 'Calculates mass · CG · CP · margin · trajectory')}</em>
+          </span>
+          <b>→</b>
         </button>
       </section>
 
@@ -1068,7 +1098,7 @@ function App() {
       </section>
 
       <div className="mobile-context-bar">
-        <button type="button" onClick={() => navigateMobile(['vehicle','geometry','motor','cad'].includes(mobileSection) ? 'pdr' : 'cdr')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={19} strokeWidth={1.8} /></button>
+        <button type="button" onClick={() => navigateMobile(['vehicle','geometry','motor','cad','analysis'].includes(mobileSection) ? 'pdr' : 'analysis')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={19} strokeWidth={1.8} /></button>
         <div>
           <span>{['vehicle','geometry','motor','cad'].includes(mobileSection) ? 'PDR' : 'CDR'}</span>
           <strong>{
@@ -1079,6 +1109,7 @@ function App() {
             mobileSection === 'plots' ? txt('SIMULADOR DE VUELO · 85°', 'FLIGHT SIMULATOR · 85°') :
             mobileSection === 'model' ? txt('MODELO MATEMÁTICO', 'MATHEMATICAL MODEL') :
             mobileSection === 'status' ? txt('ESTADO DEL CDR', 'CDR STATUS') :
+            mobileSection === 'analysis' ? txt('ANÁLISIS CDR · CG / CP', 'CDR ANALYSIS · CG / CP') :
             txt('RESULTADOS DEL CDR', 'CDR RESULTS')
           }</strong>
         </div>
@@ -1337,7 +1368,7 @@ function App() {
           <span className="mobile-nav-icon"><Rocket size={20} strokeWidth={1.8} /></span>
           <small>PDR</small>
         </button>
-        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('cdr')}>
+        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('analysis')}>
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>

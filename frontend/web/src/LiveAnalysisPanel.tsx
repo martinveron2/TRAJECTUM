@@ -1,8 +1,6 @@
-import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MissionSample } from './missionTypes';
 import { EngineeringEquations } from './EngineeringEquations';
-
-const FlightAnalysisCharts = React.lazy(() => import('./FlightAnalysisCharts').then((module) => ({ default: module.FlightAnalysisCharts })));
 
 type NumericField = number | '';
 type MotorLike = { designation: string; burn: NumericField; impulse: NumericField; propellantMass: NumericField; dryMass: NumericField; maxThrust: NumericField; propellant: string; officialAverageThrust?: NumericField; thrustCurve?: Array<[number, number]>; };
@@ -283,20 +281,6 @@ export function LiveAnalysisPanel({
       {metricDetail === 'cp' && <><strong>{txt('Método de Barrowman · cofia + aletas', 'Barrowman method · nose + fins')}</strong><p>{txt('TRAJECTUM combina las contribuciones aerodinámicas y transforma el resultado al sistema +X axial con origen en la base.', 'TRAJECTUM combines aerodynamic contributions and transforms the result to the +X axial coordinate system from the base.')}</p></>}
       {metricDetail === 'apogee' && <><strong>{txt('Integración temporal RK4 · vuelo 2D', 'RK4 time integration · 2D flight')}</strong><p>{txt('El apogeo proviene de la trayectoria simulada con masa variable, empuje, gravedad y resistencia aerodinámica al ángulo real configurado.', 'Apogee comes from the simulated trajectory with variable mass, thrust, gravity and drag at the configured real launch angle.')}</p></>}
     </div>}
-    {analysis?.mission_timeline && analysis.mission_timeline.length > 1 ? <>
-      <Suspense fallback={<div className="panel flight-analysis-loading">{txt('CARGANDO GRÁFICOS DE INGENIERÍA…', 'LOADING ENGINEERING PLOTS…')}</div>}>
-        <FlightAnalysisCharts samples={analysis.mission_timeline} motorBurnTimeS={Number(motor.burn) || 0} analysis={analysis} lang={lang} />
-      </Suspense>
-    </> : <section className="panel flight-analysis-empty">
-      <div className="telemetry-empty-icon">⌁</div>
-      <span>{txt('CENTRO DE TELEMETRÍA', 'TELEMETRY CENTER')}</span>
-      <strong>{txt('Todavía no hay una corrida de vuelo', 'No flight run yet')}</strong>
-      <p>{txt('Ejecutá el análisis para generar Altitud h(t), Velocidad V(t), Mach, MaxQ y trayectoria X–Z. Esta pantalla nunca vuelve a quedar vacía.', 'Run the analysis to generate altitude h(t), speed V(t), Mach, MaxQ and X–Z trajectory. This screen never goes blank again.')}</p>
-      <button type="button" onClick={run} disabled={!planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}>
-        {running ? txt('GENERANDO TELEMETRÍA…', 'GENERATING TELEMETRY…') : txt('GENERAR PRIMERA CORRIDA', 'GENERATE FIRST RUN')} →
-      </button>
-    </section>}
-
     <div className="mass-editor-gate">
       <div>
         <span>{txt('MASAS Y xCG', 'MASSES & xCG')}</span>
