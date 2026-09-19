@@ -3845,3 +3845,113 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     display:none!important;
   }
 }
+
+
+/* Final polish: live flight altitude, sequential home results, centered PDR schematic and tactile data entry. */
+.mission-live-altitude-label{
+  fill:#6F90B6;
+  font-family:"Space Grotesk",sans-serif;
+  font-size:9px;
+  letter-spacing:.12em;
+}
+.mission-live-altitude-value{
+  fill:#F3FAFF;
+  font-family:"Michroma","Space Grotesk",sans-serif;
+  font-size:20px;
+  letter-spacing:.015em;
+  filter:drop-shadow(0 0 7px rgba(0,240,255,.22));
+}
+
+@media(max-width:820px){
+  .mobile-home-telemetry-link.completed{
+    border-color:#00F0FF!important;
+    background:linear-gradient(180deg,#123A58,#0F2B48)!important;
+    color:#F4FFFF!important;
+    box-shadow:0 0 0 1px rgba(0,240,255,.10),0 0 18px rgba(0,240,255,.12),inset 0 1px 0 rgba(255,255,255,.06)!important;
+  }
+  .mobile-home-telemetry-link.completed svg,
+  .mobile-home-telemetry-link.completed b{
+    color:#00F0FF!important;
+  }
+
+  /* PDR schematic stays optically centered even as geometry changes. */
+  .pdr-schematic-panel .mobile-pdr-model{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:8px 4px!important;
+    overflow:hidden!important;
+  }
+  .pdr-schematic-panel .mobile-pdr-model .schematic.realistic{
+    width:100%!important;
+    max-width:330px!important;
+    margin:0 auto!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  .pdr-schematic-panel .mobile-pdr-model .schematic.realistic svg{
+    display:block!important;
+    width:100%!important;
+    max-width:320px!important;
+    height:auto!important;
+    margin:auto!important;
+    transform:none!important;
+    transform-origin:center center!important;
+  }
+
+  /* Inputs behave like cockpit controls: focus is obvious and tactile. */
+  .pdr-input-grid label,
+  .pdr-component-card{
+    transition:border-color 120ms ease,box-shadow 120ms ease,background 120ms ease,transform 100ms ease!important;
+  }
+  .pdr-input-grid label:focus-within,
+  .pdr-component-card:focus-within{
+    border-color:#00F0FF!important;
+    background:linear-gradient(160deg,#102B45,#091928)!important;
+    box-shadow:
+      0 0 0 1px rgba(0,240,255,.11),
+      0 0 18px rgba(0,240,255,.10),
+      inset 0 1px 0 rgba(255,255,255,.06)!important;
+    transform:translateY(-1px);
+  }
+  .pdr-input-grid label:focus-within>span,
+  .pdr-component-card:focus-within .pdr-component-head strong,
+  .pdr-component-card:focus-within .pdr-component-fields label>span{
+    color:#E9FBFF!important;
+  }
+  .pdr-input-grid input,
+  .pdr-input-grid select,
+  .pdr-component-fields input{
+    caret-color:#00F0FF!important;
+    transition:border-color 110ms ease,box-shadow 110ms ease,background 110ms ease!important;
+  }
+  .pdr-input-grid input:focus,
+  .pdr-input-grid select:focus,
+  .pdr-component-fields input:focus{
+    background:linear-gradient(180deg,#0B2238,#06131F)!important;
+    border-color:#00F0FF!important;
+    color:#FFFFFF!important;
+    box-shadow:
+      0 0 0 2px rgba(0,240,255,.08),
+      0 0 14px rgba(0,240,255,.11),
+      inset 0 2px 8px rgba(0,0,0,.28)!important;
+  }
+  .pdr-input-grid input:active,
+  .pdr-component-fields input:active{
+    transform:scale(.995);
+  }
+
+  .phase-internal-tabs button,
+  .phase-secondary-link,
+  .phase-primary-action,
+  .mobile-home-dashboard button{
+    transition:border-color 110ms ease,box-shadow 110ms ease,background 110ms ease,transform 80ms ease!important;
+  }
+  .phase-internal-tabs button:active,
+  .phase-secondary-link:active,
+  .phase-primary-action:active,
+  .mobile-home-dashboard button:active{
+    transform:scale(.975)!important;
+  }
+}

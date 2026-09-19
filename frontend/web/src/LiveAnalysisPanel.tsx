@@ -296,16 +296,7 @@ export function LiveAnalysisPanel({
         {running ? txt('GENERANDO TELEMETRÍA…', 'GENERATING TELEMETRY…') : txt('GENERAR PRIMERA CORRIDA', 'GENERATE FIRST RUN')} →
       </button>
     </section>}
-        {analysis?.landing_time_s !== undefined && <div className="recovery-timeline">
-      <div className="timeline-title"><span>{txt('SECUENCIA DE RECUPERACIÓN', 'RECOVERY SEQUENCE')}</span><strong>{txt('Vuelo → despliegue → aterrizaje', 'Flight → deployment → landing')}</strong></div>
-      <div className="timeline-track">
-        <div className="timeline-node complete"><b>1</b><span>{txt('Lanzamiento', 'Launch')}</span><em>t = 0 s</em></div>
-        <div className="timeline-node complete"><b>2</b><span>{txt('Apogeo', 'Apogee')}</span><em>{analysis.time_to_apogee_s?.toFixed(2) ?? '—'} s</em></div>
-        <div className="timeline-node complete"><b>3</b><span>{txt('Despliegue', 'Deploy')}</span><em>{analysis.deployment_altitude_m?.toFixed(1) ?? '—'} m</em></div>
-        <div className="timeline-node complete"><b>4</b><span>{txt('Descenso con paracaídas', 'Parachute descent')}</span><em>Cd {Number(vehicle.parachuteCd).toFixed(2)}</em></div>
-        <div className="timeline-node complete"><b>5</b><span>{txt('Aterrizaje', 'Landing')}</span><em>{analysis.impact_speed_m_s?.toFixed(2) ?? '—'} m/s</em></div>
-      </div>
-    </div>}
+
     <div className="mass-editor-gate">
       <div>
         <span>{txt('MASAS Y xCG', 'MASSES & xCG')}</span>

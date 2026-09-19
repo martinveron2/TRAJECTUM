@@ -781,8 +781,10 @@ function App() {
             <article><span>{txt('IMPACTO', 'IMPACT')}</span><strong>{analysisSummary?.impact_speed_m_s != null ? analysisSummary.impact_speed_m_s.toFixed(1) + ' m/s' : '—'}</strong><small>R2 ≤ 5 m/s</small></article>
             <article><span>{txt('ESTABILIDAD', 'STABILITY')}</span><strong>{stabilityMargin != null ? stabilityMargin.toFixed(2) + ' cal' : '—'}</strong><small>{stabilityState}</small></article>
           </div>
-          <button type="button" className="mobile-home-telemetry-link" onClick={() => navigateMobile('plots')}>
-            <ChartNoAxesCombined size={18}/><span>{txt('ABRIR TELEMETRÍA Y TRAYECTORIA', 'OPEN TELEMETRY & TRAJECTORY')}</span><b>→</b>
+          <button type="button" className={analysisSummary ? 'mobile-home-telemetry-link completed' : 'mobile-home-telemetry-link'} onClick={() => analysisSummary ? navigateMobile('analysis') : navigateMobile('cdr')}>
+            {analysisSummary ? <ClipboardCheck size={18}/> : <ChartNoAxesCombined size={18}/>}
+            <span>{analysisSummary ? txt('ANÁLISIS COMPLETADO · VER RESULTADOS', 'ANALYSIS COMPLETE · VIEW RESULTS') : txt('CONTINUAR AL ANÁLISIS CDR', 'CONTINUE TO CDR ANALYSIS')}</span>
+            <b>→</b>
           </button>
         </section>
       </section>
