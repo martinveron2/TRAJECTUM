@@ -6090,3 +6090,9 @@ input[type="number"],
     text-shadow:0 0 9px rgba(255,255,255,.10),0 0 22px rgba(73,153,255,.22)!important;
   }
 }
+
+/* Desktop-only flight results surface. Mobile flow remains unchanged. */
+.desktop-flight-results{display:block}
+@media(max-width:820px){
+  .desktop-flight-results{display:none!important}
+}

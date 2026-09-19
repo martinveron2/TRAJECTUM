@@ -1353,6 +1353,12 @@ function App() {
             }}
             lang={lang}
           />
+          {analysisSummary?.mission_timeline?.length > 1 && <div className="desktop-flight-results">
+            <button type="button" className="phase-secondary-link desktop-flight-launch" onClick={() => setMissionControlOpen(true)}><Play size={17}/><span>{txt('ABRIR SIMULACIÓN DE VUELO', 'OPEN FLIGHT SIMULATION')}</span><b>→</b></button>
+            <Suspense fallback={<div className="panel flight-analysis-loading">{txt('CARGANDO RESULTADOS DE VUELO…', 'LOADING FLIGHT RESULTS…')}</div>}>
+              <FlightAnalysisCharts samples={analysisSummary.mission_timeline} motorBurnTimeS={Number(motor.burn) || 0} analysis={analysisSummary} lang={lang}/>
+            </Suspense>
+          </div>}
           {mobileSection === 'plots' && analysisSummary?.mission_timeline?.length > 1 && <Suspense fallback={<div className="panel flight-analysis-loading">{txt('CARGANDO RESULTADOS DE VUELO…', 'LOADING FLIGHT RESULTS…')}</div>}>
             <FlightAnalysisCharts samples={analysisSummary.mission_timeline} motorBurnTimeS={Number(motor.burn) || 0} analysis={analysisSummary} lang={lang}/>
           </Suspense>}
