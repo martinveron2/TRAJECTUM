@@ -97,7 +97,32 @@ const cdrEquations: EquationItem[] = [
   },
 ];
 
-export function EngineeringEquations() {
+export function EngineeringEquations({ lang = 'es' }: { lang?: 'es' | 'en' }) {
+  const isEs = lang === 'es';
+  const txt = (es: string, en: string) => isEs ? es : en;
+  const cdrEquationsEn: Array<Pick<EquationItem, 'title' | 'model' | 'note'>> = [
+    { title: 'Reference frontal area', model: 'Aerodynamic reference', note: 'Circular frontal area used by the drag model.' },
+    { title: 'Tangent ogive', model: 'Nose geometry', note: 'Exact tangent-ogive profile for 0 ≤ x ≤ L.' },
+    { title: 'Von Kármán · Haack C=0', model: 'Nose geometry', note: 'Alternative profile preserving the same length L and base radius R.' },
+    { title: 'Power series', model: 'Nose geometry', note: 'Exponent n controls the shape without changing L or R.' },
+    { title: 'Total center of gravity', model: 'Mass properties', note: 'Each xᵢ comes from component geometry and mass weights the total CG.' },
+    { title: 'Course reference · R7', model: 'Coordinate transform', note: 'Internal calculations retain the nose datum while output is reported from the support datum.' },
+    { title: 'CP of an axisymmetric nose', model: 'Slender-body / Barrowman', note: 'Vₙ is obtained by integrating the selected axisymmetric profile.' },
+    { title: 'Total CP', model: 'Barrowman superposition', note: 'Combines the active aerodynamic contributions of the vehicle.' },
+    { title: 'Aerodynamic drag', model: '2D point-mass trajectory', note: 'Drag force opposes the velocity vector.' },
+    { title: 'Equations of motion', model: '2D point mass · RK4', note: 'TRAJECTUM integrates this system with fourth-order Runge–Kutta.' },
+    { title: 'Dynamic pressure', model: 'Flight state', note: 'Max Q is the maximum q along the trajectory.' },
+    { title: 'Speed of sound and Mach', model: 'ISA atmosphere', note: 'c is used for local speed of sound and M for Mach number.' },
+  ];
+  const cdrModelsEs = [
+    'Referencia aerodinámica', 'Geometría de cofia', 'Geometría de cofia', 'Geometría de cofia',
+    'Propiedades de masa', 'Transformación de coordenadas', 'Cuerpo esbelto / Barrowman',
+    'Superposición de Barrowman', 'Trayectoria 2D de masa puntual', 'Masa puntual 2D · RK4',
+    'Estado de vuelo', 'Atmósfera ISA',
+  ];
+  const equationTitle = (i: number) => isEs ? cdrEquations[i].title : cdrEquationsEn[i].title;
+  const equationModel = (i: number) => isEs ? cdrModelsEs[i] : cdrEquationsEn[i].model;
+  const equationNote = (i: number) => isEs ? cdrEquations[i].note : cdrEquationsEn[i].note;
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [showFrr, setShowFrr] = useState(false);
@@ -127,41 +152,41 @@ export function EngineeringEquations() {
   return <div className="panel equations-panel">
     <div className="panel-title compact">
       <div>
-        <p>ENGINEERING MODEL</p>
-        <h2>Modelo matemático por fase</h2>
+        <p>{txt('MODELO DE INGENIERÍA', 'ENGINEERING MODEL')}</p>
+        <h2>{txt('Modelo matemático por fase', 'Mathematical model by phase')}</h2>
       </div>
       {!open
-        ? <button type="button" className="phase-equations-button" onClick={() => setOpen(true)}>ECUACIONES CDR</button>
-        : <button type="button" className="phase-equations-button secondary" onClick={close}>CERRAR</button>}
+        ? <button type="button" className="phase-equations-button" onClick={() => setOpen(true)}>{txt('ECUACIONES CDR', 'CDR EQUATIONS')}</button>
+        : <button type="button" className="phase-equations-button secondary" onClick={close}>{txt('CERRAR', 'CLOSE')}</button>}
     </div>
 
     {!open && <p className="equations-intro">
-      Abrí las ecuaciones del CDR una por una. La fase siguiente, FRR, queda separada para no mezclar entregables.
+      {txt('Abrí las ecuaciones del CDR una por una. La fase siguiente, FRR, queda separada para no mezclar entregables.', 'Open the CDR equations one by one. The next phase, FRR, remains separate to avoid mixing deliverables.')}
     </p>}
 
     {open && !showFrr && <div className="equation-focus">
       <div className="equation-progress">
-        <span>CDR · ECUACIÓN {index + 1} / {cdrEquations.length}</span>
-        <strong>{cdrEquations[index].title}</strong>
+        <span>CDR · {txt('ECUACIÓN', 'EQUATION')} {index + 1} / {cdrEquations.length}</span>
+        <strong>{equationTitle(index)}</strong>
       </div>
       <article className="equation-card focus-card">
-        <header><strong>{cdrEquations[index].title}</strong><span>{cdrEquations[index].model}</span></header>
+        <header><strong>{equationTitle(index)}</strong><span>{equationModel(index)}</span></header>
         <Equation tex={cdrEquations[index].tex} />
-        <p>{cdrEquations[index].note}</p>
+        <p>{equationNote(index)}</p>
       </article>
       <div className="equation-nav">
-        <button type="button" onClick={previous} disabled={index === 0}>ANTERIOR</button>
+        <button type="button" onClick={previous} disabled={index === 0}>{txt('ANTERIOR', 'PREVIOUS')}</button>
         <button type="button" onClick={next}>
-          {index === cdrEquations.length - 1 ? 'SIGUIENTE · FRR' : 'SIGUIENTE ECUACIÓN'}
+          {index === cdrEquations.length - 1 ? txt('SIGUIENTE · FRR', 'NEXT · FRR') : txt('SIGUIENTE ECUACIÓN', 'NEXT EQUATION')}
         </button>
       </div>
     </div>}
 
     {open && showFrr && <div className="phase-construction">
-      <span>FASE SIGUIENTE</span>
-      <strong>FRR · Flight Readiness Review</strong>
-      <p>En construcción. Acá van a entrar estabilidad final, recuperación, velocidad de impacto y verificaciones de vuelo.</p>
-      <button type="button" onClick={previous}>VOLVER A CDR</button>
+      <span>{txt('FASE SIGUIENTE', 'NEXT PHASE')}</span>
+      <strong>FRR · {txt('Revisión de preparación para vuelo', 'Flight Readiness Review')}</strong>
+      <p>{txt('En construcción. Acá van a entrar estabilidad final, recuperación, velocidad de impacto y verificaciones de vuelo.', 'Under construction. Final stability, recovery, impact speed and flight verification will be added here.')}</p>
+      <button type="button" onClick={previous}>{txt('VOLVER A CDR', 'BACK TO CDR')}</button>
     </div>}
   </div>;
 }

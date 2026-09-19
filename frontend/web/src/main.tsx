@@ -244,15 +244,15 @@ function App() {
       <header className="topbar">
         <div>
           <p className="eyebrow">TRAJECTUM · v0.1.0-CDR</p>
-          <h1>{txt('Entorno de ingeniería del vehículo', 'Vehicle Engineering Workspace')}</h1>
+          <h1>{txt('Ingeniería del vehículo', 'Vehicle Engineering Workspace')}</h1>
         </div>
         <div className="top-actions">
-          <button className="ghost lang-toggle" onClick={() => setLang((current) => current === 'es' ? 'en' : 'es')} title={txt('Cambiar a inglés', 'Switch to Spanish')}>{isEs ? 'EN' : 'ES'}</button>
           <button className="ghost" onClick={reset}>{txt('Restablecer caso UTN', 'Reset UTN baseline')}</button>
           <button className="ghost" onClick={exportCase}>{txt('Exportar borrador JSON', 'Export draft JSON')}</button>
           <button className="run" onClick={ready ? runFromTop : goToAnalysis}>
             {ready ? txt('EJECUTAR · ACTUALIZAR CG/CP', 'RUN · UPDATE CG/CP') : `${txt('ABRIR ANÁLISIS', 'OPEN ANALYSIS')} · ${blockers.length} ${txt('ENTRADAS', 'INPUTS')}`}
           </button>
+          <button className="ghost lang-toggle" onClick={() => setLang((current) => current === 'es' ? 'en' : 'es')} title={txt('Cambiar a inglés', 'Switch to Spanish')}>{isEs ? 'EN' : 'ES'}</button>
         </div>
       </header>
 
@@ -268,70 +268,70 @@ function App() {
         <aside className="panel editor">
           <div className="panel-title">
             <div>
-              <p>INPUT</p>
-              <h2>Parametric Vehicle Editor</h2>
+              <p>{txt('ENTRADA', 'INPUT')}</p>
+              <h2>{txt('Editor paramétrico del vehículo', 'Parametric Vehicle Editor')}</h2>
             </div>
-            <span className="live-badge">LIVE</span>
+            <span className="live-badge">{txt('EN VIVO', 'LIVE')}</span>
           </div>
 
-          <h3>Primary geometry</h3>
+          <h3>{txt('Geometría principal', 'Primary geometry')}</h3>
           <div className="airfoil-row nose-selector">
             <label>
-              <span>Nose profile family</span>
+              <span>{txt('Familia de perfil de cofia', 'Nose profile family')}</span>
               <select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}>
-                <option value="tangent_ogive">Tangent ogive</option>
+                <option value="tangent_ogive">{txt('Ojiva tangente', 'Tangent ogive')}</option>
                 <option value="von_karman">Von Kármán</option>
-                <option value="power_series">Power series n=0.75</option>
+                <option value="power_series">{txt('Serie de potencias n=0.75', 'Power series n=0.75')}</option>
               </select>
             </label>
-            <span className="info-badge">same L · same Ø</span>
+            <span className="info-badge">{txt('misma L · mismo Ø', 'same L · same Ø')}</span>
           </div>
           <div className="field-grid">
-            <Field label="Total length" value={vehicle.totalLength} unit="mm" status="frozen" onChange={(v) => update('totalLength', v)} />
-            <Field label="Outer diameter" value={vehicle.diameter} unit="mm" status="frozen" onChange={(v) => update('diameter', v)} />
-            <Field label="Nose length" value={vehicle.noseLength} unit="mm" status="frozen" onChange={(v) => update('noseLength', v)} />
-            <Field label="Modular bay" value={vehicle.bayLength} unit="mm" status="frozen" onChange={(v) => update('bayLength', v)} />
-            <Field label="Lower body" value={vehicle.bodyLength} unit="mm" status="frozen" onChange={(v) => update('bodyLength', v)} />
-            <Field label="Wall thickness" value={vehicle.wall} unit="mm" status="provisional" onChange={(v) => update('wall', v)} />
+            <Field label={txt('Longitud total', 'Total length')} value={vehicle.totalLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('totalLength', v)} />
+            <Field label={txt('Diámetro exterior', 'Outer diameter')} value={vehicle.diameter} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('diameter', v)} />
+            <Field label={txt('Longitud de cofia', 'Nose length')} value={vehicle.noseLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('noseLength', v)} />
+            <Field label={txt('Compartimiento modular', 'Modular bay')} value={vehicle.bayLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('bayLength', v)} />
+            <Field label={txt('Cuerpo inferior', 'Lower body')} value={vehicle.bodyLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('bodyLength', v)} />
+            <Field label={txt('Espesor de pared', 'Wall thickness')} value={vehicle.wall} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('wall', v)} />
           </div>
 
           <div className="section-heading">
-            <h3>Fins</h3>
-            <span>trapezoidal planform</span>
+            <h3>{txt('Aletas', 'Fins')}</h3>
+            <span>{txt('planta trapezoidal', 'trapezoidal planform')}</span>
           </div>
           <div className="airfoil-row">
             <label>
-              <span>Cross-section profile</span>
+              <span>{txt('Perfil de sección transversal', 'Cross-section profile')}</span>
               <select value={vehicle.airfoil} onChange={(e) => update('airfoil', e.target.value)}>
                 <option>NACA 0012</option>
                 <option>NACA 0009</option>
                 <option>NACA 0015</option>
                 <option>NACA 2412</option>
-                <option>CUSTOM</option>
+                <option>{txt('PERSONALIZADO', 'CUSTOM')}</option>
               </select>
             </label>
-            <span className="info-badge">Professor / PDR correction</span>
+            <span className="info-badge">{txt('Corrección profesor / PDR', 'Professor / PDR correction')}</span>
           </div>
           <div className="field-grid">
-            <Field label="Fin count" value={vehicle.finCount} status="frozen" onChange={(v) => update('finCount', v)} />
-            <Field label="Root chord" value={vehicle.rootChord} unit="mm" status="provisional" onChange={(v) => update('rootChord', v)} />
-            <Field label="Tip chord" value={vehicle.tipChord} unit="mm" status="demo" onChange={(v) => update('tipChord', v)} />
-            <Field label="Span" value={vehicle.span} unit="mm" status="provisional" onChange={(v) => update('span', v)} />
-            <Field label="Sweep" value={vehicle.sweep} unit="mm" status="demo" onChange={(v) => update('sweep', v)} />
-            <Field label="Leading-edge X" value={vehicle.finX} unit="mm" status="demo" onChange={(v) => update('finX', v)} />
+            <Field label={txt('Cantidad de aletas', 'Fin count')} value={vehicle.finCount} status={txt('fijado', 'frozen')} onChange={(v) => update('finCount', v)} />
+            <Field label={txt('Cuerda de raíz (cr)', 'Root chord (cr)')} value={vehicle.rootChord} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('rootChord', v)} />
+            <Field label={txt('Cuerda de punta (ct)', 'Tip chord (ct)')} value={vehicle.tipChord} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('tipChord', v)} />
+            <Field label={txt('Semienvergadura de la aleta (s)', 'Fin semispan (s)')} value={vehicle.span} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('span', v)} />
+            <Field label={txt('Desplazamiento del borde de ataque (Xf)', 'Leading-edge offset (Xf)')} value={vehicle.sweep} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('sweep', v)} />
+            <Field label={txt('Posición del borde de ataque de la raíz desde la nariz', 'Root leading-edge position from nose')} value={vehicle.finX} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('finX', v)} />
           </div>
 
           <button className="advanced-toggle" onClick={() => setShowAdvanced((v) => !v)}>
-            {showAdvanced ? 'Hide' : 'Show'} flight inputs
+            {showAdvanced ? txt('Ocultar', 'Hide') : txt('Mostrar', 'Show')} {txt('entradas de vuelo', 'flight inputs')}
           </button>
           {showAdvanced && (
             <div className="field-grid advanced">
-              <Field label="Launch angle" value={vehicle.launchAngle} unit="deg" status="TP" onChange={(v) => update('launchAngle', v)} />
-              <Field label="Drag coefficient Cd" value={vehicle.cd} status="demo" onChange={(v) => update('cd', v)} />
-              <Field label="Parachute Cd" value={vehicle.parachuteCd} status="recovery" onChange={(v) => update('parachuteCd', v)} />
-              <Field label="Parachute area" value={vehicle.parachuteArea} unit="m²" status="recovery" onChange={(v) => update('parachuteArea', v)} />
-              <Field label="Deploy altitude" value={vehicle.deployAltitude} unit="m" status="blank = apogee" onChange={(v) => update('deployAltitude', v)} />
-              <Field label="Deploy delay" value={vehicle.deployDelay} unit="s" status="recovery" onChange={(v) => update('deployDelay', v)} />
+              <Field label={txt('Ángulo de lanzamiento', 'Launch angle')} value={vehicle.launchAngle} unit="deg" status="TP" onChange={(v) => update('launchAngle', v)} />
+              <Field label={txt('Coeficiente de resistencia aerodinámica (Cd)', 'Drag coefficient (Cd)')} value={vehicle.cd} status={txt('referencia', 'reference')} onChange={(v) => update('cd', v)} />
+              <Field label={txt('Coeficiente de resistencia del paracaídas (Cd)', 'Parachute drag coefficient (Cd)')} value={vehicle.parachuteCd} status={txt('recuperación', 'recovery')} onChange={(v) => update('parachuteCd', v)} />
+              <Field label={txt('Área del paracaídas', 'Parachute area')} value={vehicle.parachuteArea} unit="m²" status={txt('recuperación', 'recovery')} onChange={(v) => update('parachuteArea', v)} />
+              <Field label={txt('Altitud de despliegue', 'Deploy altitude')} value={vehicle.deployAltitude} unit="m" status={txt('vacío = apogeo', 'blank = apogee')} onChange={(v) => update('deployAltitude', v)} />
+              <Field label={txt('Retardo de despliegue', 'Deploy delay')} value={vehicle.deployDelay} unit="s" status={txt('recuperación', 'recovery')} onChange={(v) => update('deployDelay', v)} />
             </div>
           )}
         </aside>
@@ -340,8 +340,8 @@ function App() {
           <div className="panel visual">
             <div className="panel-title">
               <div>
-                <p>GEOMETRY</p>
-                <h2>Parametric side view</h2>
+                <p>{txt('GEOMETRÍA', 'GEOMETRY')}</p>
+                <h2>{txt('Vista lateral paramétrica', 'Parametric side view')}</h2>
               </div>
               <div className="visual-tools">
                 <button
@@ -350,9 +350,9 @@ function App() {
                   onClick={() => setShowComponentCgs((value) => !value)}
                   aria-pressed={showComponentCgs}
                 >
-                  {showComponentCgs ? 'HIDE COMPONENT CGs' : 'SHOW COMPONENT CGs'}
+                  {showComponentCgs ? txt('OCULTAR CG DE COMPONENTES', 'HIDE COMPONENT CGs') : txt('MOSTRAR CG DE COMPONENTES', 'SHOW COMPONENT CGs')}
                 </button>
-                <span className="scale-note">technical view · live dimensions</span>
+                <span className="scale-note">{txt('vista técnica · dimensiones en vivo', 'technical view · live dimensions')}</span>
               </div>
             </div>
             <RocketRealistic
@@ -361,34 +361,36 @@ function App() {
               cpMm={analysisSummary?.cp_x_mm_from_nose ?? null}
               componentCgs={componentSummary?.components ?? []}
               showComponentCgs={showComponentCgs}
+              lang={lang}
             />
           </div>
 
           <NoseProfileComparison
             selected={vehicle.noseProfile}
             onSelect={(profile) => update('noseProfile', profile)}
+            lang={lang}
           />
 
           <div className="result-grid">
             <article className="metric-card">
               <span>CG</span>
               <strong>{liveCgFromNose !== null ? `${(Number(vehicle.totalLength) - liveCgFromNose).toFixed(1)} mm` : '—'}</strong>
-              <small>desde apoyo · referencia cátedra</small>
+              <small>{txt('desde apoyo · referencia cátedra', 'from support · course reference')}</small>
             </article>
             <article className="metric-card">
               <span>CP</span>
               <strong>{analysisSummary?.cp_x_mm_from_support !== undefined ? `${analysisSummary.cp_x_mm_from_support.toFixed(1)} mm` : analysisSummary?.cp_x_mm_from_nose !== undefined ? `${(Number(vehicle.totalLength) - analysisSummary.cp_x_mm_from_nose).toFixed(1)} mm` : '—'}</strong>
-              <small>desde apoyo · Barrowman/profile</small>
+              <small>{txt('desde apoyo · Barrowman/perfil', 'from support · Barrowman/profile')}</small>
             </article>
             <article className="metric-card">
-              <span>APOGEE</span>
+              <span>{txt('APOGEO', 'APOGEE')}</span>
               <strong>{analysisSummary?.apogee_m !== undefined ? `${analysisSummary.apogee_m.toFixed(1)} m` : '—'}</strong>
-              <small>trajectory result</small>
+              <small>{txt('resultado de trayectoria', 'trajectory result')}</small>
             </article>
             <article className="metric-card">
-              <span>MAX Q</span>
+              <span>{txt('Q MÁX', 'MAX Q')}</span>
               <strong>{analysisSummary?.max_q_pa !== undefined ? `${analysisSummary.max_q_pa.toFixed(0)} Pa` : '—'}</strong>
-              <small>trajectory result</small>
+              <small>{txt('resultado de trayectoria', 'trajectory result')}</small>
             </article>
           </div>
 
@@ -397,45 +399,46 @@ function App() {
             runToken={runToken}
             resetToken={resetToken}
             onAnalysisUpdate={handleAnalysisUpdate}
+            lang={lang}
           />
-          <CadInteroperabilityPanel onGeometryImported={importCadGeometry} />
+          <CadInteroperabilityPanel onGeometryImported={importCadGeometry} lang={lang} />
 
           <div className="panel readiness">
             <div className="panel-title compact">
               <div>
-                <p>TRACEABILITY</p>
-                <h2>CDR readiness</h2>
+                <p>{txt('TRAZABILIDAD', 'TRACEABILITY')}</p>
+                <h2>{txt('Estado del CDR', 'CDR readiness')}</h2>
               </div>
               <strong className="score">{5 - Math.min(blockers.length, 5)}/5</strong>
             </div>
             <div className="readiness-grid">
-              <div className="ready-row complete"><b>01</b><span>Principal geometry</span><em>860 / 180 / 180 / 500 / Ø63</em></div>
-              <div className="ready-row complete"><b>02</b><span>Fin profile</span><em>{vehicle.airfoil}</em></div>
-              <div className={`ready-row ${vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'complete' : ''}`}><b>03</b><span>Fin planform</span><em>{vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'READY' : 'TBD'}</em></div>
-              <div className="ready-row complete"><b>04</b><span>Mass table</span><em>PRELOADED · EDITABLE</em></div>
-              <div className={`ready-row ${vehicle.cd !== '' ? 'complete' : ''}`}><b>05</b><span>Drag model</span><em>{vehicle.cd === '' ? 'TBD' : `Cd ${vehicle.cd}`}</em></div>
+              <div className="ready-row complete"><b>01</b><span>{txt('Geometría principal', 'Principal geometry')}</span><em>860 / 180 / 180 / 500 / Ø63</em></div>
+              <div className="ready-row complete"><b>02</b><span>{txt('Perfil de aleta', 'Fin profile')}</span><em>{vehicle.airfoil}</em></div>
+              <div className={`ready-row ${vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'complete' : ''}`}><b>03</b><span>{txt('Planta de aleta', 'Fin planform')}</span><em>{vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? txt('LISTA', 'READY') : txt('POR DEFINIR', 'TBD')}</em></div>
+              <div className="ready-row complete"><b>04</b><span>{txt('Tabla de masas', 'Mass table')}</span><em>{txt('PRECARGADA · EDITABLE', 'PRELOADED · EDITABLE')}</em></div>
+              <div className={`ready-row ${vehicle.cd !== '' ? 'complete' : ''}`}><b>05</b><span>{txt('Modelo de resistencia', 'Drag model')}</span><em>{vehicle.cd === '' ? txt('POR DEFINIR', 'TBD') : `Cd ${vehicle.cd}`}</em></div>
             </div>
             <div className="blocker-box">
-              <span>ANALYSIS BLOCKERS</span>
+              <span>{txt('BLOQUEOS DEL ANÁLISIS', 'ANALYSIS BLOCKERS')}</span>
               <div>{blockers.map((blocker) => <code key={blocker}>{blocker}</code>)}</div>
             </div>
           </div>
 
           <div className="panel motor-panel">
             <div>
-              <p>MOTOR · TP SPECIFICATION</p>
+              <p>{txt('MOTOR · ESPECIFICACIÓN TP', 'MOTOR · TP SPECIFICATION')}</p>
               <h2>{motor.designation}</h2>
               <span>{motor.propellant}</span>
             </div>
             <dl>
-              <div><dt>Burn</dt><dd>{motor.burn} s</dd></div>
-              <div><dt>Impulse</dt><dd>{motor.impulse} N·s</dd></div>
-              <div><dt>Avg thrust</dt><dd>{motor.averageThrust} N</dd></div>
-              <div><dt>Max thrust</dt><dd>{motor.maxThrust} N</dd></div>
-              <div><dt>Propellant</dt><dd>{motor.propellantMass} g</dd></div>
-              <div><dt>Dry</dt><dd>{motor.dryMass} g</dd></div>
+              <div><dt>{txt('Combustión', 'Burn')}</dt><dd>{motor.burn} s</dd></div>
+              <div><dt>{txt('Impulso', 'Impulse')}</dt><dd>{motor.impulse} N·s</dd></div>
+              <div><dt>{txt('Empuje medio', 'Avg thrust')}</dt><dd>{motor.averageThrust} N</dd></div>
+              <div><dt>{txt('Empuje máximo', 'Max thrust')}</dt><dd>{motor.maxThrust} N</dd></div>
+              <div><dt>{txt('Propelente', 'Propellant')}</dt><dd>{motor.propellantMass} g</dd></div>
+              <div><dt>{txt('Masa seca', 'Dry')}</dt><dd>{motor.dryMass} g</dd></div>
             </dl>
-            <small className="motor-consistency-note">Empuje medio mostrado = I/t = 207 N·s / 0.5 s = 414 N. El valor TP 441 N queda marcado para reconciliación con la curva real de empuje.</small>
+            <small className="motor-consistency-note">{txt('Empuje medio mostrado = I/t = 207 N·s / 0.5 s = 414 N. El valor TP 441 N queda marcado para reconciliación con la curva real de empuje.', 'Displayed average thrust = I/t = 207 N·s / 0.5 s = 414 N. The TP value of 441 N remains flagged for reconciliation with the actual thrust curve.')}</small>
           </div>
         </section>
       </section>
