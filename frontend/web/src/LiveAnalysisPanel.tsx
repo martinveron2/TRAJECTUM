@@ -75,10 +75,9 @@ export const initialComponentRows: ComponentRow[] = [
   { id: 1, name: 'Cofia', massG: 100, lengthMm: 180, diameterMm: 63, kind: 'nose', note: 'xCG from selected nose-profile shell' },
   { id: 2, name: 'Cuerpo principal', massG: 330, lengthMm: 500, diameterMm: 63, kind: 'body', note: 'xCG from axial shell envelope' },
   { id: 3, name: 'Motor', massG: 490, lengthMm: 190, diameterMm: 50, kind: 'motor', note: 'xCG from motor axial envelope' },
-  { id: 4, name: 'Paracaídas', massG: 30, lengthMm: 60, diameterMm: 50, kind: 'parachute', note: 'upper third of modular bay · demo geometry' },
-  { id: 5, name: 'Electrónica', massG: 80, lengthMm: 60, diameterMm: 50, kind: 'electronics', note: 'middle third of modular bay · demo geometry' },
-  { id: 6, name: 'Carga útil', massG: 100, lengthMm: 60, diameterMm: 50, kind: 'payload', note: 'lower third of modular bay · demo geometry' },
-  { id: 7, name: 'Aletas · 4 total', massG: 20, lengthMm: 80, diameterMm: 0, kind: 'fins', note: 'xCG from trapezoidal planform' },
+  { id: 4, name: 'Paracaídas', massG: 30, lengthMm: 60, diameterMm: 50, kind: 'parachute', note: 'upper third of modular bay · reference geometry' },
+  { id: 5, name: 'Carga útil + electrónica', massG: 100, lengthMm: 120, diameterMm: 50, kind: 'payload', note: 'combined 100 g reference mass from the CDR report' },
+  { id: 6, name: 'Aletas · 4 total', massG: 20, lengthMm: 80, diameterMm: 0, kind: 'fins', note: 'xCG from trapezoidal planform' },
 ];
 
 export function LiveAnalysisPanel({
