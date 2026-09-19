@@ -6,6 +6,7 @@ import { CadInteroperabilityPanel } from './CadInteroperabilityPanel';
 import { RocketRealistic } from './RocketRealistic';
 import { NoseProfileComparison } from './NoseProfileComparison';
 import { buildEngineeringChartImages } from './engineeringChartExport';
+import { MissionControl } from './MissionControl';
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
   Flame, Sigma, ClipboardCheck, ArrowLeft, Play,
@@ -213,6 +214,8 @@ function App() {
   const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status'>('home');
   const [mobileNavBusy, setMobileNavBusy] = useState(false);
   const [mobileNavDirection, setMobileNavDirection] = useState<'forward' | 'back'>('forward');
+  const [missionControlOpen, setMissionControlOpen] = useState(false);
+  const [pendingMissionLaunch, setPendingMissionLaunch] = useState(false);
   const motor = motorConfigs.find((item) => item.id === activeMotorId) ?? motorConfigs[0];
   const averageThrust = motorAverageThrust(motor);
 
@@ -334,7 +337,11 @@ function App() {
     // may be older than the latest mass/geometry edit, so never let it pin CG.
     setAnalysisSummary(analysis);
     setComponentSummary(components);
-  }, []);
+    if (pendingMissionLaunch && analysis?.mission_timeline?.length > 1) {
+      setPendingMissionLaunch(false);
+      setMissionControlOpen(true);
+    }
+  }, [pendingMissionLaunch]);
 
   const liveCgFromNose = componentSummary?.total_cg_mm ?? analysisSummary?.cg_x_mm_from_nose ?? null;
 
@@ -363,7 +370,7 @@ function App() {
 
   const exportTrajectoryCsv = () => {
     const samples = analysisSummary?.mission_timeline ?? [];
-    const headers = ['t_s','phase','x_m','altitude_m','speed_m_s','vertical_speed_m_s','mach','q_pa','parachute_deployed'];
+    const headers = ['t_s','phase','x_m','altitude_m','speed_m_s','vertical_speed_m_s','mach','q_pa','acceleration_g','parachute_deployed'];
     const escapeCsv = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"';
     const rows = [headers.join(','), ...samples.map((sample: any) => headers.map((key) => escapeCsv(sample[key])).join(','))];
     downloadBlob(rows.join('\n'), 'text/csv;charset=utf-8', 'trajectum-trajectory.csv');
@@ -415,7 +422,7 @@ function App() {
     const comp = analysisSummary?.components ?? componentSummary?.components ?? [];
     const masses = [[header('COMPONENTE'), header('MASA [g]'), header('xCG DESDE NARIZ [mm]'), header('xCG DESDE APOYO [mm]'), header('FUENTE')], ...comp.map((item: any) => [cell(item.name), cell(item.mass_g), cell(item.x_cg_mm_from_nose ?? item.x_cg_mm), cell(item.x_cg_mm_from_support ?? (item.x_cg_mm != null ? Number(vehicle.totalLength) - item.x_cg_mm : '')), cell(item.source)])];
     const cp = [[header('PARÁMETRO CP'), header('VALOR'), header('UNIDAD')], [cell('Método'), cell('Barrowman / perfil axisimétrico'), cell('')], [cell('CP total desde nariz'), cell(analysisSummary?.cp_x_mm_from_nose), cell('mm')], [cell('CP total desde apoyo'), cell(analysisSummary?.cp_x_mm_from_support), cell('mm')], [cell('CP cofia desde nariz'), cell(analysisSummary?.nose_cp_x_mm_from_nose), cell('mm')], [cell('CP cofia desde apoyo'), cell(analysisSummary?.nose_cp_x_mm_from_support), cell('mm')], [cell('CP aletas desde nariz'), cell(analysisSummary?.fins_cp_x_mm_from_nose), cell('mm')], [cell('CP aletas desde apoyo'), cell(analysisSummary?.fins_cp_x_mm_from_support), cell('mm')], [cell('Margen estático'), cell(analysisSummary?.static_margin_calibers), cell('calibres')]];
-    const trajectory = [[header('t [s]'),header('FASE'),header('x [m]'),header('ALTITUD [m]'),header('VELOCIDAD [m/s]'),header('V VERTICAL [m/s]'),header('MACH'),header('Q [Pa]'),header('PARACAÍDAS')], ...(analysisSummary?.mission_timeline ?? []).map((sample: any) => [cell(sample.t_s),cell(sample.phase),cell(sample.x_m),cell(sample.altitude_m),cell(sample.speed_m_s),cell(sample.vertical_speed_m_s),cell(sample.mach),cell(sample.q_pa),cell(sample.parachute_deployed ? 'SI' : 'NO')])];
+    const trajectory = [[header('t [s]'),header('FASE'),header('x [m]'),header('ALTITUD [m]'),header('VELOCIDAD [m/s]'),header('V VERTICAL [m/s]'),header('MACH'),header('Q [Pa]'),header('ACELERACIÓN [g]'),header('PARACAÍDAS')], ...(analysisSummary?.mission_timeline ?? []).map((sample: any) => [cell(sample.t_s),cell(sample.phase),cell(sample.x_m),cell(sample.altitude_m),cell(sample.speed_m_s),cell(sample.vertical_speed_m_s),cell(sample.mach),cell(sample.q_pa),cell(sample.acceleration_g),cell(sample.parachute_deployed ? 'SI' : 'NO')])];
     const motorSheet = [[header('CONFIGURACIÓN'),header('DESIGNACIÓN'),header('PROPELENTE'),header('COMBUSTIÓN [s]'),header('IMPULSO [N·s]'),header('EMPUJE MEDIO DERIVADO [N]'),header('EMPUJE MÁX [N]'),header('PROPELENTE [g]'),header('SECA [g]'),header('ACTIVA')], ...motorConfigs.map((item) => [cell(item.label),cell(item.designation),cell(item.propellant),cell(item.burn),cell(item.impulse),cell(motorAverageThrust(item)),cell(item.maxThrust),cell(item.propellantMass),cell(item.dryMass),cell(item.id === activeMotorId ? 'SI' : 'NO')])];
     const recovery = [[header('PARÁMETRO'),header('VALOR'),header('UNIDAD')],[cell('Cd paracaídas'),cell(vehicle.parachuteCd),cell('')],[cell('Área paracaídas'),cell(vehicle.parachuteArea),cell('m²')],[cell('Altitud despliegue configurada'),cell(vehicle.deployAltitude),cell('m')],[cell('Retardo despliegue'),cell(vehicle.deployDelay),cell('s')],[cell('Altitud despliegue simulada'),cell(analysisSummary?.deployment_altitude_m),cell('m')],[cell('Tiempo despliegue'),cell(analysisSummary?.deployment_time_s),cell('s')],[cell('Tiempo aterrizaje'),cell(analysisSummary?.landing_time_s),cell('s')],[cell('Velocidad impacto'),cell(analysisSummary?.impact_speed_m_s),cell('m/s')]];
     const model = [[header('MÓDULO'),header('MÉTODO / MODELO')],[cell('CG'),cell('Sumatoria de momentos de masa')],[cell('CP'),cell('Barrowman + perfil axisimétrico de cofia')],[cell('Trayectoria'),cell('Masa puntual 2D')],[cell('Integración'),cell('Runge–Kutta de cuarto orden (RK4)')],[cell('Resistencia'),cell('D = 1/2 ρ V² Cd A')],[cell('Atmósfera'),cell('ISA')],[cell('Recuperación'),cell('Modelo de descenso con paracaídas')]];
@@ -571,6 +578,26 @@ function App() {
           <button type="button" className={analysisSummary?.apogee_m != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>{txt('TRAYECTORIA', 'TRAJECTORY')}</span><strong>{analysisSummary?.apogee_m != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
           <button type="button" className={analysisSummary?.landing_time_s != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><span>{txt('RECUPERACIÓN', 'RECOVERY')}</span><strong>{analysisSummary?.landing_time_s != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
         </div>
+        <button
+          type="button"
+          className={pendingMissionLaunch ? 'mission-launch-cta preparing' : 'mission-launch-cta'}
+          disabled={!ready || pendingMissionLaunch}
+          onClick={() => {
+            if (analysisSummary?.mission_timeline?.length > 1) {
+              setMissionControlOpen(true);
+              return;
+            }
+            setPendingMissionLaunch(true);
+            setRunToken((value) => value + 1);
+          }}
+        >
+          <span className="mission-launch-icon"><Rocket size={24} strokeWidth={1.8} /></span>
+          <span className="mission-launch-copy">
+            <small>{txt('CENTRO DE CONTROL DE VUELO', 'FLIGHT CONTROL CENTER')}</small>
+            <strong>{pendingMissionLaunch ? txt('PREPARANDO SIMULACIÓN…', 'PREPARING SIMULATION…') : txt('DESPEGAR / INICIAR SIMULACIÓN', 'LAUNCH / START SIMULATION')}</strong>
+          </span>
+          {pendingMissionLaunch ? <i className="mission-launch-spinner" /> : <b>→</b>}
+        </button>
         <div className="mobile-action-list">
           <button type="button" onClick={() => { navigateMobile('analysis'); if (!analysisSummary && ready) setRunToken((value) => value + 1); }}><span><Play size={18} strokeWidth={1.8} /></span><div><strong>{analysisSummary ? txt('RESULTADOS DEL CDR', 'CDR RESULTS') : txt('EJECUTAR CDR', 'RUN CDR')}</strong><small>{txt('CG · CP · trayectoria · recuperación', 'CG · CP · trajectory · recovery')}</small></div><b>→</b></button>
           <button type="button" onClick={() => navigateMobile('plots')}><span><ChartNoAxesCombined size={18} strokeWidth={1.8} /></span><div><strong>{txt('GRÁFICOS', 'PLOTS')}</strong><small>{txt('Análisis de vuelo interactivo', 'Interactive flight analysis')}</small></div><b>→</b></button>
@@ -818,6 +845,18 @@ function App() {
           </div>
         </section>
       </section>
+
+      {missionControlOpen && analysisSummary?.mission_timeline?.length > 1 && <MissionControl
+        samples={analysisSummary.mission_timeline}
+        motorBurnTimeS={Number(motor.burn) || 0}
+        analysis={analysisSummary}
+        lang={lang}
+        onClose={() => setMissionControlOpen(false)}
+        onViewResults={() => {
+          setMissionControlOpen(false);
+          navigateMobile('analysis');
+        }}
+      />}
 
       <nav
         className="mobile-command-bar"

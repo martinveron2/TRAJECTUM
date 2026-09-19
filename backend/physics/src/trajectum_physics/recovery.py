@@ -25,6 +25,7 @@ class RecoveryPoint:
     altitude_m: float
     velocity_m_s: float
     parachute_deployed: bool
+    acceleration_g: float
 
 
 @dataclass(frozen=True)
@@ -61,6 +62,7 @@ def simulate_recovery(
     deployment_time: float | None = None
     deployment_altitude: float | None = None
     max_descent = 0.0
+    az = -G0
     points: list[RecoveryPoint] = []
 
     while t - initial_time_s <= cfg.max_time_s and z > 0:
@@ -86,7 +88,7 @@ def simulate_recovery(
         drag_acc = drag_mag / cfg.mass_kg
         az = -G0 if abs(vz) < 1e-12 else -G0 - copysign(drag_acc, vz)
 
-        points.append(RecoveryPoint(t, z, vz, deployed))
+        points.append(RecoveryPoint(t, z, vz, deployed, abs(az) / G0))
         max_descent = max(max_descent, max(-vz, 0.0))
 
         vz += az * cfg.dt_s
@@ -94,7 +96,7 @@ def simulate_recovery(
         t += cfg.dt_s
 
     impact_speed = max(-vz, 0.0)
-    points.append(RecoveryPoint(t, max(z, 0.0), vz, deployed))
+    points.append(RecoveryPoint(t, max(z, 0.0), vz, deployed, abs(az) / G0))
     return RecoveryResult(
         deployment_time_s=deployment_time,
         deployment_altitude_m=deployment_altitude,

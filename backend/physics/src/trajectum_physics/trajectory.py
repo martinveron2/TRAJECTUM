@@ -28,6 +28,7 @@ class FlightPoint:
     speed_m_s: float
     mass_kg: float
     q_pa: float
+    acceleration_g: float
 
 
 @dataclass(frozen=True)
@@ -71,7 +72,9 @@ def simulate_to_apogee(cfg: FlightConfig) -> FlightResult:
         q = 0.5 * atmosphere.density_kg_m3 * speed**2
         max_q = max(max_q, q)
         mass = cfg.non_motor_mass_kg + motor_mass(cfg.motor, t)
-        points.append(FlightPoint(t, x, z, vx, vz, speed, mass, q))
+        _, _, ax_now, az_now = derivatives((x, z, vx, vz), t)
+        acceleration_g = hypot(ax_now, az_now) / G0
+        points.append(FlightPoint(t, x, z, vx, vz, speed, mass, q, acceleration_g))
 
         if t > cfg.motor.burn_time_s and vz <= 0 and z > 0:
             break

@@ -9,6 +9,7 @@ export type MissionSample = {
   vertical_speed_m_s: number;
   mach: number;
   q_pa: number;
+  acceleration_g: number;
   parachute_deployed: boolean;
 };
 

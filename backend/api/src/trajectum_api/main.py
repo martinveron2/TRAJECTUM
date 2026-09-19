@@ -148,6 +148,7 @@ class MissionSampleOut(BaseModel):
     vertical_speed_m_s: float
     mach: float
     q_pa: float
+    acceleration_g: float
     parachute_deployed: bool
 
 
@@ -421,6 +422,7 @@ def analyze_full(request: FullAnalysisRequest) -> FullAnalysisResponse:
                 vertical_speed_m_s=sample.vertical_speed_m_s,
                 mach=sample.mach,
                 q_pa=sample.q_pa,
+                acceleration_g=sample.acceleration_g,
                 parachute_deployed=sample.parachute_deployed,
             )
             for sample in result.mission_timeline
@@ -529,6 +531,7 @@ def analyze_full_v2(request: UnifiedFullAnalysisRequest) -> UnifiedFullAnalysisR
                 vertical_speed_m_s=sample.vertical_speed_m_s,
                 mach=sample.mach,
                 q_pa=sample.q_pa,
+                acceleration_g=sample.acceleration_g,
                 parachute_deployed=sample.parachute_deployed,
             )
             for sample in result.mission_timeline
