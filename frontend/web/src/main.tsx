@@ -54,15 +54,47 @@ const initialVehicle: Vehicle = {
   deployDelay: 0,
 };
 
-const motor = {
-  designation: 'A-100 RN (29%H)',
-  propellant: 'KNDX',
-  burn: 0.5,
-  impulse: 207,
-  averageThrust: 414,
-  maxThrust: 600,
-  propellantMass: 140,
-  dryMass: 350,
+type MotorConfig = {
+  id: string;
+  label: string;
+  designation: string;
+  propellant: string;
+  burn: NumericField;
+  impulse: NumericField;
+  maxThrust: NumericField;
+  propellantMass: NumericField;
+  dryMass: NumericField;
+};
+
+const initialMotorConfigs: MotorConfig[] = [
+  {
+    id: 'motor-1',
+    label: 'CONFIGURACIÓN 1',
+    designation: 'A-100 RN (29%H)',
+    propellant: 'KNDX',
+    burn: 0.5,
+    impulse: 207,
+    maxThrust: 600,
+    propellantMass: 140,
+    dryMass: 350,
+  },
+  {
+    id: 'motor-2',
+    label: 'CONFIGURACIÓN 2',
+    designation: '',
+    propellant: '',
+    burn: '',
+    impulse: '',
+    maxThrust: '',
+    propellantMass: '',
+    dryMass: '',
+  },
+];
+
+const motorAverageThrust = (motor: MotorConfig) => {
+  const burn = Number(motor.burn);
+  const impulse = Number(motor.impulse);
+  return burn > 0 && Number.isFinite(impulse) ? impulse / burn : null;
 };
 
 function mm(value: NumericField) {
@@ -168,10 +200,23 @@ function App() {
   const [showComponentCgs, setShowComponentCgs] = useState(true);
   const [analysisSummary, setAnalysisSummary] = useState<any>(null);
   const [componentSummary, setComponentSummary] = useState<any>(null);
+  const [motorConfigs, setMotorConfigs] = useState<MotorConfig[]>(initialMotorConfigs);
+  const [activeMotorId, setActiveMotorId] = useState('motor-1');
+  const [showMotorEditor, setShowMotorEditor] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const motor = motorConfigs.find((item) => item.id === activeMotorId) ?? motorConfigs[0];
+  const averageThrust = motorAverageThrust(motor);
 
   const update = <K extends keyof Vehicle>(key: K, value: Vehicle[K]) => {
     setVehicle((current) => ({ ...current, [key]: value }));
   };
+
+  const updateMotor = <K extends keyof MotorConfig>(key: K, value: MotorConfig[K]) => {
+    setMotorConfigs((current) => current.map((item) => item.id === activeMotorId ? { ...item, [key]: value } : item));
+    setAnalysisSummary(null);
+  };
+
+  const activeMotorReady = [motor.burn, motor.impulse, motor.propellantMass, motor.dryMass].every((value) => value !== '' && Number(value) >= 0);
 
   const importCadGeometry = (geometry: { totalLength: number; diameter: number; noseLength: number | null }) => {
     setVehicle((current) => {
@@ -194,8 +239,13 @@ function App() {
     if (vehicle.sweep === '') result.push(txt('Desplazamiento del borde de ataque', 'Leading-edge offset'));
     if (vehicle.finX === '') result.push(txt('Posición axial de la aleta', 'Fin axial location'));
     if (vehicle.cd === '') result.push(txt('Coeficiente de resistencia aerodinámica Cd', 'Drag coefficient Cd'));
+    if (!motor.designation.trim()) result.push(txt('Designación del motor', 'Motor designation'));
+    if (motor.burn === '' || Number(motor.burn) <= 0) result.push(txt('Tiempo de combustión del motor', 'Motor burn time'));
+    if (motor.impulse === '' || Number(motor.impulse) <= 0) result.push(txt('Impulso total del motor', 'Motor total impulse'));
+    if (motor.propellantMass === '' || Number(motor.propellantMass) < 0) result.push(txt('Masa de propelente', 'Propellant mass'));
+    if (motor.dryMass === '' || Number(motor.dryMass) <= 0) result.push(txt('Masa seca del motor', 'Motor dry mass'));
     return result;
-  }, [vehicle, lang]);
+  }, [vehicle, lang, motor]);
 
   const axialSum =
     (Number(vehicle.noseLength) || 0) +
@@ -215,6 +265,8 @@ function App() {
 
   const reset = () => {
     setVehicle(initialVehicle);
+    setMotorConfigs(initialMotorConfigs);
+    setActiveMotorId('motor-1');
     setAnalysisSummary(null);
     setComponentSummary(null);
     setResetToken((value) => value + 1);
@@ -229,14 +281,70 @@ function App() {
 
   const liveCgFromNose = componentSummary?.total_cg_mm ?? analysisSummary?.cg_x_mm_from_nose ?? null;
 
-  const exportCase = () => {
-    const blob = new Blob([JSON.stringify({ vehicle, motor }, null, 2)], { type: 'application/json' });
+  const downloadBlob = (contents: string, type: string, filename: string) => {
+    const blob = new Blob([contents], { type });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = 'trajectum-vehicle-draft.json';
+    anchor.download = filename;
     anchor.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportJson = () => {
+    const payload = {
+      meta: { product: 'TRAJECTUM', version: 'v0.1.0-CDR', exportedAt: new Date().toISOString(), project: 'UTN-FRH-G07 / CDR', activeMotorId },
+      vehicle,
+      motorConfigurations: motorConfigs,
+      activeMotor: motor,
+      components: componentSummary,
+      analysis: analysisSummary,
+    };
+    downloadBlob(JSON.stringify(payload, null, 2), 'application/json', 'trajectum-engineering-export.json');
+    setShowExportMenu(false);
+  };
+
+  const exportTrajectoryCsv = () => {
+    const samples = analysisSummary?.mission_timeline ?? [];
+    const headers = ['t_s','phase','x_m','altitude_m','speed_m_s','vertical_speed_m_s','q_pa','parachute_deployed'];
+    const escapeCsv = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+    const rows = [headers.join(','), ...samples.map((sample: any) => headers.map((key) => escapeCsv(sample[key])).join(','))];
+    downloadBlob(rows.join('\n'), 'text/csv;charset=utf-8', 'trajectum-trajectory.csv');
+    setShowExportMenu(false);
+  };
+
+  const exportExcel = async () => {
+    const { default: writeXlsxFile } = await import('write-excel-file');
+    const header = (value: string) => ({ value, fontWeight: 'bold' as const, backgroundColor: '#DCE6F1' });
+    const cell = (value: any) => ({ value: value ?? '' });
+    const pair = (name: string, value: any) => [header(name), cell(value)];
+    const summary = [
+      [header('TRAJECTUM — ENGINEERING EXPORT'), header('VALOR')],
+      pair('Proyecto', 'UTN-FRH-G07 / CDR'), pair('Versión', 'v0.1.0-CDR'), pair('Exportado', new Date().toLocaleString()), pair('Motor activo', motor.designation || motor.label),
+      pair('Masa total [g]', analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g ?? ''),
+      pair('CG desde apoyo [mm]', componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : analysisSummary?.cg_x_mm_from_support ?? ''),
+      pair('CP desde apoyo [mm]', analysisSummary?.cp_x_mm_from_support ?? ''), pair('Margen estático [calibres]', analysisSummary?.static_margin_calibers ?? ''),
+      pair('Apogeo [m]', analysisSummary?.apogee_m ?? ''), pair('Velocidad máxima [m/s]', analysisSummary?.max_speed_m_s ?? ''), pair('Mach máximo', analysisSummary?.max_mach ?? ''),
+      pair('Q máxima [Pa]', analysisSummary?.max_q_pa ?? ''), pair('Tiempo al apogeo [s]', analysisSummary?.time_to_apogee_s ?? ''), pair('Tiempo de aterrizaje [s]', analysisSummary?.landing_time_s ?? ''),
+      pair('Velocidad de impacto [m/s]', analysisSummary?.impact_speed_m_s ?? ''),
+    ];
+    const geometry = [
+      [header('PARÁMETRO'), header('VALOR'), header('UNIDAD')],
+      [cell('Longitud total'), cell(vehicle.totalLength), cell('mm')], [cell('Diámetro exterior'), cell(vehicle.diameter), cell('mm')], [cell('Longitud de cofia'), cell(vehicle.noseLength), cell('mm')],
+      [cell('Compartimiento modular'), cell(vehicle.bayLength), cell('mm')], [cell('Cuerpo inferior'), cell(vehicle.bodyLength), cell('mm')], [cell('Espesor de pared'), cell(vehicle.wall), cell('mm')],
+      [cell('Perfil de cofia'), cell(vehicle.noseProfile), cell('')], [cell('Perfil de aleta'), cell(vehicle.airfoil), cell('')], [cell('Cantidad de aletas'), cell(vehicle.finCount), cell('')],
+      [cell('Cuerda raíz cr'), cell(vehicle.rootChord), cell('mm')], [cell('Cuerda punta ct'), cell(vehicle.tipChord), cell('mm')], [cell('Semienvergadura s'), cell(vehicle.span), cell('mm')],
+      [cell('Desplazamiento borde de ataque Xf'), cell(vehicle.sweep), cell('mm')], [cell('Posición axial aleta'), cell(vehicle.finX), cell('mm')], [cell('Ángulo lanzamiento'), cell(vehicle.launchAngle), cell('deg')], [cell('Cd vehículo'), cell(vehicle.cd), cell('')],
+    ];
+    const comp = analysisSummary?.components ?? componentSummary?.components ?? [];
+    const masses = [[header('COMPONENTE'), header('MASA [g]'), header('xCG DESDE NARIZ [mm]'), header('xCG DESDE APOYO [mm]'), header('FUENTE')], ...comp.map((item: any) => [cell(item.name), cell(item.mass_g), cell(item.x_cg_mm_from_nose ?? item.x_cg_mm), cell(item.x_cg_mm_from_support ?? (item.x_cg_mm != null ? Number(vehicle.totalLength) - item.x_cg_mm : '')), cell(item.source)])];
+    const cp = [[header('PARÁMETRO CP'), header('VALOR'), header('UNIDAD')], [cell('Método'), cell('Barrowman / perfil axisimétrico'), cell('')], [cell('CP total desde nariz'), cell(analysisSummary?.cp_x_mm_from_nose), cell('mm')], [cell('CP total desde apoyo'), cell(analysisSummary?.cp_x_mm_from_support), cell('mm')], [cell('CP cofia desde nariz'), cell(analysisSummary?.nose_cp_x_mm_from_nose), cell('mm')], [cell('CP cofia desde apoyo'), cell(analysisSummary?.nose_cp_x_mm_from_support), cell('mm')], [cell('CP aletas desde nariz'), cell(analysisSummary?.fins_cp_x_mm_from_nose), cell('mm')], [cell('CP aletas desde apoyo'), cell(analysisSummary?.fins_cp_x_mm_from_support), cell('mm')], [cell('Margen estático'), cell(analysisSummary?.static_margin_calibers), cell('calibres')]];
+    const trajectory = [[header('t [s]'),header('FASE'),header('x [m]'),header('ALTITUD [m]'),header('VELOCIDAD [m/s]'),header('V VERTICAL [m/s]'),header('Q [Pa]'),header('PARACAÍDAS')], ...(analysisSummary?.mission_timeline ?? []).map((sample: any) => [cell(sample.t_s),cell(sample.phase),cell(sample.x_m),cell(sample.altitude_m),cell(sample.speed_m_s),cell(sample.vertical_speed_m_s),cell(sample.q_pa),cell(sample.parachute_deployed ? 'SI' : 'NO')])];
+    const motorSheet = [[header('CONFIGURACIÓN'),header('DESIGNACIÓN'),header('PROPELENTE'),header('COMBUSTIÓN [s]'),header('IMPULSO [N·s]'),header('EMPUJE MEDIO DERIVADO [N]'),header('EMPUJE MÁX [N]'),header('PROPELENTE [g]'),header('SECA [g]'),header('ACTIVA')], ...motorConfigs.map((item) => [cell(item.label),cell(item.designation),cell(item.propellant),cell(item.burn),cell(item.impulse),cell(motorAverageThrust(item)),cell(item.maxThrust),cell(item.propellantMass),cell(item.dryMass),cell(item.id === activeMotorId ? 'SI' : 'NO')])];
+    const recovery = [[header('PARÁMETRO'),header('VALOR'),header('UNIDAD')],[cell('Cd paracaídas'),cell(vehicle.parachuteCd),cell('')],[cell('Área paracaídas'),cell(vehicle.parachuteArea),cell('m²')],[cell('Altitud despliegue configurada'),cell(vehicle.deployAltitude),cell('m')],[cell('Retardo despliegue'),cell(vehicle.deployDelay),cell('s')],[cell('Altitud despliegue simulada'),cell(analysisSummary?.deployment_altitude_m),cell('m')],[cell('Tiempo despliegue'),cell(analysisSummary?.deployment_time_s),cell('s')],[cell('Tiempo aterrizaje'),cell(analysisSummary?.landing_time_s),cell('s')],[cell('Velocidad impacto'),cell(analysisSummary?.impact_speed_m_s),cell('m/s')]];
+    const model = [[header('MÓDULO'),header('MÉTODO / MODELO')],[cell('CG'),cell('Sumatoria de momentos de masa')],[cell('CP'),cell('Barrowman + perfil axisimétrico de cofia')],[cell('Trayectoria'),cell('Masa puntual 2D')],[cell('Integración'),cell('Runge–Kutta de cuarto orden (RK4)')],[cell('Resistencia'),cell('D = 1/2 ρ V² Cd A')],[cell('Atmósfera'),cell('ISA')],[cell('Recuperación'),cell('Modelo de descenso con paracaídas')]];
+    await writeXlsxFile([summary, geometry, masses, cp, trajectory, motorSheet, recovery, model], { sheets: ['RESUMEN','GEOMETRIA','MASAS_CG','CP','TRAYECTORIA','MOTOR','RECUPERACION','MODELO'], fileName: 'TRAJECTUM_Engineering_Export.xlsx' });
+    setShowExportMenu(false);
   };
 
   return (
@@ -265,7 +373,16 @@ function App() {
         </div>
         <div className="top-actions">
           <button className="ghost" onClick={reset}>{txt('Restablecer caso UTN', 'Reset UTN baseline')}</button>
-          <button className="ghost" onClick={exportCase}>{txt('Exportar borrador JSON', 'Export draft JSON')}</button>
+          <div className="export-control">
+            <button className="ghost export-trigger" onClick={() => setShowExportMenu((value) => !value)} aria-expanded={showExportMenu}>
+              {txt('EXPORTAR RESULTADOS', 'EXPORT RESULTS')} <span>▾</span>
+            </button>
+            {showExportMenu && <div className="export-menu">
+              <button type="button" onClick={exportExcel}><strong>EXCEL TÉCNICO</strong><small>.XLSX · 8 HOJAS</small></button>
+              <button type="button" onClick={exportJson}><strong>JSON</strong><small>{txt('REPRODUCIBLE / SOFTWARE', 'REPRODUCIBLE / SOFTWARE')}</small></button>
+              <button type="button" onClick={exportTrajectoryCsv}><strong>CSV</strong><small>{txt('TRAYECTORIA TABULAR', 'TABULAR TRAJECTORY')}</small></button>
+            </div>}
+          </div>
           <button className="run" onClick={ready ? runFromTop : goToAnalysis}>
             {ready ? txt('EJECUTAR · ACTUALIZAR CG/CP', 'RUN · UPDATE CG/CP') : `${txt('ABRIR ANÁLISIS', 'OPEN ANALYSIS')} · ${blockers.length} ${txt('ENTRADAS', 'INPUTS')}`}
           </button>
@@ -427,6 +544,7 @@ function App() {
             runToken={runToken}
             resetToken={resetToken}
             onAnalysisUpdate={handleAnalysisUpdate}
+            motor={motor}
             lang={lang}
           />
           </div>
@@ -453,21 +571,55 @@ function App() {
             </div>
           </div>
 
-          <div className="panel motor-panel" id="motor-panel">
-            <div>
-              <p>{txt('MOTOR · ESPECIFICACIÓN TP', 'MOTOR · TP SPECIFICATION')}</p>
-              <h2>{motor.designation}</h2>
-              <span>{motor.propellant}</span>
+          <div className="panel motor-panel motor-config-panel" id="motor-panel">
+            <div className="motor-summary">
+              <p>{txt('MOTOR · CONFIGURACIÓN ACTIVA', 'MOTOR · ACTIVE CONFIGURATION')}</p>
+              <h2>{motor.designation || txt('SIN DEFINIR', 'UNDEFINED')}</h2>
+              <span>{motor.propellant || '—'}</span>
+              <div className="motor-tabs">
+                {motorConfigs.map((item) => <button
+                  type="button"
+                  key={item.id}
+                  className={item.id === activeMotorId ? 'motor-tab active' : 'motor-tab'}
+                  onClick={() => { setActiveMotorId(item.id); setAnalysisSummary(null); }}
+                >
+                  <b>{item.label}</b>
+                  <small>{item.designation || txt('SIN CARGAR', 'EMPTY')}</small>
+                </button>)}
+              </div>
+              <button className="motor-edit-toggle" type="button" onClick={() => setShowMotorEditor((value) => !value)}>
+                {showMotorEditor ? txt('CERRAR EDICIÓN', 'CLOSE EDITOR') : txt('EDITAR MOTOR', 'EDIT MOTOR')}
+              </button>
             </div>
-            <dl>
-              <div><dt>{txt('Combustión', 'Burn')}</dt><dd>{motor.burn} s</dd></div>
-              <div><dt>{txt('Impulso', 'Impulse')}</dt><dd>{motor.impulse} N·s</dd></div>
-              <div><dt>{txt('Empuje medio', 'Avg thrust')}</dt><dd>{motor.averageThrust} N</dd></div>
-              <div><dt>{txt('Empuje máximo', 'Max thrust')}</dt><dd>{motor.maxThrust} N</dd></div>
-              <div><dt>{txt('Propelente', 'Propellant')}</dt><dd>{motor.propellantMass} g</dd></div>
-              <div><dt>{txt('Masa seca', 'Dry')}</dt><dd>{motor.dryMass} g</dd></div>
-            </dl>
-            <small className="motor-consistency-note">{txt('Empuje medio mostrado = I/t = 207 N·s / 0.5 s = 414 N. El valor TP 441 N queda marcado para reconciliación con la curva real de empuje.', 'Displayed average thrust = I/t = 207 N·s / 0.5 s = 414 N. The TP value of 441 N remains flagged for reconciliation with the actual thrust curve.')}</small>
+
+            <div className="motor-data">
+              <dl>
+                <div><dt>{txt('Combustión', 'Burn')}</dt><dd>{motor.burn === '' ? '—' : String(motor.burn) + ' s'}</dd></div>
+                <div><dt>{txt('Impulso', 'Impulse')}</dt><dd>{motor.impulse === '' ? '—' : String(motor.impulse) + ' N·s'}</dd></div>
+                <div><dt>{txt('Empuje medio', 'Avg thrust')}</dt><dd>{averageThrust == null ? '—' : averageThrust.toFixed(1) + ' N'}</dd></div>
+                <div><dt>{txt('Empuje máximo', 'Max thrust')}</dt><dd>{motor.maxThrust === '' ? '—' : String(motor.maxThrust) + ' N'}</dd></div>
+                <div><dt>{txt('Propelente', 'Propellant')}</dt><dd>{motor.propellantMass === '' ? '—' : String(motor.propellantMass) + ' g'}</dd></div>
+                <div><dt>{txt('Masa seca', 'Dry')}</dt><dd>{motor.dryMass === '' ? '—' : String(motor.dryMass) + ' g'}</dd></div>
+              </dl>
+              {!activeMotorReady && <small className="motor-consistency-note motor-warning">{txt('Completá tiempo de combustión, impulso, masa de propelente y masa seca para habilitar esta configuración.', 'Complete burn time, impulse, propellant mass and dry mass to enable this configuration.')}</small>}
+              {activeMotorReady && <small className="motor-consistency-note">{txt('El empuje medio usado por la simulación rectangular se deriva automáticamente como I/t.', 'Average thrust for the rectangular-thrust simulation is derived automatically as I/t.')}</small>}
+            </div>
+
+            {showMotorEditor && <div className="motor-editor">
+              <label><span>{txt('NOMBRE DE CONFIGURACIÓN', 'CONFIGURATION NAME')}</span><input value={motor.label} onChange={(e) => updateMotor('label', e.target.value)} /></label>
+              <label><span>{txt('DESIGNACIÓN', 'DESIGNATION')}</span><input value={motor.designation} onChange={(e) => updateMotor('designation', e.target.value)} placeholder="A-100 RN (29%H)" /></label>
+              <label><span>{txt('PROPELENTE', 'PROPELLANT')}</span><input value={motor.propellant} onChange={(e) => updateMotor('propellant', e.target.value)} placeholder="KNDX" /></label>
+              <label><span>{txt('COMBUSTIÓN', 'BURN TIME')}</span><div className="motor-input"><input type="number" value={motor.burn} onChange={(e) => updateMotor('burn', e.target.value === '' ? '' : Number(e.target.value))}/><em>s</em></div></label>
+              <label><span>{txt('IMPULSO TOTAL', 'TOTAL IMPULSE')}</span><div className="motor-input"><input type="number" value={motor.impulse} onChange={(e) => updateMotor('impulse', e.target.value === '' ? '' : Number(e.target.value))}/><em>N·s</em></div></label>
+              <label><span>{txt('EMPUJE MÁXIMO', 'MAX THRUST')}</span><div className="motor-input"><input type="number" value={motor.maxThrust} onChange={(e) => updateMotor('maxThrust', e.target.value === '' ? '' : Number(e.target.value))}/><em>N</em></div></label>
+              <label><span>{txt('MASA DE PROPELENTE', 'PROPELLANT MASS')}</span><div className="motor-input"><input type="number" value={motor.propellantMass} onChange={(e) => updateMotor('propellantMass', e.target.value === '' ? '' : Number(e.target.value))}/><em>g</em></div></label>
+              <label><span>{txt('MASA SECA', 'DRY MASS')}</span><div className="motor-input"><input type="number" value={motor.dryMass} onChange={(e) => updateMotor('dryMass', e.target.value === '' ? '' : Number(e.target.value))}/><em>g</em></div></label>
+              <div className="motor-derived">
+                <span>{txt('EMPUJE MEDIO DERIVADO', 'DERIVED AVG THRUST')}</span>
+                <strong>{averageThrust == null ? '—' : averageThrust.toFixed(2) + ' N'}</strong>
+                <small>I / t</small>
+              </div>
+            </div>}
           </div>
         </section>
       </section>
