@@ -9,7 +9,7 @@ import { buildEngineeringChartImages } from './engineeringChartExport';
 import { MissionControl } from './MissionControl';
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
-  Flame, Sigma, ClipboardCheck, ArrowLeft, Play,
+  Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit,
 } from 'lucide-react';
 
 type NumericField = number | '';
@@ -211,7 +211,8 @@ function App() {
   const [activeMotorId, setActiveMotorId] = useState('motor-1');
   const [showMotorEditor, setShowMotorEditor] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status'>('home');
+  const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status'>('home');
+  const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
   const [mobileNavBusy, setMobileNavBusy] = useState(false);
   const [mobileNavDirection, setMobileNavDirection] = useState<'forward' | 'back'>('forward');
   const [missionControlOpen, setMissionControlOpen] = useState(false);
@@ -221,11 +222,29 @@ function App() {
 
   const navigateMobile = (target: typeof mobileSection) => {
     if (target === mobileSection) return;
-    const order = ['home', 'pdr', 'vehicle', 'geometry', 'motor', 'cdr', 'analysis', 'plots', 'model', 'status'];
+    const order = ['home', 'pdr', 'vehicle', 'geometry', 'motor', 'cdr', 'analysis', 'plots', 'model', 'status', 'frr', 'lrr', 'pfr'];
     setMobileNavDirection(order.indexOf(target) >= order.indexOf(mobileSection) ? 'forward' : 'back');
     setMobileSection(target);
     setMobileNavBusy(true);
     window.setTimeout(() => setMobileNavBusy(false), 230);
+  };
+
+  const handlePhaseCarouselEnd = (element: HTMLDivElement) => {
+    const cards = Array.from(element.querySelectorAll('button'));
+    if (!cards.length) return;
+    const center = element.scrollLeft + element.clientWidth / 2;
+    let nearest = 0;
+    let distance = Infinity;
+    cards.forEach((card, index) => {
+      const cardCenter = (card as HTMLElement).offsetLeft + (card as HTMLElement).offsetWidth / 2;
+      const delta = Math.abs(cardCenter - center);
+      if (delta < distance) {
+        distance = delta;
+        nearest = index;
+      }
+    });
+    const phases: Array<typeof mobileSection> = ['pdr', 'cdr', 'frr', 'lrr', 'pfr'];
+    navigateMobile(phases[nearest]);
   };
 
   const mobileNavIndex = showExportMenu
@@ -234,11 +253,13 @@ function App() {
       ? 0
       : ['pdr','vehicle','geometry','motor'].includes(mobileSection)
         ? 1
-        : ['cdr','analysis','model','status'].includes(mobileSection)
+        : ['cdr','analysis','model','status','frr'].includes(mobileSection)
           ? 2
-          : mobileSection === 'plots'
+          : ['plots','lrr'].includes(mobileSection)
             ? 3
-            : 0;
+            : mobileSection === 'pfr'
+              ? 4
+              : 0;
 
   const update = <K extends keyof Vehicle>(key: K, value: Vehicle[K]) => {
     setVehicle((current) => ({ ...current, [key]: value }));
@@ -460,6 +481,17 @@ function App() {
               <span className="brand-subline">{txt('INGENIERÍA DEL VEHÍCULO · SIMULACIÓN · ANÁLISIS', 'VEHICLE ENGINEERING · SIMULATION · ANALYSIS')}</span>
             </div>
             <span className="brand-version">V0.1.0-CDR</span>
+            <button
+              type="button"
+              className="mobile-lang-pill"
+              onClick={() => setLang((current) => current === 'es' ? 'en' : 'es')}
+              aria-label={txt('Cambiar idioma', 'Change language')}
+            >
+              <Globe2 size={14} strokeWidth={1.8} />
+              <span>{isEs ? 'ES' : 'EN'}</span>
+              <i>|</i>
+              <b>{isEs ? 'EN' : 'ES'}</b>
+            </button>
           </div>
           <h1>{txt('Ingeniería del vehículo', 'Vehicle Engineering Workspace')}</h1>
         </div>
@@ -507,11 +539,24 @@ function App() {
             <span>{txt('PROYECTO ACTIVO', 'ACTIVE PROJECT')}</span>
             <strong>UTN-FRH-G07 / CDR</strong>
           </div>
-          <div className="mobile-guide-score"><b>{mobileGuideCompleted}/4</b><small>{txt('ETAPAS', 'STAGES')}</small></div>
+          <div className="mobile-guide-score"><b>02/05</b><small>{txt('FASE ACTUAL', 'CURRENT PHASE')}</small></div>
         </div>
 
-        <div className="mobile-guide-progress" aria-hidden="true">
-          {[1,2,3,4].map((step) => <i key={step} className={step <= mobileGuideCompleted ? 'done' : step === mobileGuideCompleted + 1 ? 'current' : ''} />)}
+        <div
+          className="mobile-phase-carousel"
+          aria-label={txt('Fases del proyecto', 'Project phases')}
+          onTouchStart={(event) => { event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0); }}
+          onTouchEnd={(event) => {
+            const start = Number(event.currentTarget.dataset.touchX ?? 0);
+            const end = event.changedTouches[0]?.clientX ?? start;
+            if (Math.abs(end - start) > 36) handlePhaseCarouselEnd(event.currentTarget);
+          }}
+        >
+          <button type="button" className="complete" onClick={() => navigateMobile('pdr')}><b>01</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
+          <button type="button" className="current" onClick={() => navigateMobile('cdr')}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
+          <button type="button" onClick={() => navigateMobile('frr')}><b>03</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
+          <button type="button" onClick={() => navigateMobile('lrr')}><b>04</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
+          <button type="button" onClick={() => navigateMobile('pfr')}><b>05</b><span>PFR / MCR</span><small>{txt('Post-vuelo', 'Post-flight')}</small></button>
         </div>
 
         <div className="mobile-guide-next">
@@ -541,10 +586,8 @@ function App() {
         </button>
 
         <div className="mobile-guide-steps">
-          <button type="button" className={geometryConsistent ? 'complete' : mobileGuideStep === 'vehicle' ? 'current' : ''} onClick={() => { navigateMobile('vehicle'); document.getElementById('vehicle-editor')?.scrollIntoView({ behavior:'smooth', block:'start' }); }}><b>01</b><span>{txt('VEHÍCULO', 'VEHICLE')}</span><em>{geometryConsistent ? '✓' : '→'}</em></button>
-          <button type="button" className={activeMotorReady ? 'complete' : mobileGuideStep === 'motor' ? 'current' : ''} onClick={() => document.getElementById('motor-panel')?.scrollIntoView({ behavior:'smooth', block:'center' })}><b>02</b><span>MOTOR</span><em>{activeMotorReady ? '✓' : '→'}</em></button>
-          <button type="button" className={analysisSummary ? 'complete' : mobileGuideStep === 'analysis' ? 'current' : ''} onClick={() => { navigateMobile('analysis'); goToAnalysis(); }}><b>03</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
-          <button type="button" className={analysisSummary ? 'current' : ''} onClick={() => document.querySelector('.flight-analysis-panel')?.scrollIntoView({ behavior:'smooth', block:'start' })}><b>04</b><span>{txt('RESULTADOS', 'RESULTS')}</span><em>{analysisSummary ? '→' : '·'}</em></button>
+          <button type="button" className={geometryConsistent ? 'complete' : mobileGuideStep === 'vehicle' ? 'current' : ''} onClick={() => navigateMobile('pdr')}><b>PDR</b><span>{txt('DISEÑO', 'DESIGN')}</span><em>{geometryConsistent ? '✓' : '→'}</em></button>
+          <button type="button" className={analysisSummary ? 'complete' : 'current'} onClick={() => navigateMobile('cdr')}><b>CDR</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
         </div>
       </section>
 
@@ -554,15 +597,41 @@ function App() {
           <div><span>FASE 01</span><h2>PDR · {txt('DISEÑO PRELIMINAR', 'PRELIMINARY DESIGN')}</h2></div>
           <b className="complete">✓</b>
         </div>
-        <div className="mobile-screen-copy">
-          <strong>{txt('Definí la arquitectura del vehículo', 'Define the vehicle architecture')}</strong>
-          <p>{txt('Geometría, perfil de cofia, aletas y configuración base. Entrá sólo al módulo que necesitás.', 'Geometry, nose profile, fins and baseline configuration. Open only the module you need.')}</p>
+
+        <div
+          className="mobile-pdr-vehicle"
+          style={{ '--tilt-x': pdrTilt.x + 'deg', '--tilt-y': pdrTilt.y + 'deg' } as React.CSSProperties}
+          onPointerMove={(event) => {
+            if (event.pointerType !== 'touch' && event.buttons === 0) return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            const px = (event.clientX - rect.left) / rect.width - .5;
+            const py = (event.clientY - rect.top) / rect.height - .5;
+            setPdrTilt({ x: Math.max(-5, Math.min(5, -py * 10)), y: Math.max(-7, Math.min(7, px * 14)) });
+          }}
+          onPointerLeave={() => setPdrTilt({ x: 0, y: 0 })}
+          onPointerUp={() => setPdrTilt({ x: 0, y: 0 })}
+        >
+          <div className="mobile-pdr-vehicle-head">
+            <div><span>{txt('VEHÍCULO INTERACTIVO', 'INTERACTIVE VEHICLE')}</span><strong>{txt('Arrastrá para explorar', 'Drag to explore')}</strong></div>
+            <Orbit size={19} strokeWidth={1.7} />
+          </div>
+          <div className="mobile-pdr-model">
+            <RocketRealistic
+              vehicle={vehicle}
+              cgMm={liveCgFromNose}
+              cpMm={analysisSummary?.cp_x_mm_from_nose ?? null}
+              componentCgs={componentSummary?.components ?? []}
+              showComponentCgs={false}
+              lang={lang}
+            />
+          </div>
         </div>
-        <div className="mobile-action-grid">
-          <button type="button" onClick={() => navigateMobile('geometry')}><span><Box size={18} strokeWidth={1.8} /></span><strong>{txt('VER COHETE', 'VIEW VEHICLE')}</strong><small>{txt('Geometría visual', 'Visual geometry')}</small><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('vehicle')}><span><SlidersHorizontal size={18} strokeWidth={1.8} /></span><strong>{txt('PARÁMETROS', 'PARAMETERS')}</strong><small>{txt('Editor paramétrico', 'Parametric editor')}</small><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('motor')}><span><Flame size={18} strokeWidth={1.8} /></span><strong>MOTOR</strong><small>{txt('Seleccionar y editar', 'Select and edit')}</small><b>→</b></button>
-          <button type="button" onClick={() => navigateMobile('cdr')}><span><Gauge size={18} strokeWidth={1.8} /></span><strong>{txt('IR A CDR', 'GO TO CDR')}</strong><small>{txt('Análisis detallado', 'Detailed analysis')}</small><b>→</b></button>
+
+        <div className="mobile-pdr-dock" aria-label={txt('Herramientas PDR', 'PDR tools')}>
+          <button type="button" onClick={() => navigateMobile('geometry')}><Box size={20} strokeWidth={1.8} /><span>{txt('GEOMETRÍA', 'GEOMETRY')}</span></button>
+          <button type="button" onClick={() => navigateMobile('vehicle')}><SlidersHorizontal size={20} strokeWidth={1.8} /><span>{txt('PARÁMETROS', 'PARAMETERS')}</span></button>
+          <button type="button" onClick={() => navigateMobile('motor')}><Flame size={20} strokeWidth={1.8} /><span>MOTOR</span></button>
+          <button type="button" className="advance" onClick={() => navigateMobile('cdr')}><Gauge size={20} strokeWidth={1.8} /><span>CDR</span></button>
         </div>
       </section>
 
@@ -606,12 +675,80 @@ function App() {
         </div>
       </section>
 
-      <section className="mobile-project-phases" aria-label={txt('Fases del proyecto', 'Project phases')}>
-        <button type="button" className="complete" onClick={() => navigateMobile('pdr')}><b>01</b><span>PDR</span><small>{txt('Diseño', 'Design')}</small></button>
-        <button type="button" className="current" onClick={() => navigateMobile('cdr')}><b>02</b><span>CDR</span><small>{txt('Análisis', 'Analysis')}</small></button>
-        <button type="button" disabled><b>03</b><span>FRR</span><small>{txt('Preparación', 'Readiness')}</small></button>
-        <button type="button" disabled><b>04</b><span>{txt('VUELO', 'FLIGHT')}</span><small>{txt('Misión', 'Mission')}</small></button>
-        <button type="button" disabled><b>05</b><span>PFR</span><small>{txt('Cierre', 'Closeout')}</small></button>
+      <section className="mobile-phase-screen mobile-frr-screen" aria-label="FRR">
+        <div className="mobile-screen-head">
+          <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
+          <div><span>FASE 03</span><h2>FRR · {txt('PREPARACIÓN DE VUELO', 'FLIGHT READINESS')}</h2></div>
+          <b className={analysisSummary && ready ? 'complete' : 'current'}>{analysisSummary && ready ? '✓' : '3'}</b>
+        </div>
+        <div className="mobile-screen-copy">
+          <strong>{txt('Verificación final antes del lanzamiento', 'Final verification before flight')}</strong>
+          <p>{txt('Revisá geometría, motor, estabilidad, trayectoria y recuperación antes de habilitar la preparación de lanzamiento.', 'Review geometry, motor, stability, trajectory and recovery before launch preparation.')}</p>
+        </div>
+        <div className="mobile-readiness-grid">
+          <button type="button" className={geometryConsistent ? 'ready' : ''} onClick={() => navigateMobile('pdr')}><Box size={19}/><span>{txt('GEOMETRÍA', 'GEOMETRY')}</span><strong>{geometryConsistent ? txt('VERIFICADA', 'VERIFIED') : txt('REVISAR', 'CHECK')}</strong></button>
+          <button type="button" className={activeMotorReady ? 'ready' : ''} onClick={() => navigateMobile('motor')}><Flame size={19}/><span>MOTOR</span><strong>{activeMotorReady ? txt('VERIFICADO', 'VERIFIED') : txt('REVISAR', 'CHECK')}</strong></button>
+          <button type="button" className={analysisSummary?.static_margin_calibers != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><ShieldCheck size={19}/><span>{txt('ESTABILIDAD', 'STABILITY')}</span><strong>{analysisSummary?.static_margin_calibers != null ? analysisSummary.static_margin_calibers.toFixed(2) + ' cal' : '—'}</strong></button>
+          <button type="button" className={analysisSummary?.landing_time_s != null ? 'ready' : ''} onClick={() => navigateMobile('analysis')}><ClipboardCheck size={19}/><span>{txt('RECUPERACIÓN', 'RECOVERY')}</span><strong>{analysisSummary?.landing_time_s != null ? txt('LISTA', 'READY') : txt('PENDIENTE', 'PENDING')}</strong></button>
+        </div>
+        <button type="button" className="phase-primary-action" disabled={!analysisSummary || !ready} onClick={() => navigateMobile('lrr')}>
+          <RadioTower size={20} /><span>{txt('CONTINUAR A LRR', 'CONTINUE TO LRR')}</span><b>→</b>
+        </button>
+      </section>
+
+      <section className="mobile-phase-screen mobile-lrr-screen" aria-label="LRR">
+        <div className="mobile-screen-head">
+          <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
+          <div><span>FASE 04</span><h2>LRR · {txt('PREPARACIÓN DE LANZAMIENTO', 'LAUNCH READINESS')}</h2></div>
+          <b className="current">4</b>
+        </div>
+        <div className="mobile-screen-copy">
+          <strong>{txt('Centro de misión listo', 'Mission control ready')}</strong>
+          <p>{txt('Esta fase concentra la simulación de misión en vivo y la secuencia completa de lanzamiento.', 'This phase contains the live mission simulation and full launch sequence.')}</p>
+        </div>
+        <button
+          type="button"
+          className={pendingMissionLaunch ? 'mission-launch-cta preparing' : 'mission-launch-cta lrr-primary'}
+          disabled={!ready || pendingMissionLaunch}
+          onClick={() => {
+            if (analysisSummary?.mission_timeline?.length > 1) {
+              setMissionControlOpen(true);
+              return;
+            }
+            setPendingMissionLaunch(true);
+            setRunToken((value) => value + 1);
+          }}
+        >
+          <span className="mission-launch-icon"><Rocket size={24} strokeWidth={1.8} /></span>
+          <span className="mission-launch-copy">
+            <small>{txt('MODO MISIÓN', 'MISSION MODE')}</small>
+            <strong>{pendingMissionLaunch ? txt('PREPARANDO SIMULACIÓN…', 'PREPARING SIMULATION…') : txt('DESPEGAR / INICIAR SIMULACIÓN', 'LAUNCH / START SIMULATION')}</strong>
+          </span>
+          {pendingMissionLaunch ? <i className="mission-launch-spinner" /> : <b>→</b>}
+        </button>
+        <div className="mobile-lrr-summary">
+          <div><span>{txt('MOTOR', 'MOTOR')}</span><strong>{motor.designation || '—'}</strong></div>
+          <div><span>{txt('ÁNGULO', 'ANGLE')}</span><strong>{vehicle.launchAngle === '' ? '—' : vehicle.launchAngle + '°'}</strong></div>
+          <div><span>{txt('APOGEO PREVISTO', 'PREDICTED APOGEE')}</span><strong>{analysisSummary?.apogee_m != null ? analysisSummary.apogee_m.toFixed(1) + ' m' : '—'}</strong></div>
+          <div><span>MAX MACH</span><strong>{analysisSummary?.max_mach != null ? analysisSummary.max_mach.toFixed(3) : '—'}</strong></div>
+        </div>
+      </section>
+
+      <section className="mobile-phase-screen mobile-pfr-screen" aria-label="PFR">
+        <div className="mobile-screen-head">
+          <button type="button" onClick={() => navigateMobile('home')} aria-label={txt('Volver', 'Back')}><ArrowLeft size={20} strokeWidth={1.8} /></button>
+          <div><span>FASE 05</span><h2>PFR / MCR · {txt('ANÁLISIS POST-VUELO', 'POST-FLIGHT REVIEW')}</h2></div>
+          <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '5'}</b>
+        </div>
+        <div className="mobile-screen-copy">
+          <strong>{txt('Telemetría, resultados y cierre técnico', 'Telemetry, results and technical closeout')}</strong>
+          <p>{txt('Revisá la corrida completa, compará los hitos y exportá la evidencia técnica de la misión.', 'Review the full run, compare mission events and export the technical evidence.')}</p>
+        </div>
+        <div className="mobile-action-list">
+          <button type="button" onClick={() => navigateMobile('plots')}><span><ChartNoAxesCombined size={18}/></span><div><strong>{txt('TELEMETRÍA Y GRÁFICOS', 'TELEMETRY & PLOTS')}</strong><small>{txt('Altitud · velocidad · Mach · Max Q', 'Altitude · speed · Mach · Max Q')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => navigateMobile('analysis')}><span><FileChartColumn size={18}/></span><div><strong>{txt('RESULTADOS COMPLETOS', 'FULL RESULTS')}</strong><small>{txt('CG · CP · estabilidad · recuperación', 'CG · CP · stability · recovery')}</small></div><b>→</b></button>
+          <button type="button" onClick={() => setShowExportMenu(true)}><span><Download size={18}/></span><div><strong>{txt('EXPORTAR MISIÓN', 'EXPORT MISSION')}</strong><small>Excel · PNG · JSON · CSV</small></div><b>→</b></button>
+        </div>
       </section>
 
       <div className="mobile-context-bar">
