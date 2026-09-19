@@ -7,6 +7,7 @@ Scientific and architectural documentation for TRAJECTUM — Aerospace Engineeri
 - theory and equations
 - scientific references
 - architecture decisions
+- mobile UI/UX navigation contract: `architecture/MOBILE_UI_NAVIGATION.md`
 - requirements and traceability
 - validation
 - CDR / FRR / LRR / PFR evidence
