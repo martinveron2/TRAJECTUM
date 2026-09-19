@@ -7,6 +7,7 @@ export type MissionSample = {
   altitude_m: number;
   speed_m_s: number;
   vertical_speed_m_s: number;
+  mach: number;
   q_pa: number;
   parachute_deployed: boolean;
 };
@@ -14,7 +15,7 @@ export type MissionSample = {
 export function FlightVisualizer({ samples, launchAngleDeg = 85, lang = 'es' }: { samples: MissionSample[]; launchAngleDeg?: number; lang?: 'es' | 'en' }) {
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
-  const phaseLabel = (phase: string) => !isEs ? phase : ({ BOOST: 'IMPULSO', COAST: 'ASCENSO LIBRE', APOGEE: 'APOGEO', DESCENT: 'DESCENSO', RECOVERY: 'RECUPERACIÓN', LANDED: 'ATERRIZADO' } as Record<string,string>)[phase] ?? phase;
+  const phaseLabel = (phase: string) => !isEs ? phase : ({ BOOST: 'IMPULSO', COAST: 'ASCENSO LIBRE', APOGEE: 'APOGEO', DESCENT: 'DESCENSO', PARACHUTE: 'PARACAÍDAS', RECOVERY: 'RECUPERACIÓN', LANDED: 'ATERRIZADO' } as Record<string,string>)[phase] ?? phase;
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [rate, setRate] = useState(4);

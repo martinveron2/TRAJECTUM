@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { FlightVisualizer, type MissionSample } from './FlightVisualizer';
 import { EngineeringEquations } from './EngineeringEquations';
+
+const FlightAnalysisCharts = React.lazy(() => import('./FlightAnalysisCharts').then((module) => ({ default: module.FlightAnalysisCharts })));
 
 type NumericField = number | '';
 type MotorLike = { designation: string; burn: NumericField; impulse: NumericField; propellantMass: NumericField; dryMass: NumericField; maxThrust: NumericField; propellant: string; };
@@ -263,7 +265,12 @@ export function LiveAnalysisPanel({
       <div><span>{txt('TIEMPO DE ATERRIZAJE', 'LANDING TIME')}</span><strong>{analysis?.landing_time_s !== undefined ? `${analysis.landing_time_s.toFixed(1)} s` : '—'}</strong></div>
       <div><span>{txt('VELOCIDAD DE IMPACTO', 'IMPACT SPEED')}</span><strong>{analysis?.impact_speed_m_s !== undefined ? `${analysis.impact_speed_m_s.toFixed(2)} m/s` : '—'}</strong></div>
     </div>
-    {analysis?.mission_timeline && analysis.mission_timeline.length > 1 && <FlightVisualizer samples={analysis.mission_timeline} launchAngleDeg={Number(vehicle.launchAngle) || 85} lang={lang} />}
+    {analysis?.mission_timeline && analysis.mission_timeline.length > 1 && <>
+      <FlightVisualizer samples={analysis.mission_timeline} launchAngleDeg={Number(vehicle.launchAngle) || 85} lang={lang} />
+      <Suspense fallback={<div className="panel flight-analysis-loading">{txt('CARGANDO GRÁFICOS DE INGENIERÍA…', 'LOADING ENGINEERING PLOTS…')}</div>}>
+        <FlightAnalysisCharts samples={analysis.mission_timeline} motorBurnTimeS={Number(motor.burn) || 0} analysis={analysis} lang={lang} />
+      </Suspense>
+    </>}
         {analysis?.landing_time_s !== undefined && <div className="recovery-timeline">
       <div className="timeline-title"><span>{txt('SECUENCIA DE RECUPERACIÓN', 'RECOVERY SEQUENCE')}</span><strong>{txt('Vuelo → despliegue → aterrizaje', 'Flight → deployment → landing')}</strong></div>
       <div className="timeline-track">
