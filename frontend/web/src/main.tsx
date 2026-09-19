@@ -958,10 +958,13 @@ function App() {
           type="button"
           className="mission-launch-cta cdr-launch cdr-execute"
           disabled={!ready}
-          onClick={() => setRunToken((value) => value + 1)}
+          onClick={() => {
+            setRunToken((value) => value + 1);
+            navigateMobile('analysis');
+          }}
         >
           <span className="mission-launch-icon"><Sigma size={23}/></span>
-          <span className="mission-launch-copy"><small>{txt('CÁLCULO CDR', 'CDR CALCULATION')}</small><strong>{analysisSummary ? txt('RECALCULAR SIMULACIÓN', 'RECALCULATE SIMULATION') : txt('EJECUTAR SIMULACIÓN', 'RUN SIMULATION')}</strong></span>
+          <span className="mission-launch-copy"><small>{txt('CÁLCULO CDR', 'CDR CALCULATION')}</small><strong>{analysisSummary ? txt('RECALCULAR CG / CP', 'RECALCULATE CG / CP') : txt('CALCULAR CG / CP', 'CALCULATE CG / CP')}</strong></span>
           <b>→</b>
         </button>
       </section>
@@ -1287,11 +1290,19 @@ function App() {
         samples={analysisSummary.mission_timeline}
         motorBurnTimeS={Number(motor.burn) || 0}
         analysis={analysisSummary}
+        launchAngleDeg={Number(vehicle.launchAngle) || 85}
+        onLaunchAngleChange={(angle) => {
+          update('launchAngle', angle);
+          setAnalysisSummary(null);
+          setMissionControlOpen(false);
+          setPendingMissionLaunch(true);
+          setRunToken((value) => value + 1);
+        }}
         lang={lang}
         onClose={() => setMissionControlOpen(false)}
         onViewResults={() => {
           setMissionControlOpen(false);
-          navigateMobile('analysis');
+          navigateMobile('plots');
         }}
       />}
 
@@ -1313,7 +1324,14 @@ function App() {
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
-        <button type="button" className={mobileSection === 'plots' ? 'active' : ''} onClick={() => navigateMobile('plots')}>
+        <button type="button" className={missionControlOpen ? 'active' : ''} onClick={() => {
+          if (analysisSummary?.mission_timeline?.length > 1) {
+            setMissionControlOpen(true);
+          } else {
+            setPendingMissionLaunch(true);
+            setRunToken((value) => value + 1);
+          }
+        }}>
           <span className="mobile-nav-icon"><Play size={20} strokeWidth={1.8} /></span>
           <small>{txt('VUELO', 'FLIGHT')}</small>
         </button>

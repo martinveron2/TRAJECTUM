@@ -13,6 +13,8 @@ type Props = {
   samples: MissionSample[];
   motorBurnTimeS: number;
   analysis: AnalysisLike;
+  launchAngleDeg?: number;
+  onLaunchAngleChange?: (angle: number) => void;
   lang?: 'es' | 'en';
   onClose: () => void;
   onViewResults: () => void;
@@ -20,12 +22,13 @@ type Props = {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-export function MissionControl({ samples, motorBurnTimeS, analysis, lang = 'es', onClose, onViewResults }: Props) {
+export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleDeg = 85, onLaunchAngleChange, lang = 'es', onClose, onViewResults }: Props) {
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
   const [timeS, setTimeS] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [rate, setRate] = useState(1);
+  const [angleUnlocked, setAngleUnlocked] = useState(false);
   const frameRef = useRef<number | null>(null);
   const lastRealRef = useRef<number | null>(null);
   const endTime = samples.length ? samples[samples.length - 1].t_s : 0;
@@ -82,8 +85,14 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, lang = 'es',
   if (!current) return null;
 
   const maxAltitude = Math.max(...samples.map((s) => s.altitude_m), 1);
-  const altitudeRatio = Math.min(Math.max(current.altitude_m / maxAltitude, 0), 1);
-  const rocketY = 420 - altitudeRatio * 330;
+  const missionScale = 330 / maxAltitude;
+  const originX = 166;
+  const originY = 420;
+  const rocketX = originX + current.x_m * missionScale;
+  const rocketY = originY - current.altitude_m * missionScale;
+  const trajectoryPoints = samples.map((sample) => `${(originX + sample.x_m * missionScale).toFixed(1)},${(originY - sample.altitude_m * missionScale).toFixed(1)}`).join(' ');
+  const currentIndex = Math.max(0, samples.findIndex((sample) => sample.t_s >= timeS));
+  const liveTrajectoryPoints = samples.slice(0, Math.max(currentIndex + 1, 1)).map((sample) => `${(originX + sample.x_m * missionScale).toFixed(1)},${(originY - sample.altitude_m * missionScale).toFixed(1)}`).join(' ');
   const phaseMap: Record<string,string> = {
     BOOST: txt('ASCENSO PROPULSADO', 'POWERED ASCENT'),
     COAST: txt('ASCENSO LIBRE', 'COAST'),
@@ -127,21 +136,29 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, lang = 'es',
                 <stop offset="100%" stopColor="#48a8ff" stopOpacity=".08"/>
               </linearGradient>
             </defs>
-            <line x1="180" y1="440" x2="180" y2="44" className="mission-axis"/>
-            <line x1="82" y1="420" x2="278" y2="420" className="mission-ground"/>
-            <line x1="180" y1="420" x2="180" y2={rocketY} stroke="url(#missionTrail)" strokeWidth="3"/>
+            <line x1={originX} y1="440" x2={originX} y2="44" className="mission-axis"/>
+            <line x1="60" y1={originY} x2="306" y2={originY} className="mission-ground"/>
+            <line
+              x1={originX}
+              y1={originY}
+              x2={originX + Math.cos(launchAngleDeg * Math.PI / 180) * 72}
+              y2={originY - Math.sin(launchAngleDeg * Math.PI / 180) * 72}
+              className="mission-launch-guide"
+            />
+            <polyline points={trajectoryPoints} className="mission-trajectory mission-trajectory-full"/>
+            <polyline points={liveTrajectoryPoints} className="mission-trajectory mission-trajectory-live"/>
             {current.parachute_deployed && <g className="mission-chute">
-              <path d={`M 148 ${rocketY-40} Q 180 ${rocketY-72} 212 ${rocketY-40}`}/>
-              <line x1="151" y1={rocketY-38} x2="173" y2={rocketY-13}/>
-              <line x1="209" y1={rocketY-38} x2="187" y2={rocketY-13}/>
+              <path d={`M ${rocketX-32} ${rocketY-40} Q ${rocketX} ${rocketY-72} ${rocketX+32} ${rocketY-40}`}/>
+              <line x1={rocketX-29} y1={rocketY-38} x2={rocketX-7} y2={rocketY-13}/>
+              <line x1={rocketX+29} y1={rocketY-38} x2={rocketX+7} y2={rocketY-13}/>
             </g>}
-            <g className={current.phase === 'BOOST' ? 'mission-rocket boosting' : 'mission-rocket'} transform={`translate(180 ${rocketY})`}>
+            <g className={current.phase === 'BOOST' ? 'mission-rocket boosting' : 'mission-rocket'} transform={`translate(${rocketX} ${rocketY})`}>
               <path d="M0-22 L9-6 L9 16 L-9 16 L-9-6 Z"/>
               <path d="M-9 8 L-17 18 L-9 15 Z M9 8 L17 18 L9 15 Z"/>
               {current.phase === 'BOOST' && <path className="mission-flame" d="M-5 16 L0 38 L5 16 Z"/>}
             </g>
             <text x="16" y="35" className="mission-stage-label">{txt('APOGEO', 'APOGEE')} {maxAltitude.toFixed(1)} m</text>
-            <text x="16" y="452" className="mission-stage-label">{txt('PLATAFORMA DE LANZAMIENTO', 'LAUNCH PAD')}</text>
+            <text x="16" y="452" className="mission-stage-label">{txt('PLATAFORMA', 'PAD')} · {launchAngleDeg.toFixed(1)}°</text>
           </svg>
         </section>
 
@@ -164,6 +181,19 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, lang = 'es',
           })}</div>
         </section>
       </main>
+
+      <div className="mission-flight-settings">
+        <div className="mission-angle-setting">
+          <div><span>{txt('ÁNGULO DE LANZAMIENTO', 'LAUNCH ANGLE')}</span><strong>{launchAngleDeg.toFixed(1)}°</strong><small>{angleUnlocked ? txt('EDITABLE', 'EDITABLE') : txt('BLOQUEADO', 'LOCKED')}</small></div>
+          <button type="button" className={angleUnlocked ? 'active' : ''} onClick={() => setAngleUnlocked((value) => !value)}>{angleUnlocked ? txt('BLOQUEAR', 'LOCK') : txt('EDITAR', 'EDIT')}</button>
+          <input type="range" min="75" max="90" step="0.5" value={launchAngleDeg} disabled={!angleUnlocked} onChange={(event) => onLaunchAngleChange?.(Number(event.target.value))}/>
+        </div>
+        <div className="mission-scrubber">
+          <span>T+{timeS.toFixed(1)}s</span>
+          <input type="range" min="0" max={Math.max(endTime,0)} step="0.05" value={timeS} onChange={(event) => { setPlaying(false); setTimeS(Number(event.target.value)); }}/>
+          <span>{endTime.toFixed(1)}s</span>
+        </div>
+      </div>
 
       <footer className="mission-controls">
         <button type="button" onClick={() => setPlaying((value) => !value)}>{playing ? <Pause size={18}/> : <Play size={18}/>}<span>{playing ? txt('PAUSAR', 'PAUSE') : txt('CONTINUAR', 'RESUME')}</span></button>
