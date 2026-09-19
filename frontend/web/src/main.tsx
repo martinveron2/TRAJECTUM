@@ -165,8 +165,9 @@ function NumericStepper({
   const [open, setOpen] = useState(false);
   const listRef = React.useRef<HTMLDivElement | null>(null);
   const current = value === '' ? min : Number(value);
+  const [draft, setDraft] = useState(current);
   const precision = String(step).includes('.') ? String(step).split('.')[1].length : 0;
-  const radius = 20;
+  const radius = 24;
   const options = Array.from({ length: radius * 2 + 1 }, (_, index) => {
     const raw = Math.max(min, current + (index - radius) * step);
     return Number(raw.toFixed(precision));
@@ -174,26 +175,76 @@ function NumericStepper({
 
   React.useEffect(() => {
     if (!open) return;
+    setDraft(current);
     window.requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>('.active')?.scrollIntoView({ block: 'center' }));
   }, [open, current]);
 
+  const updateDraftFromScroll = () => {
+    const list = listRef.current;
+    if (!list) return;
+    const center = list.scrollTop + list.clientHeight / 2;
+    let bestValue = draft;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    list.querySelectorAll<HTMLButtonElement>('button[data-value]').forEach((button) => {
+      const buttonCenter = button.offsetTop + button.offsetHeight / 2;
+      const distance = Math.abs(buttonCenter - center);
+      const option = Number(button.dataset.value);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestValue = option;
+      }
+    });
+    setDraft(bestValue);
+  };
+
+  const closePicker = () => setOpen(false);
+  const confirmPicker = () => {
+    onChange(Number(draft.toFixed(precision)));
+    setOpen(false);
+  };
+
   return (
-    <div className="numeric-wheel-control">
-      <button type="button" className={open ? 'numeric-wheel-trigger active' : 'numeric-wheel-trigger'} onClick={() => setOpen((v) => !v)}>
+    <div className={open ? 'numeric-wheel-control editing' : 'numeric-wheel-control'}>
+      <button
+        type="button"
+        className={open ? 'numeric-wheel-trigger active' : 'numeric-wheel-trigger'}
+        onClick={() => setOpen(true)}
+        aria-expanded={open}
+      >
         <span>{value === '' ? '—' : Number(value).toFixed(precision)}</span>
         {unit && <em>{unit}</em>}
         <b>↕</b>
       </button>
-      {open && <div className="numeric-wheel-popover">
-        <div className="numeric-wheel-list" ref={listRef}>
-          {options.map((option) => <button
-            type="button"
-            key={option}
-            className={option === current ? 'active' : ''}
-            onClick={() => { onChange(option); setOpen(false); }}
-          >{option.toFixed(precision)}{unit ? ' ' + unit : ''}</button>)}
+
+      {open && <div className="numeric-wheel-overlay" role="presentation" onPointerDown={(event) => {
+        if (event.target === event.currentTarget) closePicker();
+      }}>
+        <div className="numeric-wheel-sheet" role="dialog" aria-modal="true" aria-label="Seleccionar valor">
+          <div className="numeric-wheel-sheet-head">
+            <span>SELECCIONAR VALOR</span>
+            <strong>{draft.toFixed(precision)}{unit ? ' ' + unit : ''}</strong>
+          </div>
+          <div className="numeric-wheel-viewport">
+            <div className="numeric-wheel-list" ref={listRef} onScroll={updateDraftFromScroll}>
+              {options.map((option) => <button
+                type="button"
+                key={option}
+                data-value={option}
+                className={option === draft ? 'active' : ''}
+                onClick={() => {
+                  setDraft(option);
+                  window.requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>(`button[data-value="${option}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                }}
+              >{option.toFixed(precision)}{unit ? ' ' + unit : ''}</button>)}
+            </div>
+            <div className="numeric-wheel-focus-band" aria-hidden="true"/>
+            <div className="numeric-wheel-fade top"/><div className="numeric-wheel-fade bottom"/>
+          </div>
+          <div className="numeric-wheel-actions">
+            <button type="button" className="cancel" onClick={closePicker}>CANCELAR</button>
+            <button type="button" className="confirm" onClick={confirmPicker}>✓ OK</button>
+          </div>
         </div>
-        <div className="numeric-wheel-fade top"/><div className="numeric-wheel-fade bottom"/>
       </div>}
     </div>
   );
