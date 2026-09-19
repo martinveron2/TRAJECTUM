@@ -2404,3 +2404,18 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     font-size:.72rem!important;
   }
 }
+
+
+@media(max-width:820px){
+  /* Stronger visual increase for requirement identifiers. */
+  .requirements-grid .requirement-id{
+    min-width:38px!important;
+    height:28px!important;
+    padding:0 8px!important;
+    font-size:.72rem!important;
+    line-height:1!important;
+  }
+  .requirements-story-copy>strong{
+    font-size:.78rem!important;
+  }
+}
