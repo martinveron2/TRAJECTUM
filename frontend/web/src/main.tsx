@@ -245,8 +245,15 @@ function App() {
         <div className="brand-stack">
           <div className="brand-lockup" aria-label="TRAJECTUM">
             <svg className="brand-trajectory" viewBox="0 0 340 78" aria-hidden="true">
-              <path d="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
-              <circle cx="330" cy="11" r="3.4" />
+              <path className="brand-orbit-glow" d="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
+              <path className="brand-orbit-line" d="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
+              <circle className="brand-endpoint" cx="330" cy="11" r="3.4" />
+              <circle className="brand-comet" r="4.2">
+                <animateMotion dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
+              </circle>
+              <circle className="brand-comet brand-comet-tail" r="2.4">
+                <animateMotion begin="-0.16s" dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
+              </circle>
             </svg>
             <div className="brand-wordmark">
               <span className="brand-name">TRAJECTUM</span>
@@ -266,16 +273,26 @@ function App() {
         </div>
       </header>
 
-      <section className="status-strip">
-        <div><span>{txt('CASO', 'CASE')}</span><strong>UTN-FRH-G07 / CDR</strong></div>
-        <div><span>{txt('GEOMETRÍA', 'GEOMETRY')}</span><strong className={geometryConsistent ? 'ok' : 'bad'}>{geometryConsistent ? txt('CONSISTENTE', 'CONSISTENT') : txt('REVISAR LONGITUDES', 'CHECK LENGTHS')}</strong></div>
-        <div><span>{txt('PERFIL', 'AIRFOIL')}</span><strong>{vehicle.airfoil}</strong></div>
-        <div><span>MOTOR</span><strong>{motor.designation}</strong></div>
-        <div><span>{txt('CDR NUMÉRICO', 'NUMERIC CDR')}</span><strong className={ready ? 'ok' : 'warn'}>{ready ? txt('LISTO', 'READY') : txt('BLOQUEADO', 'BLOCKED')}</strong></div>
-      </section>
+      <nav className="status-strip" aria-label={txt('Navegación rápida del proyecto', 'Project quick navigation')}>
+        <button className="status-item" type="button" onClick={() => document.getElementById('vehicle-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+          <span>{txt('PROYECTO', 'PROJECT')}</span><strong>UTN-FRH-G07 / CDR</strong><i>↘</i>
+        </button>
+        <button className="status-item" type="button" onClick={() => document.getElementById('geometry-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+          <span>{txt('GEOMETRÍA', 'GEOMETRY')}</span><strong className={geometryConsistent ? 'ok' : 'bad'}>{geometryConsistent ? txt('CONSISTENTE', 'CONSISTENT') : txt('REVISAR LONGITUDES', 'CHECK LENGTHS')}</strong><i>↘</i>
+        </button>
+        <button className="status-item" type="button" onClick={() => document.getElementById('fins-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+          <span>{txt('PERFIL', 'AIRFOIL')}</span><strong>{vehicle.airfoil}</strong><i>↘</i>
+        </button>
+        <button className="status-item" type="button" onClick={() => document.getElementById('motor-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+          <span>MOTOR</span><strong>{motor.designation}</strong><i>↘</i>
+        </button>
+        <button className="status-item" type="button" onClick={() => document.getElementById('analysis-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+          <span>{txt('CDR NUMÉRICO', 'NUMERIC CDR')}</span><strong className={ready ? 'ok' : 'warn'}>{ready ? txt('LISTO', 'READY') : txt('BLOQUEADO', 'BLOCKED')}</strong><i>↘</i>
+        </button>
+      </nav>
 
       <section className="workspace">
-        <aside className="panel editor">
+        <aside className="panel editor" id="vehicle-editor">
           <div className="panel-title">
             <div>
               <p>{txt('ENTRADA', 'INPUT')}</p>
@@ -306,7 +323,7 @@ function App() {
           </div>
 
           <div className="section-heading">
-            <h3>{txt('Aletas', 'Fins')}</h3>
+            <h3 id="fins-section">{txt('Aletas', 'Fins')}</h3>
             <span>{txt('planta trapezoidal', 'trapezoidal planform')}</span>
           </div>
           <div className="airfoil-row">
@@ -347,7 +364,7 @@ function App() {
         </aside>
 
         <section className="right-column">
-          <div className="panel visual">
+          <div className="panel visual" id="geometry-panel">
             <div className="panel-title">
               <div>
                 <p>{txt('GEOMETRÍA', 'GEOMETRY')}</p>
@@ -404,6 +421,7 @@ function App() {
             </article>
           </div>
 
+          <div id="analysis-panel" className="section-anchor">
           <LiveAnalysisPanel
             vehicle={vehicle}
             runToken={runToken}
@@ -411,6 +429,7 @@ function App() {
             onAnalysisUpdate={handleAnalysisUpdate}
             lang={lang}
           />
+          </div>
           <CadInteroperabilityPanel onGeometryImported={importCadGeometry} lang={lang} />
 
           <div className="panel readiness">
@@ -434,7 +453,7 @@ function App() {
             </div>
           </div>
 
-          <div className="panel motor-panel">
+          <div className="panel motor-panel" id="motor-panel">
             <div>
               <p>{txt('MOTOR · ESPECIFICACIÓN TP', 'MOTOR · TP SPECIFICATION')}</p>
               <h2>{motor.designation}</h2>
