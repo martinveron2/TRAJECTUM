@@ -244,11 +244,14 @@ function App() {
       <header className="topbar">
         <div className="brand-stack">
           <div className="brand-lockup" aria-label="TRAJECTUM">
-            <span className="brand-name">TRAJECTUM</span>
-            <svg className="brand-trajectory" viewBox="0 0 160 34" aria-hidden="true">
-              <path d="M 8 27 Q 58 -2 124 13 Q 141 17 152 7" />
-              <circle cx="152" cy="7" r="2.5" />
+            <svg className="brand-trajectory" viewBox="0 0 340 78" aria-hidden="true">
+              <path d="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
+              <circle cx="330" cy="11" r="3.4" />
             </svg>
+            <div className="brand-wordmark">
+              <span className="brand-name">TRAJECTUM</span>
+              <span className="brand-subline">{txt('INGENIERÍA DEL VEHÍCULO · SIMULACIÓN · ANÁLISIS', 'VEHICLE ENGINEERING · SIMULATION · ANALYSIS')}</span>
+            </div>
             <span className="brand-version">V0.1.0-CDR</span>
           </div>
           <h1>{txt('Ingeniería del vehículo', 'Vehicle Engineering Workspace')}</h1>
