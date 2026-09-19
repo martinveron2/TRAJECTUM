@@ -361,8 +361,18 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
 .flight-chart-toolbar button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:31px;padding:0 9px;border:1px solid #263f62;border-radius:7px;background:#091525;color:#809abd;font-size:.58rem;letter-spacing:.06em;box-shadow:none;transform:none!important}
 .flight-chart-toolbar button:hover{border-color:#4b78b6;background:#10223a;color:#d3e5ff}
 .flight-chart-toolbar button.active{border-color:#5a8fe2;background:#12315a;color:#f0f6ff;box-shadow:inset 0 0 16px rgba(83,145,236,.12)}
-.flight-chart-toolbar button.chart-tool-export{margin-left:auto;min-height:34px;padding:0 13px;border-color:#4d8bd0;background:#0f2948;color:#d7eaff;box-shadow:0 0 0 1px rgba(86,151,226,.08),0 0 18px rgba(41,112,194,.08)}
+.flight-chart-toolbar button.chart-tool-preview{margin-left:auto;min-height:34px;padding:0 12px;border-color:#355d88;background:#0b1f36;color:#a9c9ec}
+.flight-chart-toolbar button.chart-tool-preview:hover{border-color:#5b8fc8;background:#113052;color:#e8f4ff}
+.flight-chart-toolbar button.chart-tool-export{min-height:34px;padding:0 13px;border-color:#4d8bd0;background:#0f2948;color:#d7eaff;box-shadow:0 0 0 1px rgba(86,151,226,.08),0 0 18px rgba(41,112,194,.08)}
 .flight-chart-toolbar button.chart-tool-export:hover{border-color:#71aaf0;background:#16365d;color:#fff}
+.chart-preview-backdrop{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(2,8,18,.82);backdrop-filter:blur(8px)}
+.chart-preview-modal{width:min(1180px,96vw);max-height:92vh;display:flex;flex-direction:column;border:1px solid #31547d;border-radius:14px;background:#081321;box-shadow:0 28px 90px rgba(0,0,0,.5);overflow:hidden}
+.chart-preview-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 15px;border-bottom:1px solid #203a59}
+.chart-preview-head>div{display:flex;flex-direction:column;gap:2px;min-width:0}.chart-preview-head span{font-size:.57rem;letter-spacing:.1em;color:#7294bc}.chart-preview-head strong{font-size:.68rem;color:#d8e7fb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chart-preview-head button{width:38px;height:38px;border:1px solid #33577e;border-radius:9px;background:#0c1d31;color:#bdd5ef;font-size:1.25rem}
+.chart-preview-canvas{overflow:auto;background:#eef2f6;padding:12px;touch-action:pan-x pan-y pinch-zoom}.chart-preview-canvas img{display:block;width:100%;height:auto;min-width:720px;background:#fff}
+.chart-preview-actions{display:flex;justify-content:flex-end;gap:9px;padding:12px 15px;border-top:1px solid #203a59}.chart-preview-actions button{min-height:42px;padding:0 14px;border:1px solid #36597f;border-radius:8px;background:#0c1d31;color:#acc6e5}.chart-preview-actions button.primary{border-color:#568fd1;background:#11345a;color:#fff}
+@media(max-width:720px){.flight-chart-toolbar button.chart-tool-preview{margin-left:0}.flight-chart-toolbar button.chart-tool-preview,.flight-chart-toolbar button.chart-tool-export{flex:1 1 145px}.chart-preview-backdrop{padding:8px}.chart-preview-modal{width:100%;max-height:94vh}.chart-preview-canvas{padding:8px}.chart-preview-canvas img{min-width:900px}.chart-preview-actions{position:sticky;bottom:0;background:#081321}.chart-preview-actions button{flex:1}}
 .flight-chart-toolbar button span{font-size:.56rem}
 .flight-chart-frame{border:1px solid #203653;border-radius:12px;overflow:hidden;background:#081321;box-shadow:inset 0 0 36px rgba(40,90,160,.035)}
 .flight-chart-frame .js-plotly-plot,.flight-chart-frame .plot-container,.flight-chart-frame .svg-container{width:100%!important}

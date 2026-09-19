@@ -24,6 +24,8 @@ type ChartKey = 'altitude' | 'speed' | 'mach' | 'q' | 'trajectory';
 export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang = 'es' }: Props) {
   const [active, setActive] = useState<ChartKey>('altitude');
   const [dragMode, setDragMode] = useState<'zoom' | 'pan'>('zoom');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewName, setPreviewName] = useState('');
   const graphRef = useRef<any>(null);
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
@@ -132,10 +134,14 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
   };
   const autoScale = () => graphRef.current && Plotly.relayout(graphRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
   const resetView = () => graphRef.current && Plotly.relayout(graphRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true, dragmode: dragMode });
-  const savePng = async () => {
+  const getActivePng = async () => {
     const indexByChart: Record<ChartKey, number> = { altitude: 0, speed: 1, mach: 2, q: 3, trajectory: 4 };
     const exportSet = await buildEngineeringChartImages(samples, motorBurnTimeS, analysis);
-    const file = exportSet.files[indexByChart[active]];
+    return exportSet.files[indexByChart[active]];
+  };
+
+  const savePng = async () => {
+    const file = await getActivePng();
     if (!file) return;
     const blob = new Blob([file.buffer], { type: 'image/png' });
     const url = URL.createObjectURL(blob);
@@ -143,7 +149,22 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
     anchor.href = url;
     anchor.download = file.filename;
     anchor.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  };
+
+  const previewPng = async () => {
+    const file = await getActivePng();
+    if (!file) return;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const url = URL.createObjectURL(new Blob([file.buffer], { type: 'image/png' }));
+    setPreviewUrl(url);
+    setPreviewName(file.filename);
+  };
+
+  const closePreview = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setPreviewName('');
   };
 
   if (!samples.length) return null;
@@ -173,6 +194,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
       <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Arrastrar para desplazar el gráfico', 'Drag to pan the plot')}>✥ <span>PAN</span></button>
       <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente los ejes', 'Autoscale axes')}>↔ <span>{txt('AJUSTAR', 'AUTOSCALE')}</span></button>
       <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')}>↺ <span>{txt('RESET', 'RESET')}</span></button>
+      <button type="button" className="chart-tool-preview" onClick={previewPng} title={txt('Visualizar versión PNG para impresión', 'Preview print-ready PNG')}>◉ <span>{txt('VISUALIZAR', 'PREVIEW')}</span></button>
       <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Descargar gráfico actual en PNG', 'Download current plot as PNG')}>⇩ <span>{txt('DESCARGAR PNG', 'DOWNLOAD PNG')}</span></button>
     </div>
 
@@ -222,5 +244,19 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
       <span>{txt('RUEDA: ZOOM · ARRASTRAR: PAN · HOVER: LECTURA EXACTA', 'WHEEL: ZOOM · DRAG: PAN · HOVER: EXACT READOUT')}</span>
       <strong>{txt('EVENTOS: FIN COMB. · MAX Q · APOGEO · DESPLIEGUE', 'EVENTS: BURNOUT · MAX Q · APOGEE · DEPLOY')}</strong>
     </div>
+
+    {previewUrl && <div className="chart-preview-backdrop" role="dialog" aria-modal="true" aria-label={txt('Vista previa del gráfico', 'Chart preview')}>
+      <div className="chart-preview-modal">
+        <div className="chart-preview-head">
+          <div><span>{txt('VISTA PREVIA PARA IMPRESIÓN', 'PRINT PREVIEW')}</span><strong>{previewName}</strong></div>
+          <button type="button" onClick={closePreview} aria-label={txt('Cerrar vista previa', 'Close preview')}>×</button>
+        </div>
+        <div className="chart-preview-canvas"><img src={previewUrl} alt={txt('Gráfico técnico TRAJECTUM', 'TRAJECTUM engineering plot')} /></div>
+        <div className="chart-preview-actions">
+          <button type="button" onClick={closePreview}>{txt('VOLVER', 'BACK')}</button>
+          <button type="button" className="primary" onClick={savePng}>⇩ {txt('DESCARGAR PNG', 'DOWNLOAD PNG')}</button>
+        </div>
+      </div>
+    </div>}
   </section>;
 }
