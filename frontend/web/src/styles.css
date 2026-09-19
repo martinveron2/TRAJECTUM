@@ -382,3 +382,77 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
 .flight-chart-footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:10px 2px 0;color:#607b9f;font-size:.56rem;letter-spacing:.07em}
 .flight-chart-footer strong{font-weight:600;color:#7695bf}
 @media(max-width:720px){.flight-chart-frame .js-plotly-plot{min-width:620px}.flight-chart-frame{overflow-x:auto}.flight-chart-footer{flex-direction:column}.plotly-badge{display:none}}
+
+/* Automatic desktop/mobile shell: one codebase, two layouts */
+.mobile-command-bar,.mobile-export-backdrop{display:none}
+@media(max-width:820px){
+  .app-shell{padding:12px 10px 92px}
+  .topbar{padding:7px 2px 14px;gap:10px;border-bottom-color:#203652}
+  .brand-lockup{max-width:100%}
+  .brand-trajectory{width:250px!important;height:auto}
+  .brand-name{font-size:1.22rem!important}
+  .brand-subline{font-size:.5rem;max-width:270px!important}
+  .brand-version{font-size:.52rem}
+  .brand-stack h1{font-size:1.05rem;white-space:normal}
+  .top-actions{width:100%;display:grid;grid-template-columns:1fr auto;gap:8px}
+  .top-actions>.ghost:not(.lang-toggle),.top-actions>.export-control{display:none}
+  .top-actions .run{grid-column:1;min-height:46px;width:100%;font-size:.68rem}
+  .top-actions .lang-toggle{grid-column:2;min-width:48px;min-height:46px;padding:0 12px}
+  .status-strip{display:none}
+  .workspace{grid-template-columns:1fr;gap:12px;margin-top:12px}
+  .right-column{gap:12px}
+  .panel,.editor,.visual,.readiness,.mass-panel,.cad-panel,.motor-panel,.flight-analysis-panel{border-radius:12px}
+  .editor,.visual,.readiness,.mass-panel,.cad-panel,.motor-panel,.flight-analysis-panel{padding:14px}
+  .panel-title{gap:10px}
+  h2{font-size:.92rem}
+  h3{font-size:.69rem;margin:18px 0 10px}
+  .field-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .field-label{font-size:.68rem}
+  .field-label small{font-size:.52rem}
+  .input-wrap input{min-height:42px;font-size:16px;padding:9px 10px}
+  .airfoil-row select,.motor-editor input{min-height:44px;font-size:16px}
+  .result-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .metric-card{padding:12px}
+  .metric-card strong{font-size:1.18rem}
+  .metric-card small{font-size:.58rem}
+  .realistic{min-height:0}.realistic svg{max-height:none}
+  .schematic{padding:5px;border-radius:9px}
+  .visual-tools{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .technical-toggle{min-height:38px;padding:7px 9px;font-size:.56rem}
+  .scale-note{display:none}
+  .analysis-metrics,.analysis-metrics.wide{grid-template-columns:1fr 1fr}
+  .timeline-track{grid-template-columns:1fr 1fr}
+  .motor-config-panel{grid-template-columns:1fr}
+  .motor-data dl{grid-template-columns:1fr 1fr}
+  .motor-editor{grid-template-columns:1fr}
+  .flight-chart-toolbar{gap:6px}
+  .flight-chart-toolbar>button{min-height:42px;flex:1 1 calc(33.333% - 6px)}
+  .flight-chart-toolbar button.chart-tool-preview,.flight-chart-toolbar button.chart-tool-export{flex:1 1 calc(50% - 6px);margin-left:0}
+  .flight-chart-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .flight-chart-tab{min-height:42px;padding:7px 6px;font-size:.55rem}
+  .export-menu{display:none!important}
+
+  .mobile-command-bar{display:grid;position:fixed;left:8px;right:8px;bottom:8px;z-index:1050;grid-template-columns:repeat(5,1fr);gap:4px;padding:7px;border:1px solid #2a4568;border-radius:15px;background:rgba(7,17,31,.96);backdrop-filter:blur(14px);box-shadow:0 14px 50px rgba(0,0,0,.48)}
+  .mobile-command-bar button{min-width:0;min-height:54px;padding:6px 3px;border:0;border-radius:10px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#8ca8cb;transform:none!important}
+  .mobile-command-bar button span{font-size:1rem;line-height:1}
+  .mobile-command-bar button small{font-size:.46rem;letter-spacing:.06em;white-space:nowrap}
+  .mobile-command-bar button.mobile-primary{background:#174887;color:#eef6ff;box-shadow:inset 0 0 20px rgba(82,157,255,.16)}
+  .mobile-command-bar button:active{background:#122943;color:#fff}
+
+  .mobile-export-backdrop{display:flex;position:fixed;inset:0;z-index:1150;align-items:flex-end;background:rgba(1,7,15,.72);backdrop-filter:blur(7px)}
+  .mobile-export-sheet{width:100%;padding:14px 12px calc(16px + env(safe-area-inset-bottom));border:1px solid #31547d;border-bottom:0;border-radius:18px 18px 0 0;background:#081321;box-shadow:0 -18px 60px rgba(0,0,0,.48);display:grid;gap:8px}
+  .mobile-export-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 2px 6px}
+  .mobile-export-head>div{display:flex;flex-direction:column;gap:3px}
+  .mobile-export-head span{font-size:.55rem;letter-spacing:.1em;color:#7195c2}
+  .mobile-export-head strong{font-size:.84rem;color:#edf5ff}
+  .mobile-export-head>button{width:42px;height:42px;padding:0;border-radius:10px;font-size:1.3rem}
+  .mobile-export-sheet>button{min-height:58px;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:10px 13px;border-radius:11px;background:#0d1c31;border-color:#2a4568}
+  .mobile-export-sheet>button strong{font-size:.67rem;color:#e5eefb}
+  .mobile-export-sheet>button small{font-size:.54rem;color:#7895bb}
+}
+@media(max-width:420px){
+  .field-grid{grid-template-columns:1fr}
+  .result-grid{grid-template-columns:1fr 1fr}
+  .brand-trajectory{width:225px!important}
+  .mobile-command-bar button small{font-size:.42rem}
+}

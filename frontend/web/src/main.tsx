@@ -649,6 +649,27 @@ function App() {
           </div>
         </section>
       </section>
+
+      <nav className="mobile-command-bar" aria-label={txt('Navegación móvil', 'Mobile navigation')}>
+        <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><span>⌂</span><small>{txt('INICIO', 'HOME')}</small></button>
+        <button type="button" onClick={() => document.getElementById('vehicle-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><span>◫</span><small>{txt('VEHÍCULO', 'VEHICLE')}</small></button>
+        <button type="button" className="mobile-primary" onClick={ready ? runFromTop : goToAnalysis}><span>▶</span><small>{txt('ANÁLISIS', 'ANALYSIS')}</small></button>
+        <button type="button" onClick={() => document.querySelector('.flight-analysis-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><span>⌁</span><small>{txt('GRÁFICOS', 'PLOTS')}</small></button>
+        <button type="button" onClick={() => setShowExportMenu(true)}><span>⇩</span><small>{txt('EXPORTAR', 'EXPORT')}</small></button>
+      </nav>
+
+      {showExportMenu && <div className="mobile-export-backdrop" onClick={() => setShowExportMenu(false)}>
+        <div className="mobile-export-sheet" onClick={(event) => event.stopPropagation()}>
+          <div className="mobile-export-head">
+            <div><span>{txt('SALIDA', 'OUTPUT')}</span><strong>{txt('EXPORTAR RESULTADOS', 'EXPORT RESULTS')}</strong></div>
+            <button type="button" onClick={() => setShowExportMenu(false)} aria-label={txt('Cerrar', 'Close')}>×</button>
+          </div>
+          <button type="button" onClick={exportExcel}><strong>EXCEL TÉCNICO</strong><small>.XLSX · 8 HOJAS + GRÁFICOS</small></button>
+          <button type="button" onClick={exportChartsZip}><strong>{txt('GRÁFICOS PNG', 'PNG PLOTS')}</strong><small>{txt('5 ARCHIVOS · ALTA RESOLUCIÓN', '5 FILES · HIGH RES')}</small></button>
+          <button type="button" onClick={exportJson}><strong>JSON</strong><small>{txt('PROYECTO REPRODUCIBLE / SOFTWARE', 'REPRODUCIBLE PROJECT / SOFTWARE')}</small></button>
+          <button type="button" onClick={exportTrajectoryCsv}><strong>CSV</strong><small>{txt('TRAYECTORIA TABULAR', 'TABULAR TRAJECTORY')}</small></button>
+        </div>
+      </div>}
     </main>
   );
 }
