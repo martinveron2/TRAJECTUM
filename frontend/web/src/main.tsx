@@ -205,6 +205,7 @@ function App() {
   const [activeMotorId, setActiveMotorId] = useState('motor-1');
   const [showMotorEditor, setShowMotorEditor] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [mobileSection, setMobileSection] = useState<'home' | 'vehicle' | 'analysis' | 'plots' | 'export'>('home');
   const motor = motorConfigs.find((item) => item.id === activeMotorId) ?? motorConfigs[0];
   const averageThrust = motorAverageThrust(motor);
 
@@ -651,11 +652,26 @@ function App() {
       </section>
 
       <nav className="mobile-command-bar" aria-label={txt('Navegación móvil', 'Mobile navigation')}>
-        <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><span>⌂</span><small>{txt('INICIO', 'HOME')}</small></button>
-        <button type="button" onClick={() => document.getElementById('vehicle-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><span>◫</span><small>{txt('VEHÍCULO', 'VEHICLE')}</small></button>
-        <button type="button" className="mobile-primary" onClick={ready ? runFromTop : goToAnalysis}><span>▶</span><small>{txt('ANÁLISIS', 'ANALYSIS')}</small></button>
-        <button type="button" onClick={() => document.querySelector('.flight-analysis-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><span>⌁</span><small>{txt('GRÁFICOS', 'PLOTS')}</small></button>
-        <button type="button" onClick={() => setShowExportMenu(true)}><span>⇩</span><small>{txt('EXPORTAR', 'EXPORT')}</small></button>
+        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onClick={() => { setMobileSection('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+          <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5H15v-6H9v6H3.5a.5.5 0 0 1-.5-.5z"/></svg></span>
+          <small>{txt('INICIO', 'HOME')}</small>
+        </button>
+        <button type="button" className={mobileSection === 'vehicle' ? 'active' : ''} onClick={() => { setMobileSection('vehicle'); document.getElementById('vehicle-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
+          <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 16 7v10l-4 4.5L8 17V7zM8 8H4.5v8H8m8-8h3.5v8H16"/></svg></span>
+          <small>{txt('VEHÍCULO', 'VEHICLE')}</small>
+        </button>
+        <button type="button" className={mobileSection === 'analysis' ? 'mobile-primary active' : 'mobile-primary'} onClick={() => { setMobileSection('analysis'); ready ? runFromTop() : goToAnalysis(); }}>
+          <span className="mobile-nav-icon primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 15l7 6 7-6M6.5 8.5 9 6l2 2 4-4 2.5 2.5"/></svg></span>
+          <small>{txt('ANÁLISIS', 'ANALYSIS')}</small>
+        </button>
+        <button type="button" className={mobileSection === 'plots' ? 'active' : ''} onClick={() => { setMobileSection('plots'); document.querySelector('.flight-analysis-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
+          <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 19.5h18M5 16l4-5 3 3 5-8 2 3"/></svg></span>
+          <small>{txt('GRÁFICOS', 'PLOTS')}</small>
+        </button>
+        <button type="button" className={mobileSection === 'export' ? 'active' : ''} onClick={() => { setMobileSection('export'); setShowExportMenu(true); }}>
+          <span className="mobile-nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 19h14"/></svg></span>
+          <small>{txt('EXPORTAR', 'EXPORT')}</small>
+        </button>
       </nav>
 
       {showExportMenu && <div className="mobile-export-backdrop" onClick={() => setShowExportMenu(false)}>
