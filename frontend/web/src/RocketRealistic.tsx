@@ -6,7 +6,10 @@ type VehicleLike = {
   bayLength: NumericField; bodyLength: NumericField; airfoil: string; noseProfile: string;
 };
 
-export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
+export function RocketRealistic({ vehicle, lang = 'es' }: { vehicle: VehicleLike; lang?: 'es' | 'en' }) {
+  const isEs = lang === 'es';
+  const txt = (es: string, en: string) => isEs ? es : en;
+  const noseProfileLabel = vehicle.noseProfile === 'tangent_ogive' ? txt('ojiva tangente', 'tangent ogive') : vehicle.noseProfile === 'von_karman' ? 'Von Kármán' : vehicle.noseProfile === 'power_series' ? txt('serie de potencias', 'power series') : vehicle.noseProfile.replace(/_/g, ' ');
   const total = Number(vehicle.totalLength) || 860;
   const nose = Number(vehicle.noseLength) || 180;
   const bay = Number(vehicle.bayLength) || 180;
@@ -37,7 +40,7 @@ export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
   const right = [...ogive].reverse().map((p) => `${centerX + p.half},${p.y}`).join(' ');
   const ogivePoints = `${left} ${right}`;
 
-  return <div className="schematic realistic"><svg viewBox="0 0 390 590" role="img" aria-label="Rocket side view">
+  return <div className="schematic realistic"><svg viewBox="0 0 390 590" role="img" aria-label={txt('Vista lateral del cohete', 'Rocket side view')}>
     <defs>
       <linearGradient id="shell3d" x1="0" x2="1"><stop offset="0%" stopColor="#596b82"/><stop offset="20%" stopColor="#dce5ef"/><stop offset="50%" stopColor="#f7f9fc"/><stop offset="82%" stopColor="#aebdce"/><stop offset="100%" stopColor="#50647e"/></linearGradient>
       <linearGradient id="fin3d" x1="0" x2="1"><stop offset="0%" stopColor="#364b65"/><stop offset="55%" stopColor="#a6b2c1"/><stop offset="100%" stopColor="#2e435b"/></linearGradient>
@@ -51,10 +54,10 @@ export function RocketRealistic({ vehicle }: { vehicle: VehicleLike }) {
     <polygon points={`${x},${bottom-92} ${x},${bottom-12} ${x-60},${bottom+10} ${x-37},${bottom-75}`} className="rocket-fin"/>
     <polygon points={`${x+w},${bottom-92} ${x+w},${bottom-12} ${x+w+60},${bottom+10} ${x+w+37},${bottom-75}`} className="rocket-fin"/>
     <path d={`M ${x+w/2-14} ${bottom} L ${x+w/2+14} ${bottom} L ${x+w/2+10} ${bottom+24} L ${x+w/2-10} ${bottom+24} Z`} className="nozzle"/>
-    <text x={x+w/2} y={yBay+bayH/2-8} className="module-label">PAYLOAD +</text><text x={x+w/2} y={yBay+bayH/2+7} className="module-label">ELECTRONICS</text>
+    <text x={x+w/2} y={yBay+bayH/2-8} className="module-label">{txt('CARGA ÚTIL +', 'PAYLOAD +')}</text><text x={x+w/2} y={yBay+bayH/2+7} className="module-label">{txt('ELECTRÓNICA', 'ELECTRONICS')}</text>
     <text x={x+w/2} y={yBody+bodyH*.34} className="utn-mark">UTN</text><text x={x+w/2} y={yBody+bodyH*.34+18} className="module-label">FRH · G07</text>
-    <text x="300" y={top+noseH/2} className="callout">NOSE · {nose} mm</text><text x="300" y={yBay+bayH/2} className="callout">BAY · {bay} mm</text><text x="300" y={yBody+bodyH/2} className="callout">BODY · {body} mm</text>
+    <text x="300" y={top+noseH/2} className="callout">{txt('COFIA', 'NOSE')} · {nose} mm</text><text x="300" y={yBay+bayH/2} className="callout">{txt('COMPART.', 'BAY')} · {bay} mm</text><text x="300" y={yBody+bodyH/2} className="callout">{txt('CUERPO', 'BODY')} · {body} mm</text>
   </svg>
-  <div className="schematic-meta"><span><i className="dot frozen"/> Ø {vehicle.diameter || '—'} mm</span><span><i className="dot provisional"/> {vehicle.airfoil}</span><span><i className="dot tbd"/> {vehicle.noseProfile.replace(/_/g, " ")}</span></div>
+  <div className="schematic-meta"><span><i className="dot frozen"/> Ø {vehicle.diameter || '—'} mm</span><span><i className="dot provisional"/> {vehicle.airfoil}</span><span><i className="dot tbd"/> {noseProfileLabel}</span></div>
   </div>;
 }

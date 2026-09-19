@@ -158,6 +158,9 @@ function RocketSchematic({ vehicle }: { vehicle: Vehicle }) {
 }
 
 function App() {
+  const [lang, setLang] = useState<'es' | 'en'>('es');
+  const isEs = lang === 'es';
+  const txt = (es: string, en: string) => isEs ? es : en;
   const [vehicle, setVehicle] = useState(initialVehicle);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [runToken, setRunToken] = useState(0);
@@ -183,12 +186,12 @@ function App() {
 
   const blockers = useMemo(() => {
     const result: string[] = [];
-    if (vehicle.tipChord === '') result.push('Fin tip chord');
-    if (vehicle.sweep === '') result.push('Fin sweep');
-    if (vehicle.finX === '') result.push('Fin axial location');
-    if (vehicle.cd === '') result.push('Drag coefficient Cd');
+    if (vehicle.tipChord === '') result.push(txt('Cuerda de punta', 'Fin tip chord'));
+    if (vehicle.sweep === '') result.push(txt('Desplazamiento del borde de ataque', 'Leading-edge offset'));
+    if (vehicle.finX === '') result.push(txt('Posición axial de la aleta', 'Fin axial location'));
+    if (vehicle.cd === '') result.push(txt('Coeficiente de resistencia aerodinámica Cd', 'Drag coefficient Cd'));
     return result;
-  }, [vehicle]);
+  }, [vehicle, lang]);
 
   const axialSum =
     (Number(vehicle.noseLength) || 0) +
@@ -219,63 +222,64 @@ function App() {
       <header className="topbar">
         <div>
           <p className="eyebrow">TRAJECTUM · v0.1.0-CDR</p>
-          <h1>Vehicle Engineering Workspace</h1>
+          <h1>{txt('Entorno de ingeniería del vehículo', 'Vehicle Engineering Workspace')}</h1>
         </div>
         <div className="top-actions">
-          <button className="ghost" onClick={reset}>Reset UTN baseline</button>
-          <button className="ghost" onClick={exportCase}>Export draft JSON</button>
+          <button className="ghost lang-toggle" onClick={() => setLang((current) => current === 'es' ? 'en' : 'es')} title={txt('Cambiar a inglés', 'Switch to Spanish')}>{isEs ? 'EN' : 'ES'}</button>
+          <button className="ghost" onClick={reset}>{txt('Restablecer caso UTN', 'Reset UTN baseline')}</button>
+          <button className="ghost" onClick={exportCase}>{txt('Exportar borrador JSON', 'Export draft JSON')}</button>
           <button className="run" onClick={goToAnalysis}>
-            {ready ? 'RUN FULL ANALYSIS' : `OPEN ANALYSIS · ${blockers.length} INPUTS`}
+            {ready ? txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS') : `${txt('ABRIR ANÁLISIS', 'OPEN ANALYSIS')} · ${blockers.length} ${txt('ENTRADAS', 'INPUTS')}`}
           </button>
         </div>
       </header>
 
       <section className="status-strip">
-        <div><span>CASE</span><strong>UTN-FRH-G07 / CDR</strong></div>
-        <div><span>GEOMETRY</span><strong className={geometryConsistent ? 'ok' : 'bad'}>{geometryConsistent ? 'CONSISTENT' : 'CHECK LENGTHS'}</strong></div>
-        <div><span>AIRFOIL</span><strong>{vehicle.airfoil}</strong></div>
+        <div><span>{txt('CASO', 'CASE')}</span><strong>UTN-FRH-G07 / CDR</strong></div>
+        <div><span>{txt('GEOMETRÍA', 'GEOMETRY')}</span><strong className={geometryConsistent ? 'ok' : 'bad'}>{geometryConsistent ? txt('CONSISTENTE', 'CONSISTENT') : txt('REVISAR LONGITUDES', 'CHECK LENGTHS')}</strong></div>
+        <div><span>{txt('PERFIL', 'AIRFOIL')}</span><strong>{vehicle.airfoil}</strong></div>
         <div><span>MOTOR</span><strong>{motor.designation}</strong></div>
-        <div><span>NUMERIC CDR</span><strong className={ready ? 'ok' : 'warn'}>{ready ? 'READY' : 'BLOCKED'}</strong></div>
+        <div><span>{txt('CDR NUMÉRICO', 'NUMERIC CDR')}</span><strong className={ready ? 'ok' : 'warn'}>{ready ? txt('LISTO', 'READY') : txt('BLOQUEADO', 'BLOCKED')}</strong></div>
       </section>
 
       <section className="workspace">
         <aside className="panel editor">
           <div className="panel-title">
             <div>
-              <p>INPUT</p>
-              <h2>Parametric Vehicle Editor</h2>
+              <p>{txt('ENTRADA', 'INPUT')}</p>
+              <h2>{txt('Editor paramétrico del vehículo', 'Parametric Vehicle Editor')}</h2>
             </div>
-            <span className="live-badge">LIVE</span>
+            <span className="live-badge">{txt('EN VIVO', 'LIVE')}</span>
           </div>
 
-          <h3>Primary geometry</h3>
+          <h3>{txt('Geometría principal', 'Primary geometry')}</h3>
           <div className="airfoil-row nose-selector">
             <label>
-              <span>Nose profile family</span>
+              <span>{txt('Familia de perfil de cofia', 'Nose profile family')}</span>
               <select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}>
-                <option value="tangent_ogive">Tangent ogive</option>
+                <option value="tangent_ogive">{txt('Ojiva tangente', 'Tangent ogive')}</option>
                 <option value="von_karman">Von Kármán</option>
-                <option value="power_series">Power series n=0.75</option>
+                <option value="power_series">{txt('Serie de potencias n=0.75', 'Power series n=0.75')}</option>
               </select>
             </label>
-            <div className="naca-chip">same L · same Ø</div>
+            <div className="naca-chip">{txt('misma L · mismo Ø', 'same L · same Ø')}</div>
           </div>
           <div className="field-grid">
-            <Field label="Total length" value={vehicle.totalLength} unit="mm" status="frozen" onChange={(v) => update('totalLength', v)} />
-            <Field label="Outer diameter" value={vehicle.diameter} unit="mm" status="frozen" onChange={(v) => update('diameter', v)} />
-            <Field label="Nose length" value={vehicle.noseLength} unit="mm" status="frozen" onChange={(v) => update('noseLength', v)} />
-            <Field label="Modular bay" value={vehicle.bayLength} unit="mm" status="frozen" onChange={(v) => update('bayLength', v)} />
-            <Field label="Lower body" value={vehicle.bodyLength} unit="mm" status="frozen" onChange={(v) => update('bodyLength', v)} />
-            <Field label="Wall thickness" value={vehicle.wall} unit="mm" status="provisional" onChange={(v) => update('wall', v)} />
+            <Field label={txt('Longitud total', 'Total length')} value={vehicle.totalLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('totalLength', v)} />
+            <Field label={txt('Diámetro exterior', 'Outer diameter')} value={vehicle.diameter} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('diameter', v)} />
+            <Field label={txt('Longitud de cofia', 'Nose length')} value={vehicle.noseLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('noseLength', v)} />
+            <Field label={txt('Compartimiento modular', 'Modular bay')} value={vehicle.bayLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('bayLength', v)} />
+            <Field label={txt('Cuerpo inferior', 'Lower body')} value={vehicle.bodyLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('bodyLength', v)} />
+            <Field label={txt('Espesor de pared', 'Wall thickness')} value={vehicle.wall} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('wall', v)} />
           </div>
 
           <div className="section-heading">
-            <h3>Fins</h3>
-            <span>trapezoidal planform</span>
+            <h3>{txt('Aletas', 'Fins')}</h3>
+            <span>{txt('planta trapezoidal', 'trapezoidal planform')}</span>
           </div>
           <div className="airfoil-row">
             <label>
-              <span>Cross-section profile</span>
+              <span>{txt('Perfil de sección transversal', 'Cross-section profile')}</span>
               <select value={vehicle.airfoil} onChange={(e) => update('airfoil', e.target.value)}>
                 <option>NACA 0012</option>
                 <option>NACA 0009</option>
@@ -284,28 +288,28 @@ function App() {
                 <option>CUSTOM</option>
               </select>
             </label>
-            <div className="naca-chip">Professor / PDR correction</div>
+            <div className="naca-chip">{txt('Corrección profesor / PDR', 'Professor / PDR correction')}</div>
           </div>
           <div className="field-grid">
-            <Field label="Fin count" value={vehicle.finCount} status="frozen" onChange={(v) => update('finCount', v)} />
-            <Field label="Root chord" value={vehicle.rootChord} unit="mm" status="provisional" onChange={(v) => update('rootChord', v)} />
-            <Field label="Tip chord" value={vehicle.tipChord} unit="mm" status="demo" onChange={(v) => update('tipChord', v)} />
-            <Field label="Span" value={vehicle.span} unit="mm" status="provisional" onChange={(v) => update('span', v)} />
-            <Field label="Sweep" value={vehicle.sweep} unit="mm" status="demo" onChange={(v) => update('sweep', v)} />
-            <Field label="Leading-edge X" value={vehicle.finX} unit="mm" status="demo" onChange={(v) => update('finX', v)} />
+            <Field label={txt('Cantidad de aletas', 'Fin count')} value={vehicle.finCount} status={txt('fijado', 'frozen')} onChange={(v) => update('finCount', v)} />
+            <Field label={txt('Cuerda de raíz (cr)', 'Root chord (cr)')} value={vehicle.rootChord} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('rootChord', v)} />
+            <Field label={txt('Cuerda de punta (ct)', 'Tip chord (ct)')} value={vehicle.tipChord} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('tipChord', v)} />
+            <Field label={txt('Semienvergadura de la aleta (s)', 'Fin semispan (s)')} value={vehicle.span} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('span', v)} />
+            <Field label={txt('Desplazamiento del borde de ataque (Xf)', 'Leading-edge offset (Xf)')} value={vehicle.sweep} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('sweep', v)} />
+            <Field label={txt('Posición del borde de ataque de la raíz desde la nariz', 'Root leading-edge position from nose')} value={vehicle.finX} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('finX', v)} />
           </div>
 
           <button className="advanced-toggle" onClick={() => setShowAdvanced((v) => !v)}>
-            {showAdvanced ? 'Hide' : 'Show'} flight inputs
+            {showAdvanced ? txt('Ocultar', 'Hide') : txt('Mostrar', 'Show')} {txt('entradas de vuelo', 'flight inputs')}
           </button>
           {showAdvanced && (
             <div className="field-grid advanced">
-              <Field label="Launch angle" value={vehicle.launchAngle} unit="deg" status="TP" onChange={(v) => update('launchAngle', v)} />
-              <Field label="Drag coefficient Cd" value={vehicle.cd} status="demo" onChange={(v) => update('cd', v)} />
-              <Field label="Parachute Cd" value={vehicle.parachuteCd} status="recovery" onChange={(v) => update('parachuteCd', v)} />
-              <Field label="Parachute area" value={vehicle.parachuteArea} unit="m²" status="recovery" onChange={(v) => update('parachuteArea', v)} />
-              <Field label="Deploy altitude" value={vehicle.deployAltitude} unit="m" status="blank = apogee" onChange={(v) => update('deployAltitude', v)} />
-              <Field label="Deploy delay" value={vehicle.deployDelay} unit="s" status="recovery" onChange={(v) => update('deployDelay', v)} />
+              <Field label={txt('Ángulo de lanzamiento', 'Launch angle')} value={vehicle.launchAngle} unit="deg" status="TP" onChange={(v) => update('launchAngle', v)} />
+              <Field label={txt('Coeficiente de resistencia aerodinámica (Cd)', 'Drag coefficient (Cd)')} value={vehicle.cd} status={txt('referencia', 'reference')} onChange={(v) => update('cd', v)} />
+              <Field label={txt('Coeficiente de resistencia del paracaídas (Cd)', 'Parachute drag coefficient (Cd)')} value={vehicle.parachuteCd} status={txt('recuperación', 'recovery')} onChange={(v) => update('parachuteCd', v)} />
+              <Field label={txt('Área del paracaídas', 'Parachute area')} value={vehicle.parachuteArea} unit="m²" status={txt('recuperación', 'recovery')} onChange={(v) => update('parachuteArea', v)} />
+              <Field label={txt('Altitud de despliegue', 'Deploy altitude')} value={vehicle.deployAltitude} unit="m" status={txt('vacío = apogeo', 'blank = apogee')} onChange={(v) => update('deployAltitude', v)} />
+              <Field label={txt('Retardo de despliegue', 'Deploy delay')} value={vehicle.deployDelay} unit="s" status={txt('recuperación', 'recovery')} onChange={(v) => update('deployDelay', v)} />
             </div>
           )}
         </aside>
@@ -314,81 +318,81 @@ function App() {
           <div className="panel visual">
             <div className="panel-title">
               <div>
-                <p>GEOMETRY</p>
-                <h2>Parametric side view</h2>
+                <p>{txt('GEOMETRÍA', 'GEOMETRY')}</p>
+                <h2>{txt('Vista lateral paramétrica', 'Parametric side view')}</h2>
               </div>
-              <span className="scale-note">schematic · live dimensions</span>
+              <span className="scale-note">{txt('esquema · dimensiones en vivo', 'schematic · live dimensions')}</span>
             </div>
-            <RocketRealistic vehicle={vehicle} />
+            <RocketRealistic vehicle={vehicle} lang={lang} />
           </div>
 
-          <NoseProfileComparison selected={vehicle.noseProfile} />
+          <NoseProfileComparison selected={vehicle.noseProfile} lang={lang} />
 
           <div className="result-grid">
             <article className="metric-card">
               <span>CG</span>
               <strong>—</strong>
-              <small>Waiting for current mass table</small>
+              <small>{txt('Esperando tabla de masas actual', 'Waiting for current mass table')}</small>
             </article>
             <article className="metric-card">
               <span>CP</span>
               <strong>—</strong>
-              <small>Needs final fin planform</small>
+              <small>{txt('Requiere planta final de aletas', 'Needs final fin planform')}</small>
             </article>
             <article className="metric-card">
-              <span>STATIC MARGIN</span>
+              <span>{txt('MARGEN ESTÁTICO', 'STATIC MARGIN')}</span>
               <strong>—</strong>
-              <small>CG + CP required</small>
+              <small>{txt('Se requieren CG + CP', 'CG + CP required')}</small>
             </article>
             <article className="metric-card">
-              <span>APOGEE</span>
+              <span>{txt('APOGEO', 'APOGEE')}</span>
               <strong>—</strong>
-              <small>Mass + Cd required</small>
+              <small>{txt('Se requieren masa + Cd', 'Mass + Cd required')}</small>
             </article>
             <article className="metric-card">
-              <span>MAX Q</span>
+              <span>{txt('Q MÁX', 'MAX Q')}</span>
               <strong>—</strong>
-              <small>Trajectory required</small>
+              <small>{txt('Se requiere trayectoria', 'Trajectory required')}</small>
             </article>
           </div>
 
-          <LiveAnalysisPanel vehicle={vehicle} runToken={runToken} />
-          <CadInteroperabilityPanel onGeometryImported={importCadGeometry} />
+          <LiveAnalysisPanel vehicle={vehicle} runToken={runToken} lang={lang} />
+          <CadInteroperabilityPanel onGeometryImported={importCadGeometry} lang={lang} />
 
           <div className="panel readiness">
             <div className="panel-title compact">
               <div>
-                <p>TRACEABILITY</p>
-                <h2>CDR readiness</h2>
+                <p>{txt('TRAZABILIDAD', 'TRACEABILITY')}</p>
+                <h2>{txt('Estado del CDR', 'CDR readiness')}</h2>
               </div>
               <strong className="score">{5 - Math.min(blockers.length, 5)}/5</strong>
             </div>
             <div className="readiness-grid">
-              <div className="ready-row complete"><b>01</b><span>Principal geometry</span><em>860 / 180 / 180 / 500 / Ø63</em></div>
-              <div className="ready-row complete"><b>02</b><span>Fin profile</span><em>{vehicle.airfoil}</em></div>
-              <div className={`ready-row ${vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'complete' : ''}`}><b>03</b><span>Fin planform</span><em>{vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'READY' : 'TBD'}</em></div>
-              <div className="ready-row complete"><b>04</b><span>Mass table</span><em>PRELOADED · EDITABLE</em></div>
-              <div className={`ready-row ${vehicle.cd !== '' ? 'complete' : ''}`}><b>05</b><span>Drag model</span><em>{vehicle.cd === '' ? 'TBD' : `Cd ${vehicle.cd}`}</em></div>
+              <div className="ready-row complete"><b>01</b><span>{txt('Geometría principal', 'Principal geometry')}</span><em>860 / 180 / 180 / 500 / Ø63</em></div>
+              <div className="ready-row complete"><b>02</b><span>{txt('Perfil de aleta', 'Fin profile')}</span><em>{vehicle.airfoil}</em></div>
+              <div className={`ready-row ${vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'complete' : ''}`}><b>03</b><span>{txt('Planta de aleta', 'Fin planform')}</span><em>{vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? txt('LISTA', 'READY') : txt('POR DEFINIR', 'TBD')}</em></div>
+              <div className="ready-row complete"><b>04</b><span>{txt('Tabla de masas', 'Mass table')}</span><em>{txt('PRECARGADA · EDITABLE', 'PRELOADED · EDITABLE')}</em></div>
+              <div className={`ready-row ${vehicle.cd !== '' ? 'complete' : ''}`}><b>05</b><span>{txt('Modelo de resistencia', 'Drag model')}</span><em>{vehicle.cd === '' ? txt('POR DEFINIR', 'TBD') : `Cd ${vehicle.cd}`}</em></div>
             </div>
             <div className="blocker-box">
-              <span>ANALYSIS BLOCKERS</span>
+              <span>{txt('BLOQUEOS DEL ANÁLISIS', 'ANALYSIS BLOCKERS')}</span>
               <div>{blockers.map((blocker) => <code key={blocker}>{blocker}</code>)}</div>
             </div>
           </div>
 
           <div className="panel motor-panel">
             <div>
-              <p>MOTOR · TP SPECIFICATION</p>
+              <p>{txt('MOTOR · ESPECIFICACIÓN TP', 'MOTOR · TP SPECIFICATION')}</p>
               <h2>{motor.designation}</h2>
               <span>{motor.propellant}</span>
             </div>
             <dl>
-              <div><dt>Burn</dt><dd>{motor.burn} s</dd></div>
-              <div><dt>Impulse</dt><dd>{motor.impulse} N·s</dd></div>
-              <div><dt>Avg thrust</dt><dd>{motor.averageThrust} N</dd></div>
-              <div><dt>Max thrust</dt><dd>{motor.maxThrust} N</dd></div>
-              <div><dt>Propellant</dt><dd>{motor.propellantMass} g</dd></div>
-              <div><dt>Dry</dt><dd>{motor.dryMass} g</dd></div>
+              <div><dt>{txt('Combustión', 'Burn')}</dt><dd>{motor.burn} s</dd></div>
+              <div><dt>{txt('Impulso', 'Impulse')}</dt><dd>{motor.impulse} N·s</dd></div>
+              <div><dt>{txt('Empuje medio', 'Avg thrust')}</dt><dd>{motor.averageThrust} N</dd></div>
+              <div><dt>{txt('Empuje máximo', 'Max thrust')}</dt><dd>{motor.maxThrust} N</dd></div>
+              <div><dt>{txt('Propelente', 'Propellant')}</dt><dd>{motor.propellantMass} g</dd></div>
+              <div><dt>{txt('Masa seca', 'Dry')}</dt><dd>{motor.dryMass} g</dd></div>
             </dl>
           </div>
         </section>

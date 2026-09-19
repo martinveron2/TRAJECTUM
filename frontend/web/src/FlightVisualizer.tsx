@@ -11,7 +11,13 @@ export type MissionSample = {
   parachute_deployed: boolean;
 };
 
-export function FlightVisualizer({ samples }: { samples: MissionSample[] }) {
+export function FlightVisualizer({ samples, lang = 'es' }: { samples: MissionSample[]; lang?: 'es' | 'en' }) {
+  const isEs = lang === 'es';
+  const txt = (es: string, en: string) => isEs ? es : en;
+  const phaseLabel = (phase: string) => {
+    if (!isEs) return phase;
+    return ({ BOOST: 'IMPULSO', COAST: 'ASCENSO LIBRE', APOGEE: 'APOGEO', DESCENT: 'DESCENSO', RECOVERY: 'RECUPERACIÓN', LANDED: 'ATERRIZADO' } as Record<string, string>)[phase] ?? phase;
+  };
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [rate, setRate] = useState(4);
@@ -52,12 +58,12 @@ export function FlightVisualizer({ samples }: { samples: MissionSample[] }) {
 
   return <div className="panel flight-visualizer">
     <div className="panel-title compact">
-      <div><p>MISSION VISUALIZER</p><h2>Second-by-second flight playback</h2></div>
-      <span className={playing ? "live-badge flight-live" : "live-badge"}>{playing ? 'PLAYING' : current.phase}</span>
+      <div><p>{txt('VISUALIZADOR DE MISIÓN', 'MISSION VISUALIZER')}</p><h2>{txt('Reproducción del vuelo segundo a segundo', 'Second-by-second flight playback')}</h2></div>
+      <span className={playing ? "live-badge flight-live" : "live-badge"}>{playing ? txt('REPRODUCIENDO', 'PLAYING') : phaseLabel(current.phase)}</span>
     </div>
 
     <div className="flight-stage">
-      <svg viewBox="0 0 760 340" role="img" aria-label="Flight trajectory visualizer">
+      <svg viewBox="0 0 760 340" role="img" aria-label={txt('Visualizador de trayectoria de vuelo', 'Flight trajectory visualizer')}>
         <defs>
           <linearGradient id="skyFade" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#071225"/>
@@ -69,8 +75,8 @@ export function FlightVisualizer({ samples }: { samples: MissionSample[] }) {
         <line x1="30" y1="300" x2="735" y2="300" className="ground-line"/>
         <line x1="42" y1="45" x2="42" y2="300" className="flight-axis"/>
         <polyline points={plot} fill="none" className="trajectory-line"/>
-        <text x="54" y="62" className="flight-label">APOGEE {maxAltitude.toFixed(1)} m</text>
-        <text x="54" y="322" className="flight-label">RANGE {maxRange.toFixed(1)} m · vertical recovery model after apogee</text>
+        <text x="54" y="62" className="flight-label">{txt('APOGEO', 'APOGEE')} {maxAltitude.toFixed(1)} m</text>
+        <text x="54" y="322" className="flight-label">{txt('ALCANCE', 'RANGE')} {maxRange.toFixed(1)} m · {txt('modelo de recuperación vertical después del apogeo', 'vertical recovery model after apogee')}</text>
 
         {current.parachute_deployed && <>
           <path d={`M ${rocketX-18} ${rocketY-28} Q ${rocketX} ${rocketY-48} ${rocketX+18} ${rocketY-28}`} className="parachute-canopy"/>
@@ -86,20 +92,20 @@ export function FlightVisualizer({ samples }: { samples: MissionSample[] }) {
       </svg>
 
       <div className="flight-telemetry">
-        <div><span>TIME</span><strong>{current.t_s.toFixed(2)} s</strong></div>
-        <div><span>ALTITUDE</span><strong>{current.altitude_m.toFixed(1)} m</strong></div>
-        <div><span>SPEED</span><strong>{current.speed_m_s.toFixed(1)} m/s</strong></div>
-        <div><span>VERTICAL V</span><strong>{current.vertical_speed_m_s.toFixed(1)} m/s</strong></div>
+        <div><span>{txt('TIEMPO', 'TIME')}</span><strong>{current.t_s.toFixed(2)} s</strong></div>
+        <div><span>{txt('ALTITUD', 'ALTITUDE')}</span><strong>{current.altitude_m.toFixed(1)} m</strong></div>
+        <div><span>{txt('VELOCIDAD', 'SPEED')}</span><strong>{current.speed_m_s.toFixed(1)} m/s</strong></div>
+        <div><span>{txt('V VERTICAL', 'VERTICAL V')}</span><strong>{current.vertical_speed_m_s.toFixed(1)} m/s</strong></div>
         <div><span>Q</span><strong>{current.q_pa.toFixed(0)} Pa</strong></div>
-        <div><span>PHASE</span><strong>{current.phase}</strong></div>
+        <div><span>{txt('FASE', 'PHASE')}</span><strong>{phaseLabel(current.phase)}</strong></div>
       </div>
     </div>
 
     <div className="flight-controls">
-      <button onClick={() => setPlaying((value) => !value)}>{playing ? 'PAUSE' : 'PLAY'}</button>
-      <button onClick={() => { setIndex(0); setPlaying(false); }}>RESTART</button>
+      <button onClick={() => setPlaying((value) => !value)}>{playing ? txt('PAUSA', 'PAUSE') : txt('REPRODUCIR', 'PLAY')}</button>
+      <button onClick={() => { setIndex(0); setPlaying(false); }}>{txt('REINICIAR', 'RESTART')}</button>
       <input
-        aria-label="Mission timeline"
+        aria-label={txt('Línea de tiempo de la misión', 'Mission timeline')}
         type="range"
         min={0}
         max={Math.max(samples.length - 1, 0)}
