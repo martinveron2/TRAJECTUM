@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import Plotly from 'plotly.js-basic-dist-min';
-import type { MissionSample } from './FlightVisualizer';
+import type { MissionSample } from './missionTypes';
 import { buildEngineeringChartImages } from './engineeringChartExport';
 import { Download, Eye, Move, RotateCcw, ScanSearch, ZoomIn } from 'lucide-react';
 

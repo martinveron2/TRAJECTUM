@@ -1,4 +1,4 @@
-import type { MissionSample } from './FlightVisualizer';
+import type { MissionSample } from './missionTypes';
 
 type AnalysisMeta = {
   time_to_apogee_s?: number;

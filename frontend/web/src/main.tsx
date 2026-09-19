@@ -1203,11 +1203,6 @@ function App() {
             motor={motor}
             rows={componentRows}
             onRowsChange={setComponentRows}
-            onLaunchAngleChange={(angle) => {
-              update('launchAngle', angle);
-              setAnalysisSummary(null);
-              setRunToken((value) => value + 1);
-            }}
             lang={lang}
           />
           </div>

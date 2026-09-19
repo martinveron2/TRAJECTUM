@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pause, Play, RotateCcw, X, Gauge, Rocket, Activity } from 'lucide-react';
-import type { MissionSample } from './FlightVisualizer';
+import type { MissionSample } from './missionTypes';
 
 type AnalysisLike = {
   apogee_m?: number;
