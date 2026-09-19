@@ -949,3 +949,52 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     .mobile-view-geometry #geometry-panel .schematic.realistic svg{width:84%!important;height:84%!important;max-width:84%!important;max-height:84%!important}
   }
 }
+
+
+@media(max-width:820px){
+  /* Final header alignment: language stays at the extreme top-right on the TRAJECTUM line */
+  .topbar{position:relative}
+  .brand-stack{width:100%}
+  .brand-lockup{
+    position:relative!important;display:flex!important;align-items:center!important;width:100%!important;
+    min-height:54px;padding-right:108px!important
+  }
+  .brand-wordmark{display:flex!important;flex-direction:column;min-width:0}
+  .brand-version{position:absolute!important;left:2px;bottom:-2px;margin:0!important}
+  .mobile-lang-pill{
+    position:absolute!important;right:0!important;top:7px!important;grid-column:auto!important;grid-row:auto!important;
+    min-width:94px;min-height:34px;margin:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+    border-radius:9px!important
+  }
+
+  /* Fixed phase selector: zero horizontal overflow, swipe changes focus only */
+  .mobile-phase-carousel{
+    width:100%!important;max-width:100%!important;margin:14px 0 17px!important;padding:0!important;
+    display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;
+    overflow:hidden!important;scroll-snap-type:none!important;scroll-padding:0!important;
+    overscroll-behavior-x:none!important;touch-action:pan-y!important;
+    -webkit-mask-image:none!important;mask-image:none!important;contain:layout paint!important
+  }
+  .mobile-phase-carousel button{
+    width:100%!important;min-width:0!important;max-width:100%!important;min-height:72px!important;
+    flex:none!important;scroll-snap-align:none!important;scroll-snap-stop:normal!important;
+    transform:none!important;opacity:.72!important;
+    transition:transform 160ms cubic-bezier(.25,1,.5,1),opacity 150ms ease,border-color 170ms ease,box-shadow 170ms ease,background 170ms ease!important
+  }
+  .mobile-phase-carousel button.phase-wide{grid-column:1/-1!important;min-height:64px!important}
+  .mobile-phase-carousel button.focused{
+    opacity:1!important;transform:scale(.985)!important;border-color:#66a9f4!important;
+    background:linear-gradient(155deg,#123356,#0b2038)!important;
+    box-shadow:0 0 0 1px rgba(102,169,244,.16),0 0 20px rgba(72,139,213,.14),inset 0 0 22px rgba(73,135,202,.10)!important
+  }
+  .mobile-phase-carousel button.focused span{color:#eef7ff!important}
+  .mobile-phase-carousel button.phase-current:not(.focused){
+    border-color:#355d86!important;background:linear-gradient(155deg,#0f243c,#0a1a2d)!important
+  }
+  .mobile-phase-carousel button:active{transform:scale(.97)!important}
+
+  /* Keep every mobile container clipped to viewport width */
+  .mobile-guide,.mobile-guide>*{max-width:100%;min-width:0}
+  .app-shell{overflow-x:hidden!important}
+  body{overflow-x:hidden!important}
+}

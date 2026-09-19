@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 import { LiveAnalysisPanel } from './LiveAnalysisPanel';
@@ -213,7 +213,7 @@ function App() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [mobileSection, setMobileSection] = useState<'home' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status'>('home');
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
-  const phaseCarouselRef = useRef<HTMLDivElement | null>(null);
+  const [phaseFocusIndex, setPhaseFocusIndex] = useState(1);
   const [mobileNavBusy, setMobileNavBusy] = useState(false);
   const [mobileNavDirection, setMobileNavDirection] = useState<'forward' | 'back'>('forward');
   const [missionControlOpen, setMissionControlOpen] = useState(false);
@@ -230,38 +230,14 @@ function App() {
     window.setTimeout(() => setMobileNavBusy(false), 230);
   };
 
-  const activePhaseIndex =
-    ['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 0 :
-    ['cdr','analysis','plots','model','status'].includes(mobileSection) ? 1 :
-    mobileSection === 'frr' ? 2 :
-    mobileSection === 'lrr' ? 3 :
-    mobileSection === 'pfr' ? 4 : 1;
-
-  useEffect(() => {
-    if (mobileSection !== 'home' || !phaseCarouselRef.current) return;
-    const cards = phaseCarouselRef.current.querySelectorAll('button');
-    const active = cards[activePhaseIndex] as HTMLElement | undefined;
-    if (!active) return;
-    const left = active.offsetLeft - (phaseCarouselRef.current.clientWidth - active.offsetWidth) / 2;
-    phaseCarouselRef.current.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
-  }, [mobileSection, activePhaseIndex]);
-
-  const handlePhaseCarouselEnd = (element: HTMLDivElement) => {
-    const cards = Array.from(element.querySelectorAll('button'));
-    if (!cards.length) return;
-    const center = element.scrollLeft + element.clientWidth / 2;
-    let nearest = 0;
-    let distance = Infinity;
-    cards.forEach((card, index) => {
-      const cardCenter = (card as HTMLElement).offsetLeft + (card as HTMLElement).offsetWidth / 2;
-      const delta = Math.abs(cardCenter - center);
-      if (delta < distance) {
-        distance = delta;
-        nearest = index;
-      }
-    });
+  const selectPhase = (index: number) => {
     const phases: Array<typeof mobileSection> = ['pdr', 'cdr', 'frr', 'lrr', 'pfr'];
-    navigateMobile(phases[nearest]);
+    setPhaseFocusIndex(index);
+    navigateMobile(phases[index]);
+  };
+
+  const movePhaseFocus = (delta: number) => {
+    setPhaseFocusIndex((current) => Math.max(0, Math.min(4, current + delta)));
   };
 
   const mobileNavIndex = showExportMenu
@@ -560,21 +536,21 @@ function App() {
         </div>
 
         <div
-          ref={phaseCarouselRef}
           className="mobile-phase-carousel"
           aria-label={txt('Fases del proyecto', 'Project phases')}
           onTouchStart={(event) => { event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0); }}
           onTouchEnd={(event) => {
             const start = Number(event.currentTarget.dataset.touchX ?? 0);
             const end = event.changedTouches[0]?.clientX ?? start;
-            if (Math.abs(end - start) > 36) handlePhaseCarouselEnd(event.currentTarget);
+            const delta = end - start;
+            if (Math.abs(delta) > 34) movePhaseFocus(delta < 0 ? 1 : -1);
           }}
         >
-          <button type="button" className="complete" onClick={() => navigateMobile('pdr')}><b>01</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
-          <button type="button" className="current" onClick={() => navigateMobile('cdr')}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
-          <button type="button" onClick={() => navigateMobile('frr')}><b>03</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
-          <button type="button" onClick={() => navigateMobile('lrr')}><b>04</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
-          <button type="button" onClick={() => navigateMobile('pfr')}><b>05</b><span>PFR / MCR</span><small>{txt('Post-vuelo', 'Post-flight')}</small></button>
+          <button type="button" className={'complete ' + (phaseFocusIndex === 0 ? 'focused' : '')} onClick={() => selectPhase(0)}><b>01</b><span>PDR</span><small>{txt('Diseño preliminar', 'Preliminary design')}</small></button>
+          <button type="button" className={'phase-current ' + (phaseFocusIndex === 1 ? 'focused' : '')} onClick={() => selectPhase(1)}><b>02</b><span>CDR</span><small>{txt('Diseño crítico', 'Critical design')}</small></button>
+          <button type="button" className={phaseFocusIndex === 2 ? 'focused' : ''} onClick={() => selectPhase(2)}><b>03</b><span>FRR</span><small>{txt('Listo para vuelo', 'Flight readiness')}</small></button>
+          <button type="button" className={phaseFocusIndex === 3 ? 'focused' : ''} onClick={() => selectPhase(3)}><b>04</b><span>LRR</span><small>{txt('Listo para lanzamiento', 'Launch readiness')}</small></button>
+          <button type="button" className={'phase-wide ' + (phaseFocusIndex === 4 ? 'focused' : '')} onClick={() => selectPhase(4)}><b>05</b><span>PFR / MCR</span><small>{txt('Post-vuelo y cierre', 'Post-flight & closeout')}</small></button>
         </div>
 
         <div className="mobile-guide-next">
