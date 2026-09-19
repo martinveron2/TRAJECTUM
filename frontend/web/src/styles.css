@@ -357,11 +357,12 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
 .flight-chart-tab{padding:8px 12px;border:1px solid #263f62;background:#0a1628;color:#7892b7;border-radius:8px;font-size:.62rem;letter-spacing:.08em;transform:none!important}
 .flight-chart-tab:hover{border-color:#426ca6;background:#10223d;color:#b7d2fa}
 .flight-chart-tab.active{border-color:#5a8fe2;background:#10294b;color:#edf5ff;box-shadow:inset 0 0 20px rgba(72,137,235,.12),0 0 0 1px rgba(90,143,226,.08)}
-.flight-chart-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:-2px 0 9px}
+.flight-chart-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:7px;flex-wrap:wrap;margin:2px 0 11px}
 .flight-chart-toolbar button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:31px;padding:0 9px;border:1px solid #263f62;border-radius:7px;background:#091525;color:#809abd;font-size:.58rem;letter-spacing:.06em;box-shadow:none;transform:none!important}
 .flight-chart-toolbar button:hover{border-color:#4b78b6;background:#10223a;color:#d3e5ff}
 .flight-chart-toolbar button.active{border-color:#5a8fe2;background:#12315a;color:#f0f6ff;box-shadow:inset 0 0 16px rgba(83,145,236,.12)}
-.flight-chart-toolbar button.chart-tool-export{margin-left:5px;border-color:#37699d;color:#9ec9ff}
+.flight-chart-toolbar button.chart-tool-export{margin-left:auto;min-height:34px;padding:0 13px;border-color:#4d8bd0;background:#0f2948;color:#d7eaff;box-shadow:0 0 0 1px rgba(86,151,226,.08),0 0 18px rgba(41,112,194,.08)}
+.flight-chart-toolbar button.chart-tool-export:hover{border-color:#71aaf0;background:#16365d;color:#fff}
 .flight-chart-toolbar button span{font-size:.56rem}
 .flight-chart-frame{border:1px solid #203653;border-radius:12px;overflow:hidden;background:#081321;box-shadow:inset 0 0 36px rgba(40,90,160,.035)}
 .flight-chart-frame .js-plotly-plot,.flight-chart-frame .plot-container,.flight-chart-frame .svg-container{width:100%!important}

@@ -160,7 +160,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
       <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Arrastrar para desplazar el gráfico', 'Drag to pan the plot')}>✥ <span>PAN</span></button>
       <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente los ejes', 'Autoscale axes')}>↔ <span>{txt('AJUSTAR', 'AUTOSCALE')}</span></button>
       <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')}>↺ <span>{txt('RESET', 'RESET')}</span></button>
-      <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Exportar gráfico en PNG', 'Export plot as PNG')}>⇩ <span>PNG</span></button>
+      <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Descargar gráfico actual en PNG', 'Download current plot as PNG')}>⇩ <span>{txt('DESCARGAR PNG', 'DOWNLOAD PNG')}</span></button>
     </div>
 
     <div className="flight-chart-frame">
