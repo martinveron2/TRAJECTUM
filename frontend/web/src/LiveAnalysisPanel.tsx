@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MissionSample } from './missionTypes';
 import { EngineeringEquations } from './EngineeringEquations';
+import { RocketRealistic } from './RocketRealistic';
 
 type NumericField = number | '';
 type MotorLike = { designation: string; burn: NumericField; impulse: NumericField; propellantMass: NumericField; dryMass: NumericField; maxThrust: NumericField; propellant: string; officialAverageThrust?: NumericField; thrustCurve?: Array<[number, number]>; };
@@ -10,6 +11,7 @@ type VehicleLike = {
   sweep: NumericField; finX: NumericField; launchAngle: NumericField; cd: NumericField;
   parachuteCd: NumericField; parachuteArea: NumericField; deployAltitude: NumericField; deployDelay: NumericField;
   noseProfile: string;
+  airfoil: string;
 };
 export type ComponentRow = { id: number; name: string; massG: NumericField; lengthMm: NumericField; diameterMm: NumericField; kind: string; note: string };
 type ComponentOut = { name: string; mass_g: number; x_cg_mm: number; source: string };
@@ -348,6 +350,21 @@ export function LiveAnalysisPanel({
         <article><span>{txt('MACH MÁX', 'MAX MACH')}</span><strong><AnimatedValue value={analysis.max_mach} decimals={3}/></strong></article>
         <article><span>{txt('IMPACTO', 'IMPACT')}</span><strong><AnimatedValue value={analysis.impact_speed_m_s} decimals={2} suffix=" m/s"/></strong></article>
       </div>
+
+      <section className="cdr-vehicle-map">
+        <div className="cdr-vehicle-map-head">
+          <div><span>{txt('UBICACIÓN SOBRE EL VEHÍCULO', 'LOCATION ON VEHICLE')}</span><strong>{txt('CG TOTAL · CP TOTAL · CG DE COMPONENTES', 'TOTAL CG · TOTAL CP · COMPONENT CGs')}</strong></div>
+          <b>{txt('ESCALA REAL', 'TRUE SCALE')}</b>
+        </div>
+        <RocketRealistic
+          vehicle={vehicle}
+          cgMm={totalCgFromNose ?? null}
+          cpMm={analysis.cp_x_mm_from_nose ?? null}
+          componentCgs={componentResult?.components ?? []}
+          showComponentCgs
+          lang={lang}
+        />
+      </section>
     </section>}
     <div className="mass-editor-gate">
       <div>

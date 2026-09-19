@@ -336,6 +336,7 @@ function App() {
   const [phaseStoryDragging, setPhaseStoryDragging] = useState(false);
   const [pdrTab, setPdrTab] = useState<'geometry' | 'schematic' | 'mass'>('geometry');
   const [showPdrCadImport, setShowPdrCadImport] = useState(false);
+  const [showHeaderCadModal, setShowHeaderCadModal] = useState(false);
   const [cdrTab, setCdrTab] = useState<'stability' | 'trajectory' | 'propulsion'>('stability');
   const [cdrPositionFocus, setCdrPositionFocus] = useState<'cg' | 'cp' | 'margin'>('margin');
   const [exportPreparing, setExportPreparing] = useState(false);
@@ -715,15 +716,12 @@ function App() {
               </button>
               <button
                 type="button"
-                className="mobile-header-export mobile-header-import"
-                onClick={() => {
-                  setPdrTab('geometry');
-                  setShowPdrCadImport(true);
-                  navigateMobile('pdr');
-                }}
+                className="mobile-header-export mobile-header-import compact"
+                onClick={() => setShowHeaderCadModal(true)}
+                aria-label={txt('Importar CAD', 'Import CAD')}
               >
-                <FileUp size={14} strokeWidth={1.8} />
-                <span>{txt('IMPORTAR CAD', 'IMPORT CAD')}</span>
+                <FileUp size={15} strokeWidth={1.8} />
+                <span>CAD</span>
               </button>
             </div>
           </div>
@@ -1467,6 +1465,30 @@ function App() {
           <small>{txt('EXPORTAR', 'EXPORT')}</small>
         </button>
       </nav>
+
+      {showHeaderCadModal && typeof document !== 'undefined' && createPortal(
+        <div className="header-cad-backdrop" onPointerDown={(event) => {
+          if (event.target === event.currentTarget) setShowHeaderCadModal(false);
+        }}>
+          <section className="header-cad-modal" onPointerDown={(event) => event.stopPropagation()}>
+            <div className="header-cad-modal-head">
+              <div><span>{txt('GEOMETRÍA EXTERNA', 'EXTERNAL GEOMETRY')}</span><strong>{txt('IMPORTAR CAD AL PDR', 'IMPORT CAD INTO PDR')}</strong></div>
+              <button type="button" onClick={() => setShowHeaderCadModal(false)} aria-label={txt('Cerrar', 'Close')}>×</button>
+            </div>
+            <CadInteroperabilityPanel
+              onGeometryImported={(geometry) => {
+                importCadGeometry(geometry);
+                setPdrTab('geometry');
+                setShowHeaderCadModal(false);
+                navigateMobile('pdr');
+              }}
+              lang={lang}
+              compact
+            />
+          </section>
+        </div>,
+        document.body
+      )}
 
       {showExportMenu && <div className="mobile-export-backdrop" onClick={() => { setShowExportMenu(false);  }}>
         <div className="mobile-export-sheet" onClick={(event) => event.stopPropagation()}>
