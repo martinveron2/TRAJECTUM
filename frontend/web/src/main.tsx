@@ -242,8 +242,15 @@ function App() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <div>
-          <p className="eyebrow">TRAJECTUM · v0.1.0-CDR</p>
+        <div className="brand-stack">
+          <div className="brand-lockup" aria-label="TRAJECTUM">
+            <span className="brand-name">TRAJECTUM</span>
+            <svg className="brand-trajectory" viewBox="0 0 160 34" aria-hidden="true">
+              <path d="M 8 27 Q 58 -2 124 13 Q 141 17 152 7" />
+              <circle cx="152" cy="7" r="2.5" />
+            </svg>
+            <span className="brand-version">V0.1.0-CDR</span>
+          </div>
           <h1>{txt('Ingeniería del vehículo', 'Vehicle Engineering Workspace')}</h1>
         </div>
         <div className="top-actions">

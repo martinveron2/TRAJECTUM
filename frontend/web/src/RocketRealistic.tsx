@@ -271,9 +271,9 @@ export function RocketRealistic({
         </g>;
       })}
 
-      <text x={x - 16} y={top + noseH / 2} textAnchor="end" className="section-name">{txt('COFIA', 'NOSE')}</text>
-      <text x={x - 16} y={yBay + bayH / 2} textAnchor="end" className="section-name">{txt('COMPART.', 'BAY')}</text>
-      <text x={x - 16} y={yBody + bodyH / 2} textAnchor="end" className="section-name">{txt('CUERPO', 'BODY')}</text>
+      <text x={x - 34} y={top + noseH / 2} textAnchor="end" className="section-name">{txt('COFIA', 'NOSE')}</text>
+      <text x={x - 34} y={yBay + bayH / 2} textAnchor="end" className="section-name">{txt('COMPART.', 'BAY')}</text>
+      <text x={x - 34} y={yBody + bodyH / 2} textAnchor="end" className="section-name">{txt('CUERPO', 'BODY')}</text>
 
       <text x="112" y={bottom + 36} className="scale-note-svg">
         {txt('ESCALA GEOMÉTRICA ÚNICA', 'SINGLE GEOMETRIC SCALE')} · 1 px = {(1 / scale).toFixed(2)} mm
