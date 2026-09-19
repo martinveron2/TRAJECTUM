@@ -3,6 +3,7 @@ import createPlotlyComponent from 'react-plotly.js/factory';
 import Plotly from 'plotly.js-basic-dist-min';
 import type { MissionSample } from './FlightVisualizer';
 import { buildEngineeringChartImages } from './engineeringChartExport';
+import { Download, Eye, Move, RotateCcw, ScanSearch, ZoomIn } from 'lucide-react';
 
 const Plot = createPlotlyComponent(Plotly as any);
 
@@ -194,13 +195,13 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
       >{label}</button>)}
     </div>
 
-    <div className="flight-chart-toolbar" aria-label={txt('Herramientas del gráfico', 'Chart tools')}>
-      <button type="button" className={dragMode === 'zoom' ? 'active' : ''} onClick={() => setInteraction('zoom')} title={txt('Arrastrar para ampliar una zona', 'Drag to zoom into an area')}>⌕ <span>{txt('ZOOM', 'ZOOM')}</span></button>
-      <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Arrastrar para desplazar el gráfico', 'Drag to pan the plot')}>✥ <span>PAN</span></button>
-      <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente los ejes', 'Autoscale axes')}>↔ <span>{txt('AJUSTAR', 'AUTOSCALE')}</span></button>
-      <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')}>↺ <span>{txt('RESET', 'RESET')}</span></button>
-      <button type="button" className="chart-tool-preview" onClick={previewPng} title={txt('Visualizar versión PNG para impresión', 'Preview print-ready PNG')}>◉ <span>{txt('VISUALIZAR', 'PREVIEW')}</span></button>
-      <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Descargar gráfico actual en PNG', 'Download current plot as PNG')}>⇩ <span>{txt('DESCARGAR PNG', 'DOWNLOAD PNG')}</span></button>
+    <div className="flight-chart-toolbar aero-toolbar" aria-label={txt('Herramientas del gráfico', 'Chart tools')}>
+      <button type="button" className={dragMode === 'zoom' ? 'active' : ''} onClick={() => setInteraction('zoom')} title={txt('Zoom por selección', 'Box zoom')} aria-label={txt('Zoom por selección', 'Box zoom')}><ZoomIn size={16}/></button>
+      <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Desplazar gráfico', 'Pan plot')} aria-label={txt('Desplazar gráfico', 'Pan plot')}><Move size={16}/></button>
+      <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente', 'Autoscale')} aria-label={txt('Ajustar automáticamente', 'Autoscale')}><ScanSearch size={16}/></button>
+      <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')} aria-label={txt('Restablecer vista', 'Reset view')}><RotateCcw size={16}/></button>
+      <button type="button" className="chart-tool-preview" onClick={previewPng} title={txt('Vista previa PNG', 'Preview PNG')} aria-label={txt('Vista previa PNG', 'Preview PNG')}><Eye size={16}/></button>
+      <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Descargar PNG', 'Download PNG')} aria-label={txt('Descargar PNG', 'Download PNG')}><Download size={16}/></button>
     </div>
 
     <div className="flight-chart-frame">
@@ -241,7 +242,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
         onInitialized={(_, graphDiv) => { graphRef.current = graphDiv; }}
         onUpdate={(_, graphDiv) => { graphRef.current = graphDiv; }}
         useResizeHandler
-        style={{ width: '100%', height: '460px' }}
+        style={{ width: '100%', height: '100%' }}
       />
     </div>
 

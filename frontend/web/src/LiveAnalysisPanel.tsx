@@ -101,6 +101,8 @@ export function LiveAnalysisPanel({
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState('');
   const [running, setRunning] = useState(false);
+  const [metricDetail, setMetricDetail] = useState<'mass' | 'cg' | 'cp' | 'apogee' | null>(null);
+  const [showMassEditor, setShowMassEditor] = useState(false);
   const lastAutoRunToken = useRef(0);
 
   useEffect(() => {
@@ -156,6 +158,11 @@ export function LiveAnalysisPanel({
   const updateMass = (id: number, value: NumericField) => {
     setRows((current) => current.map((row) => row.id === id ? { ...row, massG: value, note: 'mass edited locally; xCG remains geometry-derived' } : row));
     setAnalysis(null);
+  };
+
+  const keepInputVisible = (event: React.FocusEvent<HTMLInputElement>) => {
+    if (window.innerWidth > 820) return;
+    window.setTimeout(() => event.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }), 180);
   };
 
     const run = async () => {
@@ -256,21 +263,23 @@ export function LiveAnalysisPanel({
       <span className={vehicle.cd !== '' && planformReady ? 'module-on' : ''}>{txt('TRAYECTORIA', 'TRAJECTORY')} · {vehicle.cd !== '' && planformReady ? txt('LISTA', 'READY') : txt('REQUIERE Cd', 'NEEDS Cd')}</span>
       <span className={vehicle.cd !== '' && planformReady ? 'module-on' : ''}>{txt('RECUPERACIÓN', 'RECOVERY')} · {vehicle.cd !== '' && planformReady ? txt('LISTA', 'READY') : txt('DESPUÉS DEL VUELO', 'AFTER FLIGHT')}</span>
     </div>
-    <div className="analysis-metrics wide">
-      <div><span>{txt('MASA TOTAL', 'TOTAL MASS')}</span><strong>{totalMass !== undefined ? `${totalMass.toFixed(1)} g` : '—'}</strong></div>
-      <div><span>{txt('CG CÁTEDRA · DESDE APOYO', 'CG · FROM SUPPORT')}</span><strong>{totalCgCatedra !== undefined ? `${totalCgCatedra.toFixed(1)} mm` : '—'}</strong><small>{totalCgFromNose !== undefined ? (isEs ? `interno: ${totalCgFromNose.toFixed(1)} mm desde punta` : `internal: ${totalCgFromNose.toFixed(1)} mm from nose`) : ''}</small></div>
-      <div><span>{txt('CP CÁTEDRA · DESDE APOYO', 'CP · FROM SUPPORT')}</span><strong>{cpCatedra !== undefined ? `${cpCatedra.toFixed(1)} mm` : '—'}</strong><small>{analysis?.cp_x_mm_from_nose !== undefined ? (isEs ? `interno: ${analysis.cp_x_mm_from_nose.toFixed(1)} mm desde punta` : `internal: ${analysis.cp_x_mm_from_nose.toFixed(1)} mm from nose`) : ''}</small></div>
-      <div><span>{txt('CP COFIA', 'NOSE CP')}</span><strong>{analysis?.nose_cp_x_mm_from_support !== undefined ? `${analysis.nose_cp_x_mm_from_support.toFixed(1)} mm` : '—'}</strong><small>{txt('desde apoyo', 'from support')}</small></div>
-      <div><span>{txt('CP ALETAS', 'FINS CP')}</span><strong>{analysis?.fins_cp_x_mm_from_support !== undefined ? `${analysis.fins_cp_x_mm_from_support.toFixed(1)} mm` : '—'}</strong><small>{txt('desde apoyo', 'from support')}</small></div>
-      <div><span>{txt('APOGEO', 'APOGEE')}</span><strong>{analysis?.apogee_m !== undefined ? `${analysis.apogee_m.toFixed(1)} m` : '—'}</strong></div>
+    <div className="analysis-metrics wide interactive-metrics">
+      <button type="button" onClick={() => setMetricDetail(metricDetail === 'mass' ? null : 'mass')}><span>{txt('MASA TOTAL', 'TOTAL MASS')}</span><strong>{totalMass !== undefined ? `${totalMass.toFixed(1)} g` : '—'}</strong><small>{txt('tocá para desglose', 'tap for breakdown')}</small></button>
+      <button type="button" onClick={() => setMetricDetail(metricDetail === 'cg' ? null : 'cg')}><span>{txt('CG CÁTEDRA · DESDE APOYO', 'CG · FROM SUPPORT')}</span><strong>{totalCgCatedra !== undefined ? `${totalCgCatedra.toFixed(1)} mm` : '—'}</strong><small>{totalCgFromNose !== undefined ? (isEs ? `interno: ${totalCgFromNose.toFixed(1)} mm desde punta` : `internal: ${totalCgFromNose.toFixed(1)} mm from nose`) : ''}</small></button>
+      <button type="button" onClick={() => setMetricDetail(metricDetail === 'cp' ? null : 'cp')}><span>{txt('CP CÁTEDRA · DESDE APOYO', 'CP · FROM SUPPORT')}</span><strong>{cpCatedra !== undefined ? `${cpCatedra.toFixed(1)} mm` : '—'}</strong><small>{analysis?.cp_x_mm_from_nose !== undefined ? (isEs ? `interno: ${analysis.cp_x_mm_from_nose.toFixed(1)} mm desde punta` : `internal: ${analysis.cp_x_mm_from_nose.toFixed(1)} mm from nose`) : ''}</small></button>
+      <button type="button" onClick={() => setMetricDetail(metricDetail === 'apogee' ? null : 'apogee')}><span>{txt('APOGEO', 'APOGEE')}</span><strong>{analysis?.apogee_m !== undefined ? `${analysis.apogee_m.toFixed(1)} m` : '—'}</strong><small>{txt('trayectoria RK4', 'RK4 trajectory')}</small></button>
       <div><span>{txt('Q MÁX', 'MAX Q')}</span><strong>{analysis?.max_q_pa !== undefined ? `${analysis.max_q_pa.toFixed(0)} Pa` : '—'}</strong></div>
       <div><span>{txt('VELOCIDAD MÁX', 'MAX SPEED')}</span><strong>{analysis?.max_speed_m_s !== undefined ? `${analysis.max_speed_m_s.toFixed(1)} m/s` : '—'}</strong></div>
       <div><span>{txt('MACH MÁX', 'MAX MACH')}</span><strong>{analysis?.max_mach !== undefined ? analysis.max_mach.toFixed(3) : '—'}</strong></div>
-      <div><span>{txt('ALTITUD DE DESPLIEGUE', 'DEPLOY ALTITUDE')}</span><strong>{analysis?.deployment_altitude_m != null ? `${analysis.deployment_altitude_m.toFixed(1)} m` : '—'}</strong></div>
-      <div><span>{txt('TIEMPO DE DESPLIEGUE', 'DEPLOY TIME')}</span><strong>{analysis?.deployment_time_s != null ? `${analysis.deployment_time_s.toFixed(2)} s` : '—'}</strong></div>
-      <div><span>{txt('TIEMPO DE ATERRIZAJE', 'LANDING TIME')}</span><strong>{analysis?.landing_time_s !== undefined ? `${analysis.landing_time_s.toFixed(1)} s` : '—'}</strong></div>
       <div><span>{txt('VELOCIDAD DE IMPACTO', 'IMPACT SPEED')}</span><strong>{analysis?.impact_speed_m_s !== undefined ? `${analysis.impact_speed_m_s.toFixed(2)} m/s` : '—'}</strong></div>
     </div>
+    {metricDetail && <div className="metric-detail-drawer">
+      <div><span>{txt('DESGLOSE DE CÁLCULO', 'CALCULATION BREAKDOWN')}</span><button type="button" onClick={() => setMetricDetail(null)}>×</button></div>
+      {metricDetail === 'mass' && <><strong>m_total = Σ mᵢ</strong><p>{txt('Suma automática de cofia, cuerpo, motor, recuperación, electrónica, carga útil y aletas.', 'Automatic sum of nose, body, motor, recovery, electronics, payload and fins.')}</p></>}
+      {metricDetail === 'cg' && <><strong>xCG = Σ(mᵢ·xᵢ) / Σmᵢ</strong><p>{txt('Cada xᵢ se deriva de la geometría del componente. La coordenada Cátedra se expresa desde el apoyo/base.', 'Each xᵢ is geometry-derived. The course coordinate is expressed from the support/base.')}</p></>}
+      {metricDetail === 'cp' && <><strong>{txt('Método de Barrowman · cofia + aletas', 'Barrowman method · nose + fins')}</strong><p>{txt('TRAJECTUM combina las contribuciones aerodinámicas y transforma el resultado al sistema +X axial con origen en la base.', 'TRAJECTUM combines aerodynamic contributions and transforms the result to the +X axial coordinate system from the base.')}</p></>}
+      {metricDetail === 'apogee' && <><strong>{txt('Integración temporal RK4 · vuelo 2D', 'RK4 time integration · 2D flight')}</strong><p>{txt('El apogeo proviene de la trayectoria simulada con masa variable, empuje, gravedad y resistencia aerodinámica al ángulo real configurado.', 'Apogee comes from the simulated trajectory with variable mass, thrust, gravity and drag at the configured real launch angle.')}</p></>}
+    </div>}
     {analysis?.mission_timeline && analysis.mission_timeline.length > 1 ? <>
       <FlightVisualizer samples={analysis.mission_timeline} launchAngleDeg={Number(vehicle.launchAngle) || 85} lang={lang} />
       <Suspense fallback={<div className="panel flight-analysis-loading">{txt('CARGANDO GRÁFICOS DE INGENIERÍA…', 'LOADING ENGINEERING PLOTS…')}</div>}>
@@ -295,16 +304,26 @@ export function LiveAnalysisPanel({
         <div className="timeline-node complete"><b>5</b><span>{txt('Aterrizaje', 'Landing')}</span><em>{analysis.impact_speed_m_s?.toFixed(2) ?? '—'} m/s</em></div>
       </div>
     </div>}
-    <div className="demo-banner">{txt('Ingresá únicamente la MASA de cada componente. El backend calcula xCG a partir de la geometría o envolvente de cada componente.', 'Enter component MASS only. xCG is calculated by the backend from each component geometry/envelope.')}</div>
-    <div className="mass-head derived"><span>{txt('Componente', 'Component')}</span><span>{txt('Masa [g]', 'Mass [g]')}</span><span>xCG {txt('CÁTEDRA', 'COURSE')} [mm]</span></div>
-    <div className="mass-table">{rows.map((row) => {
-      const computed = componentResult?.components.find((item) => item.name === row.name);
-      return <div className="mass-row-wrap" key={row.id}><div className="mass-row derived">
-        <span>{componentName(row)}</span>
-        <input type="number" value={row.massG} disabled={row.kind === 'motor'} title={row.kind === 'motor' ? txt('La masa del motor se deriva de la configuración activa.', 'Motor mass is derived from the active configuration.') : undefined} onChange={(e) => updateMass(row.id, e.target.value === '' ? '' : Number(e.target.value))}/>
-        <output>{computed ? (totalLengthMm - computed.x_cg_mm).toFixed(1) : txt('POR DEFINIR', 'TBD')}</output>
-      </div><small>{computed ? displaySource(computed.source) : displayNote(row)}</small></div>;
-    })}</div>
+    <div className="mass-editor-gate">
+      <div>
+        <span>{txt('MASAS Y xCG', 'MASSES & xCG')}</span>
+        <strong>{txt('Derivados automáticamente desde PDR', 'Automatically derived from PDR')}</strong>
+        <small>{txt('No necesitás volver a cargar datos. Abrí este editor sólo si querés ajustar una masa.', 'No re-entry required. Open only if you want to adjust a mass.')}</small>
+      </div>
+      <button type="button" onClick={() => setShowMassEditor((value) => !value)}>{showMassEditor ? txt('OCULTAR', 'HIDE') : txt('AJUSTAR', 'ADJUST')}</button>
+    </div>
+    {showMassEditor && <div className="mass-editor-collapsible">
+      <div className="demo-banner">{txt('El backend conserva xCG derivado de la geometría; sólo la masa es editable.', 'The backend keeps geometry-derived xCG; only mass is editable.')}</div>
+      <div className="mass-head derived"><span>{txt('Componente', 'Component')}</span><span>{txt('Masa [g]', 'Mass [g]')}</span><span>xCG {txt('CÁTEDRA', 'COURSE')} [mm]</span></div>
+      <div className="mass-table">{rows.map((row) => {
+        const computed = componentResult?.components.find((item) => item.name === row.name);
+        return <div className="mass-row-wrap" key={row.id}><div className="mass-row derived">
+          <span>{componentName(row)}</span>
+          <input type="number" value={row.massG} disabled={row.kind === 'motor'} onFocus={keepInputVisible} title={row.kind === 'motor' ? txt('La masa del motor se deriva de la configuración activa.', 'Motor mass is derived from the active configuration.') : undefined} onChange={(e) => updateMass(row.id, e.target.value === '' ? '' : Number(e.target.value))}/>
+          <output>{computed ? (totalLengthMm - computed.x_cg_mm).toFixed(1) : txt('POR DEFINIR', 'TBD')}</output>
+        </div><small>{computed ? displaySource(computed.source) : displayNote(row)}</small></div>;
+      })}</div>
+    </div>}
     {!planformReady && <div className="analysis-note">{txt('El xCG de las aletas y el CP permanecen bloqueados hasta definir cuerda de punta, desplazamiento del borde de ataque y posición axial de la aleta.', 'Fin xCG and CP remain blocked until tip chord, sweep and fin X are defined.')}</div>}
     {planformReady && vehicle.cd === '' && <div className="analysis-note">{txt('CG + CP disponibles. Ingresá Cd para habilitar trayectoria, apogeo, Q máx y Mach.', 'CG + CP available. Enter Cd to unlock trajectory, apogee, MaxQ and Mach.')}</div>}
     {error && <div className="analysis-error">{txt('Error de API', 'API error')}: {error}</div>}

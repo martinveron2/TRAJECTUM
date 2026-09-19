@@ -46,11 +46,14 @@ export function FlightVisualizer({ samples, launchAngleDeg = 85, lang = 'es' }: 
   const engineeringScale = Math.min(676 / Math.max(maxRange, 1), 250 / Math.max(maxAltitude, 1));
   const originX = 92;
   const originY = 300;
-  const plot = useMemo(() => samples.map((s) => {
+  const plotPoints = useMemo(() => samples.map((s) => {
     const x = originX + s.x_m * engineeringScale;
     const y = originY - s.altitude_m * engineeringScale;
     return `${x},${y}`;
-  }).join(' '), [samples, engineeringScale]);
+  }), [samples, engineeringScale]);
+  const plot = plotPoints.join(' ');
+  const traversedPlot = plotPoints.slice(0, Math.max(index + 1, 1)).join(' ');
+  const maxQSample = useMemo(() => samples.reduce((best, sample) => sample.q_pa > best.q_pa ? sample : best, samples[0]), [samples]);
 
   if (!current) return null;
 
@@ -89,7 +92,8 @@ export function FlightVisualizer({ samples, launchAngleDeg = 85, lang = 'es' }: 
           className="launch-guide"
         />
         <text x={originX + 14} y={originY - 86} className="flight-label">{txt('LANZAMIENTO', 'LAUNCH')} {launchAngleDeg.toFixed(0)}°</text>
-        <polyline points={plot} fill="none" className="trajectory-line"/>
+        <polyline points={plot} fill="none" className="trajectory-line trajectory-line-full"/>
+        <polyline points={traversedPlot} fill="none" className="trajectory-line trajectory-line-live"/>
         <text x="54" y="62" className="flight-label">{txt('APOGEO', 'APOGEE')} {maxAltitude.toFixed(1)} m</text>
         <text x="54" y="322" className="flight-label">{txt('ALCANCE', 'RANGE')} {maxRange.toFixed(1)} m · {txt('modelo de recuperación vertical después del apogeo', 'vertical recovery model after apogee')}</text>
 
@@ -107,11 +111,13 @@ export function FlightVisualizer({ samples, launchAngleDeg = 85, lang = 'es' }: 
       </svg>
 
       <div className="flight-telemetry">
+        <div><span>{txt('ÁNGULO REAL', 'REAL ANGLE')}</span><strong>{launchAngleDeg.toFixed(1)}°</strong></div>
         <div><span>{txt('TIEMPO', 'TIME')}</span><strong>{current.t_s.toFixed(2)} s</strong></div>
         <div><span>{txt('ALTITUD', 'ALTITUDE')}</span><strong>{current.altitude_m.toFixed(1)} m</strong></div>
         <div><span>{txt('VELOCIDAD', 'SPEED')}</span><strong>{current.speed_m_s.toFixed(1)} m/s</strong></div>
-        <div><span>{txt('V VERTICAL', 'VERTICAL V')}</span><strong>{current.vertical_speed_m_s.toFixed(1)} m/s</strong></div>
         <div><span>Q</span><strong>{current.q_pa.toFixed(0)} Pa</strong></div>
+        <div><span>MAX Q</span><strong>{maxQSample.q_pa.toFixed(0)} Pa</strong></div>
+        <div><span>{txt('APOGEO', 'APOGEE')}</span><strong>{maxAltitude.toFixed(1)} m</strong></div>
         <div><span>{txt('FASE', 'PHASE')}</span><strong>{phaseLabel(current.phase)}</strong></div>
       </div>
     </div>
