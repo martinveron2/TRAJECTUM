@@ -67,6 +67,16 @@ type TwinValue = {
   note?: string;
 };
 
+type CurrentCp = {
+  resolved: boolean;
+  status?: string;
+  method?: string;
+  cp_x_mm_from_nose?: number | null;
+  cp_x_mm_from_support?: number | null;
+  cn_alpha_total?: number | null;
+  blockers?: string[];
+};
+
 type CurrentTwin = {
   geometry?: {
     outer_diameter_mm?: TwinValue;
@@ -415,6 +425,7 @@ function App() {
   const [componentRows, setComponentRows] = useState<ComponentRow[]>(initialComponentRows);
   const [currentTwin, setCurrentTwin] = useState<CurrentTwin | null>(null);
   const [twinAssembly, setTwinAssembly] = useState<TwinAssembly | null>(null);
+  const [currentCp, setCurrentCp] = useState<CurrentCp | null>(null);
   const [motorConfigs, setMotorConfigs] = useState<MotorConfig[]>(initialMotorConfigs);
   const [activeMotorId, setActiveMotorId] = useState('motor-1');
   const [showMotorEditor, setShowMotorEditor] = useState(false);
@@ -450,8 +461,10 @@ function App() {
     Promise.all([
       fetch('/api/v1/digital-twin/current', { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
       fetch('/api/v1/digital-twin/assembly', { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
-    ]).then(([design, assembly]) => {
+      fetch('/api/v1/digital-twin/cp', { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
+    ]).then(([design, assembly, cp]) => {
       if (design) setCurrentTwin(design as CurrentTwin);
+      if (cp) setCurrentCp(cp as CurrentCp);
       if (assembly) {
         const twin = assembly as TwinAssembly;
         setTwinAssembly(twin);
@@ -680,6 +693,8 @@ function App() {
   }, [pendingMissionLaunch]);
 
   const liveCgFromNose = componentSummary?.total_cg_mm ?? analysisSummary?.cg_x_mm_from_nose ?? null;
+  const liveCpFromNose = analysisSummary?.cp_x_mm_from_nose ?? currentCp?.cp_x_mm_from_nose ?? null;
+  const liveCpFromSupport = analysisSummary?.cp_x_mm_from_support ?? currentCp?.cp_x_mm_from_support ?? null;
 
   const downloadBlob = (contents: BlobPart, type: string, filename: string) => {
     const blob = new Blob([contents], { type });
@@ -1106,7 +1121,13 @@ function App() {
           {twinAssembly && <div className="pdr-mass-total">
             <span>{txt('GEMELO CAD ACTUAL', 'CURRENT CAD TWIN')}</span>
             <strong>{twinAssembly.total_length_mm?.toFixed(0) ?? '—'} mm · Ø{currentTwin?.geometry?.outer_diameter_mm?.value ?? '—'} mm</strong>
-            <small>{txt('Ensamblaje real · masa estructural medida ', 'Real assembly · measured structural mass ')}{currentTwin?.masses?.measured_structure_total_g ?? '—'} g</small>
+            <small>{txt('Ensamblaje derivado de planos · masa estructural medida ', 'Drawing-derived assembly · measured structural mass ')}{currentTwin?.masses?.measured_structure_total_g ?? '—'} g</small>
+          </div>}
+
+          {currentCp?.resolved && <div className="pdr-mass-total">
+            <span>{txt('CP · BARROWMAN', 'CP · BARROWMAN')}</span>
+            <strong>{currentCp.cp_x_mm_from_nose?.toFixed(1)} mm {txt('desde nariz', 'from nose')} · {currentCp.cp_x_mm_from_support?.toFixed(1)} mm {txt('desde apoyo', 'from support')}</strong>
+            <small>{txt('Derivado de la geometría Fusion actual · CG todavía pendiente', 'Derived from current Fusion geometry · CG still pending')}</small>
           </div>}
 
           <div className="pdr-input-grid">
@@ -1145,7 +1166,7 @@ function App() {
         >
           <div className="mobile-pdr-vehicle-head"><div><span>{txt('ESQUEMA 2D ÚNICO', 'SINGLE 2D SCHEMATIC')}</span><strong>{txt('Geometría sincronizada en tiempo real', 'Real-time synchronized geometry')}</strong></div><Orbit size={19}/></div>
           <div className="mobile-pdr-model">
-            <RocketRealistic vehicle={vehicle} cgMm={liveCgFromNose} cpMm={analysisSummary?.cp_x_mm_from_nose ?? null} componentCgs={componentSummary?.components ?? []} assemblyStations={twinAssembly?.stations ?? []} showComponentCgs={false} lang={lang}/>
+            <RocketRealistic vehicle={vehicle} cgMm={liveCgFromNose} cpMm={liveCpFromNose} componentCgs={componentSummary?.components ?? []} assemblyStations={twinAssembly?.stations ?? []} showComponentCgs={false} lang={lang}/>
           </div>
           <div className="schematic-live-stats">
             <span><b>{vehicle.totalLength}</b> mm {txt('LARGO', 'LENGTH')}</span>
@@ -1232,7 +1253,7 @@ function App() {
             </button>
             <button type="button" className={cdrPositionFocus === 'cp' ? 'active cp-widget' : 'cp-widget'} onClick={() => setCdrPositionFocus('cp')}>
               <span>CP</span>
-              <strong>{analysisSummary?.cp_x_mm_from_nose != null ? (Number(vehicle.totalLength) - analysisSummary.cp_x_mm_from_nose).toFixed(1) + ' mm' : '—'}</strong>
+              <strong>{liveCpFromSupport != null ? liveCpFromSupport.toFixed(1) + ' mm' : '—'}</strong>
               <small>{txt('Barrowman · tocar para ubicar', 'Barrowman · tap to locate')}</small>
             </button>
             <button type="button" className={cdrPositionFocus === 'margin' ? 'active margin-widget' : 'margin-widget'} onClick={() => setCdrPositionFocus('margin')}>
@@ -1244,7 +1265,7 @@ function App() {
           <div className={'stability-axis focus-' + cdrPositionFocus} aria-label={txt('Posición relativa de CG y CP', 'Relative CG and CP position')}>
             <div className="stability-axis-line"/>
             {liveCgFromNose != null && <i className="cg-marker" style={{ left: Math.max(4, Math.min(96, liveCgFromNose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CG</b></i>}
-            {analysisSummary?.cp_x_mm_from_nose != null && <i className="cp-marker" style={{ left: Math.max(4, Math.min(96, analysisSummary.cp_x_mm_from_nose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CP</b></i>}
+            {liveCpFromNose != null && <i className="cp-marker" style={{ left: Math.max(4, Math.min(96, liveCpFromNose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CP</b></i>}
             <span>0</span><em>{vehicle.totalLength} mm</em>
           </div>
           <div className="cdr-position-detail">
@@ -1501,7 +1522,7 @@ function App() {
             <RocketRealistic
               vehicle={vehicle}
               cgMm={liveCgFromNose}
-              cpMm={analysisSummary?.cp_x_mm_from_nose ?? null}
+              cpMm={liveCpFromNose}
               componentCgs={componentSummary?.components ?? []}
               assemblyStations={twinAssembly?.stations ?? []}
               showComponentCgs={showComponentCgs}
@@ -1523,7 +1544,7 @@ function App() {
             </article>
             <article className="metric-card">
               <span>CP</span>
-              <strong>{analysisSummary?.cp_x_mm_from_support !== undefined ? `${analysisSummary.cp_x_mm_from_support.toFixed(1)} mm` : analysisSummary?.cp_x_mm_from_nose !== undefined ? `${(Number(vehicle.totalLength) - analysisSummary.cp_x_mm_from_nose).toFixed(1)} mm` : '—'}</strong>
+              <strong>{liveCpFromSupport != null ? `${liveCpFromSupport.toFixed(1)} mm` : '—'}</strong>
               <small>{txt('desde apoyo · Barrowman/perfil', 'from support · Barrowman/profile')}</small>
             </article>
             <article className="metric-card">

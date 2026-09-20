@@ -30,6 +30,18 @@ def test_current_digital_twin_exposes_verified_cad_and_measured_masses():
     assert data["legacy_test_vehicle"]["status"] == "simulation-fixture-only-not-current-design"
 
 
+def test_current_digital_twin_cp_uses_current_fusion_geometry_without_mass_inputs():
+    response = client.get("/v1/digital-twin/cp")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["resolved"] is True
+    assert data["status"] == "derived-current-geometry"
+    assert data["blockers"] == []
+    assert abs(data["cp_x_mm_from_nose"] - 578.2305610742484) < 1e-9
+    assert abs(data["cp_x_mm_from_support"] - 210.76943892575156) < 1e-9
+    assert [item["name"] for item in data["contributions"]] == ["nose", "fins"]
+
+
 def test_current_digital_twin_assembly_uses_drawing_derived_engagements():
     response = client.get("/v1/digital-twin/assembly")
     assert response.status_code == 200
