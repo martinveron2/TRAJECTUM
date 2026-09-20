@@ -79,11 +79,21 @@ def relative_error(reference: float, candidate: float) -> float:
 
 
 def compare(name: str, reference: float, candidate: float, tolerance: float) -> ValidationResult:
+    """Run the legacy one-tolerance comparison.
+
+    ``tolerance`` remains relative when ``reference`` is non-zero.  For a zero
+    reference, where relative error is undefined, it is interpreted as an
+    absolute tolerance.  ``ValidationResult.relative_error`` is retained for
+    API compatibility and contains the metric used by this comparison.
+    """
+
     if not name.strip():
         raise ValueError("Comparison name is required.")
     if not isfinite(tolerance) or tolerance < 0:
         raise ValueError("Tolerance must be finite and non-negative.")
-    error = relative_error(reference, candidate)
+    if not all(isfinite(value) for value in (reference, candidate)):
+        raise ValueError("Reference and candidate must be finite.")
+    error = abs(candidate) if reference == 0 else relative_error(reference, candidate)
     return ValidationResult(name, reference, candidate, error, tolerance, error <= tolerance)
 
 

@@ -34,7 +34,20 @@ def test_relative_error():
 def test_compare_records_pass_fail_and_tolerance():
     result = compare("benchmark", 100.0, 98.0, 0.03)
     assert result.passed
+    assert abs(result.relative_error - 0.02) < 1e-12
     assert result.tolerance == 0.03
+
+
+def test_compare_zero_reference_within_absolute_tolerance():
+    result = compare("zero reference", 0.0, 0.05, 0.1)
+    assert result.passed
+    assert result.relative_error == 0.05
+
+
+def test_compare_zero_reference_outside_absolute_tolerance():
+    result = compare("zero reference", 0.0, -0.10001, 0.1)
+    assert not result.passed
+    assert result.relative_error == 0.10001
 
 
 def test_combined_tolerance_handles_zero_reference():
@@ -48,6 +61,10 @@ def test_combined_tolerance_handles_zero_reference():
 def test_non_finite_values_are_rejected(bad_value):
     with pytest.raises(ValueError):
         relative_error(1.0, bad_value)
+    with pytest.raises(ValueError):
+        compare("candidate", 0.0, bad_value, 0.1)
+    with pytest.raises(ValueError):
+        compare("reference", bad_value, 0.0, 0.1)
     with pytest.raises(ValueError):
         compare_scalar(
             "x", "m", bad_value, 1.0, Tolerance(0.0, 0.0, "exact"), evidence()
