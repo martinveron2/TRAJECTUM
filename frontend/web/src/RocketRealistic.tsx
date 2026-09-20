@@ -14,6 +14,9 @@ type VehicleLike = {
   finX: NumericField;
   airfoil: string;
   noseProfile: string;
+  nozzleLength?: NumericField;
+  nozzleNeckDiameter?: NumericField;
+  nozzleExitDiameter?: NumericField;
 };
 
 type ComponentCg = {
@@ -127,6 +130,9 @@ export function RocketRealistic({
   const finTipTrailY = finTipLeadY + finTip * scale;
   const finOutLeft = x - finSpan * scale;
   const finOutRight = x + w + finSpan * scale;
+  const nozzleLength = Number(vehicle.nozzleLength) > 0 ? Number(vehicle.nozzleLength) : 22;
+  const nozzleNeckDiameter = Number(vehicle.nozzleNeckDiameter) > 0 ? Number(vehicle.nozzleNeckDiameter) : 16;
+  const nozzleExitDiameter = Number(vehicle.nozzleExitDiameter) > 0 ? Number(vehicle.nozzleExitDiameter) : 12;
 
   const fromSupport = (fromNoseMm: number) => total - fromNoseMm;
   const yFromR7 = (r7Mm: number) => supportY - r7Mm * scale;
@@ -205,7 +211,7 @@ export function RocketRealistic({
       />
 
       <path
-        d={`M ${centerX - 8 * scale} ${bottom} L ${centerX + 8 * scale} ${bottom} L ${centerX + 6 * scale} ${bottom + 22 * scale} L ${centerX - 6 * scale} ${bottom + 22 * scale} Z`}
+        d={`M ${centerX - nozzleNeckDiameter * scale / 2} ${bottom} L ${centerX + nozzleNeckDiameter * scale / 2} ${bottom} L ${centerX + nozzleExitDiameter * scale / 2} ${bottom + nozzleLength * scale} L ${centerX - nozzleExitDiameter * scale / 2} ${bottom + nozzleLength * scale} Z`}
         className="nozzle"
       />
 

@@ -40,6 +40,9 @@ type Vehicle = {
   parachuteArea: NumericField;
   deployAltitude: NumericField;
   deployDelay: NumericField;
+  nozzleLength: NumericField;
+  nozzleNeckDiameter: NumericField;
+  nozzleExitDiameter: NumericField;
 };
 
 const initialVehicle: Vehicle = {
@@ -63,6 +66,9 @@ const initialVehicle: Vehicle = {
   parachuteArea: 0.20,
   deployAltitude: '',
   deployDelay: 0,
+  nozzleLength: '',
+  nozzleNeckDiameter: '',
+  nozzleExitDiameter: '',
 };
 
 type MotorConfig = {
@@ -942,11 +948,15 @@ function App() {
             <label><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><NumericStepper value={vehicle.totalLength} onChange={(value) => update('totalLength', value)} unit="mm" step={5}/></label>
             <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><NumericStepper value={vehicle.diameter} onChange={(value) => update('diameter', value)} unit="mm" step={1}/></label>
             <label><span>{txt('COFIA', 'NOSE')}</span><select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}><option value="tangent_ogive">{txt('OJIVA TANGENTE', 'TANGENT OGIVE')}</option><option value="cone">{txt('CÓNICA', 'CONICAL')}</option><option value="power_series">{txt('SERIE POTENCIA', 'POWER SERIES')}</option></select></label>
+            <label><span>{txt('PERFIL DE ALETA', 'FIN AIRFOIL')}</span><select value={vehicle.airfoil} onChange={(e) => update('airfoil', e.target.value)}><option>NACA 0012</option><option>NACA 0009</option><option>NACA 0015</option><option>NACA 2412</option></select></label>
             <label><span>{txt('ALETAS', 'FINS')}</span><NumericStepper value={vehicle.finCount} onChange={(value) => update('finCount', value)} unit="u" step={1} min={1}/></label>
             <label><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><NumericStepper value={vehicle.rootChord} onChange={(value) => update('rootChord', value)} unit="mm" step={1}/></label>
             <label><span>{txt('CUERDA PUNTA', 'TIP CHORD')}</span><NumericStepper value={vehicle.tipChord} onChange={(value) => update('tipChord', value)} unit="mm" step={1}/></label>
             <label><span>{txt('ENVERGADURA', 'SPAN')}</span><NumericStepper value={vehicle.span} onChange={(value) => update('span', value)} unit="mm" step={1}/></label>
             <label><span>{txt('FLECHA', 'SWEEP')}</span><NumericStepper value={vehicle.sweep} onChange={(value) => update('sweep', value)} unit="mm" step={1}/></label>
+            <label><span>{txt('TOBERA · LARGO', 'NOZZLE · LENGTH')}</span><NumericStepper value={vehicle.nozzleLength} onChange={(value) => update('nozzleLength', value)} unit="mm" step={1}/></label>
+            <label><span>{txt('TOBERA · Ø CUELLO', 'NOZZLE · NECK Ø')}</span><NumericStepper value={vehicle.nozzleNeckDiameter} onChange={(value) => update('nozzleNeckDiameter', value)} unit="mm" step={1}/></label>
+            <label><span>{txt('TOBERA · Ø SALIDA', 'NOZZLE · EXIT Ø')}</span><NumericStepper value={vehicle.nozzleExitDiameter} onChange={(value) => update('nozzleExitDiameter', value)} unit="mm" step={1}/></label>
           </div>
           <div className="pdr-inline-actions">
             <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('mdr')}><ClipboardCheck size={17}/><span>{requirementVerified}/11 {txt('REQUERIMIENTOS VERIFICADOS', 'REQUIREMENTS VERIFIED')}</span><b>→</b></button>
@@ -1257,6 +1267,16 @@ function App() {
             <Field label={txt('Semienvergadura de la aleta (s)', 'Fin semispan (s)')} value={vehicle.span} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('span', v)} />
             <Field label={txt('Desplazamiento del borde de ataque (Xf)', 'Leading-edge offset (Xf)')} value={vehicle.sweep} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('sweep', v)} />
             <Field label={txt('Posición del borde de ataque de la raíz desde la nariz', 'Root leading-edge position from nose')} value={vehicle.finX} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('finX', v)} />
+          </div>
+
+          <div className="section-heading">
+            <h3>{txt('Tobera', 'Nozzle')}</h3>
+            <span>{txt('geometría CAD · no altera física hasta validar', 'CAD geometry · physics unchanged until validated')}</span>
+          </div>
+          <div className="field-grid">
+            <Field label={txt('Longitud de tobera', 'Nozzle length')} value={vehicle.nozzleLength} unit="mm" status={txt('por medir', 'to measure')} onChange={(v) => update('nozzleLength', v)} />
+            <Field label={txt('Diámetro de cuello', 'Neck diameter')} value={vehicle.nozzleNeckDiameter} unit="mm" status={txt('por medir', 'to measure')} onChange={(v) => update('nozzleNeckDiameter', v)} />
+            <Field label={txt('Diámetro de salida', 'Exit diameter')} value={vehicle.nozzleExitDiameter} unit="mm" status={txt('por medir', 'to measure')} onChange={(v) => update('nozzleExitDiameter', v)} />
           </div>
 
           <button className="advanced-toggle" onClick={() => setShowAdvanced((v) => !v)}>

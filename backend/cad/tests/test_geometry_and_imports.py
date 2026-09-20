@@ -19,7 +19,7 @@ def test_cad_format_registry_classifies_common_files():
 
 
 def test_nose_profile_family_preserves_length_and_radius():
-    for name in ("tangent_ogive", "von_karman", "power_series"):
+    for name in ("tangent_ogive", "cone", "von_karman", "power_series"):
         points = nose_profile(name, length_mm=180.0, base_radius_mm=31.5, stations=41)
         assert abs(points[0][0]) < 1e-9
         assert abs(points[-1][0] - 180.0) < 1e-9
