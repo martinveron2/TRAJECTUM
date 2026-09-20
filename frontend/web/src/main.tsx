@@ -404,7 +404,20 @@ function App() {
       fetch('/api/v1/digital-twin/assembly', { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
     ]).then(([design, assembly]) => {
       if (design) setCurrentTwin(design as CurrentTwin);
-      if (assembly) setTwinAssembly(assembly as TwinAssembly);
+      if (assembly) {
+        const twin = assembly as TwinAssembly;
+        setTwinAssembly(twin);
+        if (twin.resolved && twin.total_length_mm != null) {
+          setVehicle((current) => ({
+            ...current,
+            totalLength: Math.round(twin.total_length_mm!),
+            diameter: Number((design as CurrentTwin | null)?.geometry?.outer_diameter_mm?.value ?? current.diameter),
+            noseLength: 180,
+            finCount: 4,
+            airfoil: 'NACA 0012',
+          }));
+        }
+      }
     }).catch((error) => {
       if (error instanceof DOMException && error.name === 'AbortError') return;
     });
@@ -513,7 +526,7 @@ function App() {
     (Number(vehicle.noseLength) || 0) +
     (Number(vehicle.bayLength) || 0) +
     (Number(vehicle.bodyLength) || 0);
-  const geometryConsistent = vehicle.totalLength !== '' && axialSum === Number(vehicle.totalLength);
+  const geometryConsistent = twinAssembly?.resolved === true || (vehicle.totalLength !== '' && axialSum === Number(vehicle.totalLength));
   const ready = blockers.length === 0;
   const twinStationLabel = (key: string) => ({
     nose: txt('Cofia', 'Nose'),
@@ -583,7 +596,11 @@ function App() {
   };
 
   const reset = () => {
-    setVehicle(initialVehicle);
+    setVehicle({
+      ...initialVehicle,
+      totalLength: twinAssembly?.total_length_mm != null ? Math.round(twinAssembly.total_length_mm) : initialVehicle.totalLength,
+      diameter: Number(currentTwin?.geometry?.outer_diameter_mm?.value ?? initialVehicle.diameter),
+    });
     setMotorConfigs(initialMotorConfigs);
     setActiveMotorId('motor-1');
     setAnalysisSummary(null);
