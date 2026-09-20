@@ -455,6 +455,8 @@ function App() {
   const [pendingMissionLaunch, setPendingMissionLaunch] = useState(false);
   const motor = motorConfigs.find((item) => item.id === activeMotorId) ?? motorConfigs[0];
   const averageThrust = motorAverageThrust(motor);
+  const estimatedCd = Number(currentTwin?.aerodynamics?.cd?.value ?? 0.345);
+  const cdIsEstimated = vehicle.cd !== '' && Math.abs(Number(vehicle.cd) - estimatedCd) < 1e-6;
 
   React.useEffect(() => {
     const controller = new AbortController();
@@ -1223,20 +1225,44 @@ function App() {
           <div><span>FASE 03 · {txt('ACTUAL', 'CURRENT')}</span><h2>CDR · {txt('ANÁLISIS CRÍTICO', 'CRITICAL ANALYSIS')}</h2></div>
           <b className={analysisSummary ? 'complete' : 'current'}>{analysisSummary ? '✓' : '3'}</b>
         </div>
-        <button
-          type="button"
-          className={analysisSummary ? 'cdr-analysis-primary recalculated' : 'cdr-analysis-primary'}
-          disabled={!ready}
-          onClick={() => setRunToken((value) => value + 1)}
-        >
-          <span className="cdr-analysis-primary-icon"><Sigma size={23}/></span>
-          <span className="cdr-analysis-primary-copy">
-            <small>{txt('PASO PRINCIPAL · CDR', 'PRIMARY STEP · CDR')}</small>
-            <strong>{analysisSummary ? txt('RECALCULAR ANÁLISIS CDR', 'RECALCULATE CDR ANALYSIS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</strong>
-            <em>{txt('Calcula masa · CG · CP · margen · trayectoria', 'Calculates mass · CG · CP · margin · trajectory')}</em>
-          </span>
-          <b>→</b>
-        </button>
+        <div className="cdr-run-controls">
+          <div className={cdIsEstimated ? 'cdr-cd-control estimated' : 'cdr-cd-control manual'} title={txt('Cd usado por la simulación', 'Cd used by the simulation')}>
+            <div className="cdr-cd-head">
+              <span>Cd</span>
+              <small>{cdIsEstimated ? txt('EST.', 'EST.') : txt('MAN.', 'MAN.')}</small>
+            </div>
+            <input
+              aria-label={txt('Cd para simulación', 'Cd for simulation')}
+              type="number"
+              min="0"
+              step="0.001"
+              inputMode="decimal"
+              value={vehicle.cd}
+              onChange={(event) => {
+                const value = event.target.value;
+                update('cd', value === '' ? '' : Number(value));
+                setAnalysisSummary(null);
+              }}
+            />
+            {cdIsEstimated
+              ? <em>N/O</em>
+              : <button type="button" onClick={() => { update('cd', estimatedCd); setAnalysisSummary(null); }} aria-label={txt('Restaurar Cd estimado', 'Restore estimated Cd')}>↺ EST</button>}
+          </div>
+          <button
+            type="button"
+            className={analysisSummary ? 'cdr-analysis-primary recalculated' : 'cdr-analysis-primary'}
+            disabled={!ready}
+            onClick={() => setRunToken((value) => value + 1)}
+          >
+            <span className="cdr-analysis-primary-icon"><Sigma size={23}/></span>
+            <span className="cdr-analysis-primary-copy">
+              <small>{txt('PASO PRINCIPAL · CDR', 'PRIMARY STEP · CDR')}</small>
+              <strong>{analysisSummary ? txt('RECALCULAR ANÁLISIS CDR', 'RECALCULATE CDR ANALYSIS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</strong>
+              <em>{txt('Calcula masa · CG · CP · margen · trayectoria', 'Calculates mass · CG · CP · margin · trajectory')}</em>
+            </span>
+            <b>→</b>
+          </button>
+        </div>
 
         <div className="phase-internal-tabs cdr-tabs" role="tablist" aria-label={txt('Vistas CDR', 'CDR views')}>
           <button type="button" className={cdrTab === 'stability' ? 'active' : ''} onClick={() => setCdrTab('stability')}><Gauge size={16}/><span>CG / CP</span></button>

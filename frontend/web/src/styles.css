@@ -3983,6 +3983,89 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
 
 @media(max-width:820px){
   /* CDR hierarchy: execute first, read CG/CP immediately, then explore trajectory/motor. */
+  .cdr-run-controls{
+    display:grid;
+    grid-template-columns:84px minmax(0,1fr);
+    gap:8px;
+    align-items:stretch;
+    margin:8px 0 10px;
+  }
+  .cdr-run-controls .cdr-analysis-primary{
+    margin:0;
+    min-width:0;
+  }
+  .cdr-cd-control{
+    min-height:76px;
+    padding:7px 7px 6px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:4px;
+    border:1px solid #2F678F;
+    border-radius:14px;
+    background:linear-gradient(180deg,#102E47,#091D2E);
+    box-shadow:0 10px 22px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .cdr-cd-control.manual{
+    border-color:#B88738;
+  }
+  .cdr-cd-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:4px;
+    line-height:1;
+  }
+  .cdr-cd-head span{
+    font-family:"Space Mono"!important;
+    font-size:.72rem;
+    font-weight:700;
+    color:#D9EEFF;
+  }
+  .cdr-cd-head small{
+    font-size:.42rem!important;
+    letter-spacing:.07em!important;
+    color:#7EC1F4!important;
+  }
+  .cdr-cd-control.manual .cdr-cd-head small{
+    color:#E6B86C!important;
+  }
+  .cdr-cd-control input{
+    width:100%;
+    min-width:0;
+    height:29px;
+    padding:0 3px;
+    border:0;
+    border-bottom:1px solid rgba(141,200,255,.42);
+    border-radius:0;
+    outline:none;
+    background:transparent;
+    color:#FFF;
+    text-align:center;
+    font-family:"Space Mono"!important;
+    font-size:.98rem!important;
+    font-weight:700!important;
+    font-variant-numeric:tabular-nums;
+  }
+  .cdr-cd-control em,
+  .cdr-cd-control button{
+    min-height:13px;
+    padding:0;
+    border:0;
+    background:transparent;
+    color:#7EA6C6;
+    font-size:.42rem!important;
+    line-height:1.1;
+    text-align:center;
+    font-style:normal;
+    letter-spacing:.04em;
+  }
+  .cdr-cd-control button{
+    cursor:pointer;
+    color:#E6B86C;
+    font-weight:700;
+  }
+
   .cdr-analysis-primary{
     width:100%;
     min-height:76px;
