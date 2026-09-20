@@ -63,7 +63,50 @@
         "status": "verified-drawing"
       }
     },
-    "assembly_note": "Raw part lengths are not summed as vehicle length because interfaces overlap when assembled."
+    "assembly_note": "Raw part lengths are not summed as vehicle length because interfaces overlap when assembled.",
+    "assembly": {
+      "datum": "nose_tip_x0_positive_aft",
+      "serial_airframe_sequence": [
+        "nose",
+        "c1_parachute_payload",
+        "c2",
+        "tail_fin_can"
+      ],
+      "interfaces": [
+        {
+          "upstream": "nose",
+          "downstream": "c1_parachute_payload",
+          "overlap_mm": {
+            "value": null,
+            "status": "tbd-cad-interface"
+          }
+        },
+        {
+          "upstream": "c1_parachute_payload",
+          "downstream": "c2",
+          "overlap_mm": {
+            "value": null,
+            "status": "tbd-thread-engagement"
+          }
+        },
+        {
+          "upstream": "c2",
+          "downstream": "tail_fin_can",
+          "overlap_mm": {
+            "value": null,
+            "status": "tbd-cad-interface"
+          }
+        }
+      ],
+      "internal_parts": [
+        {
+          "key": "motor_mount",
+          "placement": "inside-tail-fin-can",
+          "status": "pending-axial-station"
+        }
+      ],
+      "note": "Serial stations are solved only after every adjacent engagement is verified. Portamotor is internal and does not add to external vehicle length."
+    }
   },
   "launch_angle_deg": 85.0,
   "fins": {

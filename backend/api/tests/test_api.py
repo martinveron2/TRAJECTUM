@@ -26,6 +26,21 @@ def test_current_digital_twin_exposes_verified_cad_and_measured_masses():
     assert data["legacy_test_vehicle"]["status"] == "simulation-fixture-only-not-current-design"
 
 
+def test_current_digital_twin_assembly_fails_closed_until_engagements_are_verified():
+    response = client.get("/v1/digital-twin/assembly")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["datum"] == "nose_tip_x0_positive_aft"
+    assert data["resolved"] is False
+    assert data["total_length_mm"] is None
+    assert len(data["blockers"]) == 3
+    assert data["stations"][0]["key"] == "nose"
+    assert data["stations"][0]["x_start_mm"] == 0.0
+    assert data["stations"][0]["x_end_mm"] == 180.0
+    assert data["stations"][1]["x_start_mm"] is None
+    assert data["internal_parts"][0]["key"] == "motor_mount"
+
+
 def test_capabilities_are_explicit_contracts():
     response = client.get("/v1/capabilities")
     assert response.status_code == 200

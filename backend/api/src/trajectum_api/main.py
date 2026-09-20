@@ -9,10 +9,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from trajectum_cad import CAD_FORMATS, nose_profile
 from trajectum_physics import (
+    AxialInterface,
+    AxialPart,
     ComponentMassProperty,
     MassPoint,
     Motor,
     analyze_vehicle,
+    assemble_axially,
     axial_uniform_cg,
     axisymmetric_nose_cp_from_profile,
     axisymmetric_shell_cg_from_profile,
@@ -250,6 +253,51 @@ def _load_current_design() -> dict[str, Any]:
 def current_digital_twin() -> dict[str, Any]:
     """Return the current-design engineering baseline with verification/TBD markers intact."""
     return _load_current_design()
+
+
+@app.get("/v1/digital-twin/assembly")
+def current_digital_twin_assembly() -> dict[str, Any]:
+    design = _load_current_design()
+    geometry = design["geometry"]
+    part_data = geometry["parts"]
+    assembly_data = geometry["assembly"]
+
+    parts = []
+    for key in assembly_data["serial_airframe_sequence"]:
+        item = part_data[key]
+        length_mm = item.get("raw_part_length_mm", item.get("length_mm"))
+        parts.append(AxialPart(key=key, name=key, raw_length_m=float(length_mm) / 1000.0))
+
+    interfaces = []
+    for item in assembly_data["interfaces"]:
+        value = item["overlap_mm"]["value"]
+        interfaces.append(
+            AxialInterface(
+                upstream_key=item["upstream"],
+                downstream_key=item["downstream"],
+                overlap_m=None if value is None else float(value) / 1000.0,
+            )
+        )
+
+    result = assemble_axially(tuple(parts), tuple(interfaces))
+    return {
+        "datum": assembly_data["datum"],
+        "resolved": result.resolved,
+        "total_length_mm": None if result.total_length_m is None else result.total_length_m * 1000.0,
+        "blockers": list(result.blockers),
+        "stations": [
+            {
+                "key": station.key,
+                "name": station.name,
+                "x_start_mm": None if station.x_start_m is None else station.x_start_m * 1000.0,
+                "x_end_mm": None if station.x_end_m is None else station.x_end_m * 1000.0,
+                "raw_length_mm": station.raw_length_m * 1000.0,
+            }
+            for station in result.stations
+        ],
+        "interfaces": assembly_data["interfaces"],
+        "internal_parts": assembly_data["internal_parts"],
+    }
 
 
 @app.get("/v1/capabilities", response_model=list[Capability])
