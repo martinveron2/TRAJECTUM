@@ -243,6 +243,7 @@ def health() -> HealthResponse:
 
 
 CURRENT_DESIGN_PATH = Path(__file__).resolve().parents[4] / "data" / "reference-cases" / "utn-frh-g07" / "vehicle.cdr.json"
+CURRENT_DESIGN_REVISION = "2026-09-20-assembly-789"
 
 
 def _load_current_design() -> dict[str, Any]:
@@ -252,7 +253,9 @@ def _load_current_design() -> dict[str, Any]:
 @app.get("/v1/digital-twin/current")
 def current_digital_twin() -> dict[str, Any]:
     """Return the current-design engineering baseline with verification/TBD markers intact."""
-    return _load_current_design()
+    payload = _load_current_design()
+    payload["api_baseline_revision"] = CURRENT_DESIGN_REVISION
+    return payload
 
 
 @app.get("/v1/digital-twin/assembly")
@@ -281,6 +284,7 @@ def current_digital_twin_assembly() -> dict[str, Any]:
 
     result = assemble_axially(tuple(parts), tuple(interfaces))
     return {
+        "api_baseline_revision": CURRENT_DESIGN_REVISION,
         "datum": assembly_data["datum"],
         "resolved": result.resolved,
         "total_length_mm": None if result.total_length_m is None else result.total_length_m * 1000.0,
