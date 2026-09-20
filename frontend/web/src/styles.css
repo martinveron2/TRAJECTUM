@@ -4852,19 +4852,19 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     color:#E6B86C;
     font-weight:700;
   }
-  #engineering-analysis .analysis-cd-source{
+  #engineering-analysis .analysis-cd-control .analysis-cd-source{
     display:flex;
     align-items:center;
     justify-content:center;
-    min-height:24px!important;
+    min-height:26px!important;
     padding:4px 6px;
     border:1px solid rgba(126,193,244,.34);
     border-radius:999px;
     background:rgba(30,91,132,.22);
-    font-size:.66rem!important;
+    font-size:.75rem!important;
     font-weight:900!important;
     line-height:1.08!important;
-    letter-spacing:.015em!important;
+    letter-spacing:.01em!important;
     color:#C5E5FF!important;
     text-align:center;
     white-space:normal;
