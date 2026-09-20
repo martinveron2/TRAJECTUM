@@ -4,9 +4,9 @@
   "status": "cdr-cad-baseline-in-progress",
   "geometry": {
     "total_length_mm": {
-      "value": null,
-      "status": "tbd-assembled-cad",
-      "note": "Do not reuse the former 860 mm test vehicle. Final assembled length must account for threaded/press-fit overlaps."
+      "value": 820.0,
+      "status": "team-confirmed-working-assembly",
+      "note": "Working assembled length confirmed by the team on 2026-09-20. Keep raw CAD part lengths unchanged; replace this working value if a revised assembled drawing supersedes it."
     },
     "outer_diameter_mm": {
       "value": 63.0,
@@ -137,8 +137,8 @@
     "known_internal_items": [
       {
         "name": "Paracaidas",
-        "mass_g": 30.0,
-        "status": "project-confirmed"
+        "mass_g": 50.0,
+        "status": "team-estimate"
       },
       {
         "name": "Electronica",
@@ -171,7 +171,7 @@
     },
     "note": "Drag coefficient intentionally remains TBD until a defensible CDR assumption or source is selected."
   },
-  "revision": "2026-09-19-cad-pdf-mass-ingest",
+  "revision": "2026-09-20-assembled-length-820-and-internal-mass-update",
   "datum": "nose_tip_x0_positive_aft",
   "sources": {
     "cad_and_drawings_date": "2026-09-19",

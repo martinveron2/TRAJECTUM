@@ -11,8 +11,10 @@ def _baseline_path() -> Path:
 def test_current_cad_baseline_keeps_measured_structure_mass_without_inventing_cg_stations():
     payload = json.loads(_baseline_path().read_text(encoding="utf-8"))
     masses = payload["masses"]
+    assert payload["geometry"]["total_length_mm"]["value"] == 820.0
     assert masses["measured_structure_total_g"] == 870.0
     assert sum(item["mass_g"] for item in masses["measured_items"]) == 870.0
+    assert next(item for item in masses["known_internal_items"] if item["name"] == "Paracaidas")["mass_g"] == 50.0
     assert "items" not in masses
 
 

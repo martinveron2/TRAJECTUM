@@ -21,4 +21,11 @@ The former 860 / 180 / 180 / 500 mm vehicle and 80 / 40 / 50 / 40 mm fin planfor
 - Motor mount: 190 mm, Ø54/Ø33.
 - Measured printed-structure masses: 126 + 190 + 146 + 260 + 148 = **870 g**.
 
-The final assembled length, fin-planform mapping, component axial CG stations and aerodynamic Cd intentionally remain unresolved rather than guessed. Those items block final CG/CP/trajectory results.
+The current working assembled length is **820 mm**, confirmed by the team on 2026-09-20. Raw CAD part lengths remain unchanged and are not reinterpreted as assembled stations. A revised assembled drawing will supersede this working value when available. Fin-planform mapping, component axial CG stations and aerodynamic Cd remain unresolved rather than guessed; those items still block final CG/CP/trajectory results.
+
+
+## Internal masses — working values 2026-09-20
+
+- Parachute: **50 g** (team estimate; not yet measured).
+- Payload: **100 g**.
+- Electronics: **80 g**.
