@@ -6297,3 +6297,42 @@ input[type="number"],
     font-weight:700!important;
   }
 }
+
+/* CDR longitudinal datum selector: course datum is support/base; nose is an alternate view. */
+.cdr-datum-switch{
+  display:grid;
+  grid-template-columns:auto 1fr 1fr;
+  align-items:center;
+  gap:7px;
+  margin:0 0 10px;
+  padding:7px;
+  border:1px solid rgba(96,145,189,.30);
+  border-radius:12px;
+  background:rgba(5,18,31,.58);
+}
+.cdr-datum-switch>span{
+  padding:0 3px;
+  font-family:"Space Grotesk",sans-serif!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  letter-spacing:.08em!important;
+  color:#7FA8CC!important;
+}
+.cdr-datum-switch button{
+  min-height:34px;
+  padding:5px 8px;
+  border:1px solid #315A7C;
+  border-radius:9px;
+  background:#081827;
+  color:#9FBBD4;
+  font-family:"Space Grotesk",sans-serif!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  letter-spacing:.025em!important;
+}
+.cdr-datum-switch button.active{
+  border-color:#00F0FF;
+  background:linear-gradient(180deg,#153C5F,#0F2B48);
+  color:#E9FCFF;
+  box-shadow:0 0 0 1px rgba(0,240,255,.08),0 0 12px rgba(0,240,255,.10);
+}

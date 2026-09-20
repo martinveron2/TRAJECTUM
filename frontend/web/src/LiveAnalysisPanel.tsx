@@ -217,6 +217,7 @@ export function LiveAnalysisPanel({
   const [error, setError] = useState('');
   const [running, setRunning] = useState(false);
   const [showMassEditor, setShowMassEditor] = useState(false);
+  const [datumMode, setDatumMode] = useState<'support' | 'nose'>('support');
   const lastAutoRunToken = useRef(0);
   const cdIsEstimated = vehicle.cd !== '' && Math.abs(Number(vehicle.cd) - estimatedCd) < 1e-6;
 
@@ -360,8 +361,10 @@ export function LiveAnalysisPanel({
   const cpCatedra = analysis?.cp_x_mm_from_support ??
     (analysis?.cp_x_mm_from_nose !== undefined ? totalLengthMm - analysis.cp_x_mm_from_nose : undefined);
   const cgCpSeparation = totalCgCatedra !== undefined && cpCatedra !== undefined ? Math.abs(totalCgCatedra - cpCatedra) : undefined;
-  const cgPct = totalCgCatedra !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (totalCgCatedra / totalLengthMm) * 100)) : 50;
-  const cpPct = cpCatedra !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (cpCatedra / totalLengthMm) * 100)) : 50;
+  const displayCg = datumMode === 'support' ? totalCgCatedra : totalCgFromNose;
+  const displayCp = datumMode === 'support' ? cpCatedra : analysis?.cp_x_mm_from_nose;
+  const cgPct = displayCg !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (displayCg / totalLengthMm) * 100)) : 50;
+  const cpPct = displayCp !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (displayCp / totalLengthMm) * 100)) : 50;
 
   return <div className={running ? 'panel mass-panel analysis-running' : 'panel mass-panel'} id="engineering-analysis" aria-busy={running}>
     <div className="panel-title compact"><div><p>{txt('PROPIEDADES DE MASA DERIVADAS DE LA GEOMETRÍA', 'GEOMETRY-DERIVED MASS PROPERTIES')}</p><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
@@ -395,15 +398,21 @@ export function LiveAnalysisPanel({
         <b>✓ {txt('COMPLETADO', 'COMPLETE')}</b>
       </div>
 
+      <div className="cdr-datum-switch" role="group" aria-label={txt('Datum longitudinal', 'Longitudinal datum')}>
+        <span>{txt('DATUM', 'DATUM')}</span>
+        <button type="button" className={datumMode === 'support' ? 'active' : ''} onClick={() => setDatumMode('support')}>{txt('APOYO · CÁTEDRA', 'SUPPORT · COURSE')}</button>
+        <button type="button" className={datumMode === 'nose' ? 'active' : ''} onClick={() => setDatumMode('nose')}>{txt('PUNTA / NARIZ', 'NOSE TIP')}</button>
+      </div>
+
       <div className="cdr-hero-values">
         <article className="cg">
-          <span>CG · {txt('DESDE APOYO', 'FROM SUPPORT')}</span>
-          <strong><AnimatedValue value={totalCgCatedra} decimals={1} suffix=" mm"/></strong>
+          <span>CG · {datumMode === 'support' ? txt('DESDE APOYO', 'FROM SUPPORT') : txt('DESDE NARIZ', 'FROM NOSE')}</span>
+          <strong><AnimatedValue value={displayCg} decimals={1} suffix=" mm"/></strong>
           <small>{txt('Centro de gravedad del vehículo', 'Vehicle center of gravity')}</small>
         </article>
         <article className="cp">
-          <span>CP · {txt('DESDE APOYO', 'FROM SUPPORT')}</span>
-          <strong><AnimatedValue value={cpCatedra} decimals={1} suffix=" mm"/></strong>
+          <span>CP · {datumMode === 'support' ? txt('DESDE APOYO', 'FROM SUPPORT') : txt('DESDE NARIZ', 'FROM NOSE')}</span>
+          <strong><AnimatedValue value={displayCp} decimals={1} suffix=" mm"/></strong>
           <small>{txt('Centro de presión aerodinámico', 'Aerodynamic center of pressure')}</small>
         </article>
       </div>
@@ -478,13 +487,13 @@ export function LiveAnalysisPanel({
     </div> : <div className="demo-banner">{txt('Geometría Fusion y masas medidas cargadas. El modelo de CG queda bloqueado hasta fijar xCG de Cofia, C1, C2, Cola + aletas, Portamotor e internos.', 'Fusion geometry and measured masses are loaded. CG stays blocked until xCG is fixed for Nose, C1, C2, Tail + fins, motor mount and internals.')}</div>}
     {massStationsReady && showMassEditor && <div className="mass-editor-collapsible">
       <div className="demo-banner">{txt('El backend conserva xCG derivado de la geometría; sólo la masa es editable.', 'The backend keeps geometry-derived xCG; only mass is editable.')}</div>
-      <div className="mass-head derived"><span>{txt('Componente', 'Component')}</span><span>{txt('Masa [g]', 'Mass [g]')}</span><span>xCG {txt('CÁTEDRA', 'COURSE')} [mm]</span></div>
+      <div className="mass-head derived"><span>{txt('Componente', 'Component')}</span><span>{txt('Masa [g]', 'Mass [g]')}</span><span>xCG {datumMode === 'support' ? txt('DESDE APOYO', 'FROM SUPPORT') : txt('DESDE NARIZ', 'FROM NOSE')} [mm]</span></div>
       <div className="mass-table">{rows.map((row) => {
         const computed = componentResult?.components.find((item) => item.name === row.name);
         return <div className="mass-row-wrap" key={row.id}><div className="mass-row derived">
           <span>{componentName(row)}</span>
           <input type="number" value={row.massG} disabled={row.kind === 'motor'} onFocus={keepInputVisible} title={row.kind === 'motor' ? txt('La masa del motor se deriva de la configuración activa.', 'Motor mass is derived from the active configuration.') : undefined} onChange={(e) => updateMass(row.id, e.target.value === '' ? '' : Number(e.target.value))}/>
-          <output>{computed ? (totalLengthMm - computed.x_cg_mm).toFixed(1) : txt('POR DEFINIR', 'TBD')}</output>
+          <output>{computed ? (datumMode === 'support' ? totalLengthMm - computed.x_cg_mm : computed.x_cg_mm).toFixed(1) : txt('POR DEFINIR', 'TBD')}</output>
         </div><small>{computed ? displaySource(computed.source) : displayNote(row)}</small></div>;
       })}</div>
     </div>}
