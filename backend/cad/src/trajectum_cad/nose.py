@@ -10,6 +10,17 @@ def _validate(length_mm: float, base_radius_mm: float, stations: int) -> None:
         raise ValueError("At least three stations are required.")
 
 
+def conical_profile(*, length_mm: float, base_radius_mm: float, stations: int = 81) -> tuple[tuple[float, float], ...]:
+    _validate(length_mm, base_radius_mm, stations)
+    return tuple(
+        (
+            length_mm * index / (stations - 1),
+            base_radius_mm * index / (stations - 1),
+        )
+        for index in range(stations)
+    )
+
+
 def tangent_ogive_profile(*, length_mm: float, base_radius_mm: float, stations: int = 81) -> tuple[tuple[float, float], ...]:
     _validate(length_mm, base_radius_mm, stations)
     rho = (base_radius_mm**2 + length_mm**2) / (2.0 * base_radius_mm)
@@ -66,6 +77,8 @@ def nose_profile(
     key = profile.strip().lower().replace(" ", "_")
     if key in {"tangent_ogive", "ogive"}:
         return tangent_ogive_profile(length_mm=length_mm, base_radius_mm=base_radius_mm, stations=stations)
+    if key in {"cone", "conical"}:
+        return conical_profile(length_mm=length_mm, base_radius_mm=base_radius_mm, stations=stations)
     if key in {"von_karman", "vonkarman", "haack"}:
         return von_karman_profile(length_mm=length_mm, base_radius_mm=base_radius_mm, stations=stations)
     if key in {"power_series", "power"}:
