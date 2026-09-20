@@ -2650,6 +2650,30 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     color:#7FA2C7;
     font-style:normal;
   }
+  .pdr-input-grid .pdr-cad-locked{
+    border-color:rgba(90,143,201,.28);
+    background:linear-gradient(160deg,#0A1828,#071421);
+  }
+  .pdr-input-grid .pdr-cad-locked output{
+    min-height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:0 9px;
+    border:1px solid rgba(73,119,163,.48);
+    border-radius:7px;
+    background:#071321;
+    color:#F1F7FF;
+    font-size:.72rem;
+    font-weight:700;
+  }
+  .pdr-input-grid .pdr-cad-locked output b{
+    flex:0 0 auto;
+    font-size:.47rem;
+    letter-spacing:.09em;
+    color:#76A7DF;
+  }
 
   .phase-secondary-link{
     width:100%;

@@ -1131,15 +1131,16 @@ function App() {
           </div>}
 
           <div className="pdr-input-grid">
-            <label><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><NumericStepper value={vehicle.totalLength} onChange={(value) => update('totalLength', value)} unit="mm" step={5}/></label>
-            <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><NumericStepper value={vehicle.diameter} onChange={(value) => update('diameter', value)} unit="mm" step={1}/></label>
-            <label><span>{txt('COFIA', 'NOSE')}</span><select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}><option value="tangent_ogive">{txt('OJIVA TANGENTE', 'TANGENT OGIVE')}</option><option value="cone">{txt('CÓNICA', 'CONICAL')}</option><option value="power_series">{txt('SERIE POTENCIA', 'POWER SERIES')}</option></select></label>
-            <label><span>{txt('PERFIL DE ALETA', 'FIN AIRFOIL')}</span><select value={vehicle.airfoil} onChange={(e) => update('airfoil', e.target.value)}><option>NACA 0012</option><option>NACA 0009</option><option>NACA 0015</option><option>NACA 2412</option></select></label>
-            <label><span>{txt('ALETAS', 'FINS')}</span><NumericStepper value={vehicle.finCount} onChange={(value) => update('finCount', value)} unit="u" step={1} min={1}/></label>
-            <label><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><NumericStepper value={vehicle.rootChord} onChange={(value) => update('rootChord', value)} unit="mm" step={1}/></label>
-            <label><span>{txt('CUERDA PUNTA', 'TIP CHORD')}</span><NumericStepper value={vehicle.tipChord} onChange={(value) => update('tipChord', value)} unit="mm" step={1}/></label>
-            <label><span>{txt('ENVERGADURA', 'SPAN')}</span><NumericStepper value={vehicle.span} onChange={(value) => update('span', value)} unit="mm" step={1}/></label>
-            <label><span>{txt('FLECHA', 'SWEEP')}</span><NumericStepper value={vehicle.sweep} onChange={(value) => update('sweep', value)} unit="mm" step={1}/></label>
+            <label className="pdr-cad-locked"><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><output>{vehicle.totalLength} mm <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('DIÁMETRO', 'DIAMETER')}</span><output>Ø{vehicle.diameter} mm <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('COFIA', 'NOSE')}</span><output>{txt('OJIVA TANGENTE', 'TANGENT OGIVE')} <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('PERFIL DE ALETA', 'FIN AIRFOIL')}</span><output>{vehicle.airfoil} <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('ALETAS', 'FINS')}</span><output>{vehicle.finCount} <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><output>{Number(vehicle.rootChord).toFixed(2)} mm <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('CUERDA PUNTA', 'TIP CHORD')}</span><output>{Number(vehicle.tipChord).toFixed(2)} mm <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('ENVERGADURA RADIAL', 'RADIAL SPAN')}</span><output>{Number(vehicle.span).toFixed(1)} mm <b>{txt('DERIVADO', 'DERIVED')}</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('DESPLAZAMIENTO DE PUNTA', 'TIP OFFSET')}</span><output>≈{Number(vehicle.sweep).toFixed(0)} mm <b>{txt('DERIVADO', 'DERIVED')}</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('INICIO ALETA DESDE NARIZ', 'FIN START FROM NOSE')}</span><output>{Number(vehicle.finX).toFixed(0)} mm <b>{txt('DERIVADO', 'DERIVED')}</b></output></label>
             <label><span>{txt('TOBERA · LARGO', 'NOZZLE · LENGTH')}</span><NumericStepper value={vehicle.nozzleLength} onChange={(value) => update('nozzleLength', value)} unit="mm" step={1}/></label>
             <label><span>{txt('TOBERA · Ø CUELLO', 'NOZZLE · NECK Ø')}</span><NumericStepper value={vehicle.nozzleNeckDiameter} onChange={(value) => update('nozzleNeckDiameter', value)} unit="mm" step={1}/></label>
             <label><span>{txt('TOBERA · Ø SALIDA', 'NOZZLE · EXIT Ø')}</span><NumericStepper value={vehicle.nozzleExitDiameter} onChange={(value) => update('nozzleExitDiameter', value)} unit="mm" step={1}/></label>
