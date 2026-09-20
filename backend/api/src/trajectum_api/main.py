@@ -243,7 +243,7 @@ def health() -> HealthResponse:
 
 
 CURRENT_DESIGN_PATH = Path(__file__).resolve().parents[4] / "data" / "reference-cases" / "utn-frh-g07" / "vehicle.cdr.json"
-CURRENT_DESIGN_REVISION = "2026-09-20-assembly-789"
+CURRENT_DESIGN_REVISION = "2026-09-20-fusion-geometry-mapped"
 
 
 def _load_current_design() -> dict[str, Any]:

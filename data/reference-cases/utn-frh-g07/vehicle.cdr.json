@@ -54,7 +54,12 @@
         "overall_fin_span_mm": 168.0,
         "airfoil": "NACA 0012",
         "status": "verified-drawing",
-        "note": "Fin-planform variables remain unmapped until drawing dimensions are assigned unambiguously to root chord, tip chord, radial span and sweep."
+        "note": "Fusion drawing dimensions: tail raw length 225 mm, root leading edge 125 mm from tail front, root chord 97.67 mm, tip chord 39.96 mm, overall tip-to-tip span 168 mm. Radial span is derived exactly as (168-63)/2 = 52.5 mm. Sweep is not directly dimensioned; 42.0 mm is derived from the 1:1 drawing geometry and remains drawing-derived.",
+        "root_le_from_tail_front_mm": 125.0,
+        "fin_root_chord_mm": 97.67,
+        "fin_tip_chord_mm": 39.96,
+        "radial_fin_span_mm": 52.5,
+        "fin_sweep_length_mm": 42.0
       },
       "motor_mount": {
         "raw_part_length_mm": 190.0,
@@ -112,27 +117,30 @@
   "fins": {
     "count": {
       "value": 4,
-      "status": "verified-cad"
+      "status": "verified-cad-and-drawing"
     },
     "root_chord_mm": {
-      "value": null,
-      "status": "tbd-map-from-drawing"
+      "value": 97.67,
+      "status": "verified-drawing"
     },
     "span_mm": {
-      "value": null,
-      "status": "tbd-map-from-drawing"
+      "value": 52.5,
+      "status": "derived-drawing",
+      "note": "(168 mm overall fin-tip span - 63 mm body OD)/2 = 52.5 mm radial span."
     },
     "tip_chord_mm": {
-      "value": null,
-      "status": "tbd-map-from-drawing"
+      "value": 39.96,
+      "status": "verified-drawing"
     },
     "sweep_length_mm": {
-      "value": null,
-      "status": "tbd-map-from-drawing"
+      "value": 42.0,
+      "status": "derived-1to1-drawing-geometry",
+      "note": "Not directly dimensioned on the Fusion drawing; derived from the 1:1 side-view geometry. Keep traceable as derived until Fusion parameter/export confirms it."
     },
     "leading_edge_x_mm": {
-      "value": null,
-      "status": "tbd-after-assembly-stations"
+      "value": 689.0,
+      "status": "derived-drawing-and-assembly",
+      "note": "Tail starts at x=564 mm in the assembled vehicle; fin root leading edge is 125 mm from tail front, so x_LE=689 mm from nose tip."
     },
     "airfoil": {
       "type": "naca4",
@@ -214,7 +222,7 @@
     },
     "note": "Drag coefficient intentionally remains TBD until a defensible CDR assumption or source is selected."
   },
-  "revision": "2026-09-19-cad-pdf-mass-ingest",
+  "revision": "2026-09-20-fusion-geometry-mapped",
   "datum": "nose_tip_x0_positive_aft",
   "sources": {
     "cad_and_drawings_date": "2026-09-19",

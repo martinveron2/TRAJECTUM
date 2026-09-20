@@ -61,24 +61,54 @@ type TwinAssembly = {
   stations: TwinStation[];
 };
 
+type TwinValue = {
+  value?: number | null;
+  status?: string;
+  note?: string;
+};
+
 type CurrentTwin = {
-  geometry?: { outer_diameter_mm?: { value?: number | null } };
+  geometry?: {
+    outer_diameter_mm?: TwinValue;
+    nose_length_mm?: TwinValue;
+    parts?: {
+      c1_parachute_payload?: { raw_part_length_mm?: number };
+      c2?: { raw_part_length_mm?: number };
+      tail_fin_can?: {
+        raw_part_length_mm?: number;
+        root_le_from_tail_front_mm?: number;
+      };
+      motor_mount?: {
+        raw_part_length_mm?: number;
+        outer_diameter_mm?: number;
+        inner_diameter_mm?: number;
+      };
+    };
+  };
+  fins?: {
+    count?: TwinValue;
+    root_chord_mm?: TwinValue;
+    tip_chord_mm?: TwinValue;
+    span_mm?: TwinValue;
+    sweep_length_mm?: TwinValue;
+    leading_edge_x_mm?: TwinValue;
+  };
   masses?: { measured_structure_total_g?: number };
 };
 
 const initialVehicle: Vehicle = {
-  totalLength: 860,
+  totalLength: 789,
   diameter: 63,
   noseLength: 180,
-  bayLength: 180,
-  bodyLength: 500,
-  wall: 2,
+  bayLength: 200,
+  bodyLength: 409,
+  wall: '',
   finCount: 4,
-  rootChord: 80,
-  tipChord: 40,
-  span: 50,
-  sweep: 40,
-  finX: 780,
+  rootChord: 97.67,
+  tipChord: 39.96,
+  span: 52.5,
+  sweep: 42,
+  finX: 689,
   airfoil: 'NACA 0012',
   noseProfile: 'tangent_ogive',
   launchAngle: 85,
@@ -153,14 +183,16 @@ function Field({
   status,
   step = 1,
   min = 0,
+  readOnly = false,
 }: {
   label: string;
   value: NumericField;
   unit?: string;
-  onChange: (value: NumericField) => void;
+  onChange?: (value: NumericField) => void;
   status?: string;
   step?: number;
   min?: number;
+  readOnly?: boolean;
 }) {
   const fieldState = value === '' ? 'field-empty' : Number.isFinite(Number(value)) && Number(value) >= 0 ? 'field-valid' : 'field-warning';
   return (
@@ -169,7 +201,17 @@ function Field({
         {label}
         {status && <small>{status}</small>}
       </span>
-      <NumericStepper value={value} onChange={onChange} unit={unit} step={step} min={min}/>
+      {readOnly ? (
+        <div className="numeric-wheel-control">
+          <div className="numeric-wheel-trigger" aria-readonly="true">
+            <span>{value === '' ? '—' : Number(value).toFixed(String(step).includes('.') ? String(step).split('.')[1].length : 0)}</span>
+            {unit && <em>{unit}</em>}
+            <b>CAD</b>
+          </div>
+        </div>
+      ) : (
+        <NumericStepper value={value} onChange={onChange!} unit={unit} step={step} min={min}/>
+      )}
     </div>
   );
 }
@@ -408,12 +450,19 @@ function App() {
         const twin = assembly as TwinAssembly;
         setTwinAssembly(twin);
         if (twin.resolved && twin.total_length_mm != null) {
+          const source = design as CurrentTwin | null;
           setVehicle((current) => ({
             ...current,
-            totalLength: Math.round(twin.total_length_mm!),
-            diameter: Number((design as CurrentTwin | null)?.geometry?.outer_diameter_mm?.value ?? current.diameter),
-            noseLength: 180,
-            finCount: 4,
+            totalLength: Number(twin.total_length_mm!.toFixed(2)),
+            diameter: Number(source?.geometry?.outer_diameter_mm?.value ?? current.diameter),
+            noseLength: Number(source?.geometry?.nose_length_mm?.value ?? 180),
+            wall: '',
+            finCount: Number(source?.fins?.count?.value ?? 4),
+            rootChord: Number(source?.fins?.root_chord_mm?.value ?? current.rootChord),
+            tipChord: Number(source?.fins?.tip_chord_mm?.value ?? current.tipChord),
+            span: Number(source?.fins?.span_mm?.value ?? current.span),
+            sweep: Number(source?.fins?.sweep_length_mm?.value ?? current.sweep),
+            finX: Number(source?.fins?.leading_edge_x_mm?.value ?? current.finX),
             airfoil: 'NACA 0012',
           }));
         }
@@ -1086,7 +1135,7 @@ function App() {
         >
           <div className="mobile-pdr-vehicle-head"><div><span>{txt('ESQUEMA 2D ÚNICO', 'SINGLE 2D SCHEMATIC')}</span><strong>{txt('Geometría sincronizada en tiempo real', 'Real-time synchronized geometry')}</strong></div><Orbit size={19}/></div>
           <div className="mobile-pdr-model">
-            <RocketRealistic vehicle={vehicle} cgMm={liveCgFromNose} cpMm={analysisSummary?.cp_x_mm_from_nose ?? null} componentCgs={componentSummary?.components ?? []} showComponentCgs={false} lang={lang}/>
+            <RocketRealistic vehicle={vehicle} cgMm={liveCgFromNose} cpMm={analysisSummary?.cp_x_mm_from_nose ?? null} componentCgs={componentSummary?.components ?? []} assemblyStations={twinAssembly?.stations ?? []} showComponentCgs={false} lang={lang}/>
           </div>
           <div className="schematic-live-stats">
             <span><b>{vehicle.totalLength}</b> mm {txt('LARGO', 'LENGTH')}</span>
@@ -1341,12 +1390,18 @@ function App() {
             <span className="info-badge">{txt('misma L · mismo Ø', 'same L · same Ø')}</span>
           </div>
           <div className="field-grid">
-            <Field label={txt('Longitud total', 'Total length')} value={vehicle.totalLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('totalLength', v)} />
-            <Field label={txt('Diámetro exterior', 'Outer diameter')} value={vehicle.diameter} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('diameter', v)} />
-            <Field label={txt('Longitud de cofia', 'Nose length')} value={vehicle.noseLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('noseLength', v)} />
-            <Field label={txt('Compartimiento modular', 'Modular bay')} value={vehicle.bayLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('bayLength', v)} />
-            <Field label={txt('Cuerpo inferior', 'Lower body')} value={vehicle.bodyLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('bodyLength', v)} />
-            <Field label={txt('Espesor de pared', 'Wall thickness')} value={vehicle.wall} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('wall', v)} />
+            <Field label={txt('Longitud total ensamblada', 'Assembled total length')} value={vehicle.totalLength} unit="mm" status={txt('CAD · con solapes', 'CAD · with overlaps')} readOnly step={1} />
+            <Field label={txt('Diámetro exterior', 'Outer diameter')} value={vehicle.diameter} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={1} />
+            <Field label={txt('Longitud de cofia', 'Nose length')} value={vehicle.noseLength} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={1} />
+            <Field label="C1 · porta paracaídas / carga útil" value={currentTwin?.geometry?.parts?.c1_parachute_payload?.raw_part_length_mm ?? 215} unit="mm" status={txt('largo de pieza', 'part length')} readOnly step={1} />
+            <Field label="C2" value={currentTwin?.geometry?.parts?.c2?.raw_part_length_mm ?? 215} unit="mm" status={txt('largo de pieza', 'part length')} readOnly step={1} />
+            <Field label={txt('Cola + alojamiento de aletas', 'Tail + fin can')} value={currentTwin?.geometry?.parts?.tail_fin_can?.raw_part_length_mm ?? 225} unit="mm" status={txt('largo de pieza', 'part length')} readOnly step={1} />
+            <Field label={txt('Solape cofia → C1', 'Nose → C1 overlap')} value={15} unit="mm" status={txt('derivado del plano', 'drawing-derived')} readOnly step={1} />
+            <Field label={txt('Solape C1 → C2', 'C1 → C2 overlap')} value={15} unit="mm" status={txt('derivado del plano', 'drawing-derived')} readOnly step={1} />
+            <Field label={txt('Solape C2 → cola', 'C2 → tail overlap')} value={16} unit="mm" status={txt('derivado del plano', 'drawing-derived')} readOnly step={1} />
+            <Field label={txt('Portamotor · largo', 'Motor mount · length')} value={currentTwin?.geometry?.parts?.motor_mount?.raw_part_length_mm ?? 190} unit="mm" status={txt('interno · plano Fusion', 'internal · Fusion drawing')} readOnly step={1} />
+            <Field label={txt('Portamotor · Ø exterior', 'Motor mount · outer Ø')} value={currentTwin?.geometry?.parts?.motor_mount?.outer_diameter_mm ?? 54} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={1} />
+            <Field label={txt('Portamotor · Ø interior', 'Motor mount · inner Ø')} value={currentTwin?.geometry?.parts?.motor_mount?.inner_diameter_mm ?? 33} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={1} />
           </div>
 
           <div className="section-heading">
@@ -1356,7 +1411,7 @@ function App() {
           <div className="airfoil-row">
             <label>
               <span>{txt('Perfil de sección transversal', 'Cross-section profile')}</span>
-              <select value={vehicle.airfoil} onChange={(e) => update('airfoil', e.target.value)}>
+              <select value={vehicle.airfoil} onChange={(e) => update('airfoil', e.target.value)} disabled>
                 <option>NACA 0012</option>
                 <option>NACA 0009</option>
                 <option>NACA 0015</option>
@@ -1367,12 +1422,12 @@ function App() {
             <span className="info-badge">{txt('Corrección profesor / PDR', 'Professor / PDR correction')}</span>
           </div>
           <div className="field-grid">
-            <Field label={txt('Cantidad de aletas', 'Fin count')} value={vehicle.finCount} status={txt('fijado', 'frozen')} onChange={(v) => update('finCount', v)} />
-            <Field label={txt('Cuerda de raíz (cr)', 'Root chord (cr)')} value={vehicle.rootChord} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('rootChord', v)} />
-            <Field label={txt('Cuerda de punta (ct)', 'Tip chord (ct)')} value={vehicle.tipChord} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('tipChord', v)} />
-            <Field label={txt('Semienvergadura de la aleta (s)', 'Fin semispan (s)')} value={vehicle.span} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('span', v)} />
-            <Field label={txt('Desplazamiento del borde de ataque (Xf)', 'Leading-edge offset (Xf)')} value={vehicle.sweep} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('sweep', v)} />
-            <Field label={txt('Posición del borde de ataque de la raíz desde la nariz', 'Root leading-edge position from nose')} value={vehicle.finX} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('finX', v)} />
+            <Field label={txt('Cantidad de aletas', 'Fin count')} value={vehicle.finCount} status={txt('Fusion', 'Fusion')} readOnly step={1} />
+            <Field label={txt('Cuerda de raíz (cr)', 'Root chord (cr)')} value={vehicle.rootChord} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={0.01} />
+            <Field label={txt('Cuerda de punta (ct)', 'Tip chord (ct)')} value={vehicle.tipChord} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={0.01} />
+            <Field label={txt('Semienvergadura radial (s)', 'Radial semispan (s)')} value={vehicle.span} unit="mm" status={txt('(168−63)/2', '(168−63)/2')} readOnly step={0.1} />
+            <Field label={txt('Desplazamiento del borde de ataque (Xf)', 'Leading-edge offset (Xf)')} value={vehicle.sweep} unit="mm" status={txt('derivado vista 1:1', 'derived from 1:1 view')} readOnly step={0.1} />
+            <Field label={txt('Borde de ataque raíz desde la nariz', 'Root leading edge from nose')} value={vehicle.finX} unit="mm" status={txt('564 + 125', '564 + 125')} readOnly step={1} />
           </div>
 
           <div className="section-heading">
@@ -1426,6 +1481,7 @@ function App() {
               cgMm={liveCgFromNose}
               cpMm={analysisSummary?.cp_x_mm_from_nose ?? null}
               componentCgs={componentSummary?.components ?? []}
+              assemblyStations={twinAssembly?.stations ?? []}
               showComponentCgs={showComponentCgs}
               lang={lang}
             />
@@ -1497,7 +1553,7 @@ function App() {
               <strong className="score">{5 - Math.min(blockers.length, 5)}/5</strong>
             </div>
             <div className="readiness-grid">
-              <div className="ready-row complete"><b>01</b><span>{txt('Geometría principal', 'Principal geometry')}</span><em>860 / 180 / 180 / 500 / Ø63</em></div>
+              <div className="ready-row complete"><b>01</b><span>{txt('Geometría principal', 'Principal geometry')}</span><em>{vehicle.totalLength} / 180 / C1 215 / C2 215 / COLA 225 / Ø{vehicle.diameter}</em></div>
               <div className="ready-row complete"><b>02</b><span>{txt('Perfil de aleta', 'Fin profile')}</span><em>{vehicle.airfoil}</em></div>
               <div className={`ready-row ${vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'complete' : ''}`}><b>03</b><span>{txt('Planta de aleta', 'Fin planform')}</span><em>{vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? txt('LISTA', 'READY') : txt('POR DEFINIR', 'TBD')}</em></div>
               <div className="ready-row complete"><b>04</b><span>{txt('Tabla de masas', 'Mass table')}</span><em>{txt('PRECARGADA · EDITABLE', 'PRELOADED · EDITABLE')}</em></div>

@@ -22,7 +22,11 @@ def test_current_digital_twin_exposes_verified_cad_and_measured_masses():
     assert masses["measured_structure_total_g"] == 870.0
     assert sum(item["mass_g"] for item in masses["measured_items"]) == 870.0
     assert data["fins"]["airfoil"]["designation"]["value"] == "NACA 0012"
-    assert data["fins"]["root_chord_mm"]["value"] is None
+    assert data["fins"]["root_chord_mm"]["value"] == 97.67
+    assert data["fins"]["tip_chord_mm"]["value"] == 39.96
+    assert data["fins"]["span_mm"]["value"] == 52.5
+    assert data["fins"]["sweep_length_mm"]["value"] == 42.0
+    assert data["fins"]["leading_edge_x_mm"]["value"] == 689.0
     assert data["legacy_test_vehicle"]["status"] == "simulation-fixture-only-not-current-design"
 
 

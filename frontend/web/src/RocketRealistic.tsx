@@ -24,6 +24,14 @@ type ComponentCg = {
   x_cg_mm: number;
 };
 
+type AssemblyStation = {
+  key: string;
+  name: string;
+  x_start_mm: number | null;
+  x_end_mm: number | null;
+  raw_length_mm: number;
+};
+
 type LabelStation = ComponentCg & {
   y: number;
   labelY: number;
@@ -60,6 +68,7 @@ export function RocketRealistic({
   cgMm,
   cpMm,
   componentCgs = [],
+  assemblyStations = [],
   showComponentCgs = true,
   lang = 'es',
 }: {
@@ -67,6 +76,7 @@ export function RocketRealistic({
   cgMm?: number | null;
   cpMm?: number | null;
   componentCgs?: ComponentCg[];
+  assemblyStations?: AssemblyStation[];
   showComponentCgs?: boolean;
   lang?: 'es' | 'en';
 }) {
@@ -74,11 +84,19 @@ export function RocketRealistic({
   const txt = (es: string, en: string) => isEs ? es : en;
   const componentLabel = (name: string) => !isEs ? ({ 'Cofia':'Nose', 'Cuerpo principal':'Main body', 'Motor':'Motor', 'Paracaídas':'Parachute', 'Electrónica':'Electronics', 'Carga útil':'Payload', 'Aletas · 4 total':'Fins · 4 total' } as Record<string,string>)[name] ?? name : name;
   const noseProfileLabel = vehicle.noseProfile === 'tangent_ogive' ? txt('ojiva tangente','tangent ogive') : vehicle.noseProfile === 'von_karman' ? 'Von Kármán' : vehicle.noseProfile === 'power_series' ? txt('serie de potencias','power series') : vehicle.noseProfile.replace(/_/g,' ');
-  const total = Number(vehicle.totalLength) || 860;
+  const total = Number(vehicle.totalLength) || 789;
   const diameter = Number(vehicle.diameter) || 63;
   const nose = Number(vehicle.noseLength) || 180;
   const bay = Number(vehicle.bayLength) || 180;
   const body = Number(vehicle.bodyLength) || Math.max(total - nose - bay, 0);
+  const stationByKey = new Map(assemblyStations.map((station) => [station.key, station]));
+  const noseStation = stationByKey.get('nose');
+  const c1Station = stationByKey.get('c1_parachute_payload');
+  const c2Station = stationByKey.get('c2');
+  const tailStation = stationByKey.get('tail_fin_can');
+  const useAssembly = [noseStation, c1Station, c2Station, tailStation].every(
+    (station) => station?.x_start_mm != null && station?.x_end_mm != null,
+  );
 
   // One single geometric scale is used for BOTH axial and radial dimensions.
   // This makes the rocket silhouette, diameter, fin span and all stations truly proportional.
@@ -95,6 +113,19 @@ export function RocketRealistic({
   const yBody = yBay + bayH;
   const bottom = top + total * scale;
   const supportY = bottom;
+  const bodyShellStartY = top + (useAssembly ? Number(noseStation!.x_end_mm) : nose) * scale;
+  const c1CenterY = useAssembly
+    ? top + (Number(c1Station!.x_start_mm) + Number(c1Station!.x_end_mm)) * scale / 2
+    : yBay + bayH / 2;
+  const lowerMarkY = useAssembly
+    ? top + (Number(c2Station!.x_start_mm) + Number(tailStation!.x_end_mm)) * scale / 2
+    : yBody + bodyH * .28;
+  const assemblyLabel = (key: string) => ({
+    nose: txt('COFIA', 'NOSE'),
+    c1_parachute_payload: 'C1',
+    c2: 'C2',
+    tail_fin_can: txt('COLA', 'TAIL'),
+  } as Record<string, string>)[key] ?? key;
 
   const radiusMm = diameter / 2;
   const rho = (radiusMm ** 2 + nose ** 2) / (2 * radiusMm);
@@ -119,11 +150,11 @@ export function RocketRealistic({
   const right = [...ogive].reverse().map((p) => `${centerX + p.half},${p.y}`).join(' ');
   const ogivePoints = `${left} ${right}`;
 
-  const finRoot = Number(vehicle.rootChord) || 80;
-  const finTip = Number(vehicle.tipChord) || 40;
-  const finSpan = Number(vehicle.span) || 50;
-  const finSweep = Number(vehicle.sweep) || 20;
-  const finX = Number(vehicle.finX) || 760;
+  const finRoot = Number(vehicle.rootChord) || 97.67;
+  const finTip = Number(vehicle.tipChord) || 39.96;
+  const finSpan = Number(vehicle.span) || 52.5;
+  const finSweep = Number(vehicle.sweep) || 42;
+  const finX = Number(vehicle.finX) || 689;
   const finLeadY = top + finX * scale;
   const finRootTrailY = finLeadY + finRoot * scale;
   const finTipLeadY = finLeadY + finSweep * scale;
@@ -140,11 +171,19 @@ export function RocketRealistic({
   const cpR7 = cpMm == null ? null : fromSupport(cpMm);
   const cgY = cgR7 == null ? null : yFromR7(cgR7);
   const cpY = cpR7 == null ? null : yFromR7(cpR7);
-  const sectionDims = [
-    { label: `${nose.toFixed(0)} mm`, y1: top, y2: yBay },
-    { label: `${bay.toFixed(0)} mm`, y1: yBay, y2: yBody },
-    { label: `${body.toFixed(0)} mm`, y1: yBody, y2: bottom },
-  ];
+  const sectionDims = useAssembly
+    ? assemblyStations
+        .filter((station) => ['nose', 'c1_parachute_payload', 'c2', 'tail_fin_can'].includes(station.key))
+        .map((station) => ({
+          label: `${assemblyLabel(station.key)} · ${station.raw_length_mm.toFixed(0)} mm`,
+          y1: top + Number(station.x_start_mm) * scale,
+          y2: top + Number(station.x_end_mm) * scale,
+        }))
+    : [
+        { label: `${nose.toFixed(0)} mm`, y1: top, y2: yBay },
+        { label: `${bay.toFixed(0)} mm`, y1: yBay, y2: yBody },
+        { label: `${body.toFixed(0)} mm`, y1: yBody, y2: bottom },
+      ];
 
   const componentStations = distributeLabels(
     componentCgs
@@ -192,14 +231,35 @@ export function RocketRealistic({
       </g>)}
 
       <polygon points={ogivePoints} className="rocket-shell"/>
-      <rect x={x} y={yBay} width={w} height={bayH} className="rocket-shell"/>
-      <rect x={x} y={yBody} width={w} height={bodyH} className="rocket-shell"/>
+      {useAssembly ? (
+        <rect x={x} y={bodyShellStartY} width={w} height={bottom - bodyShellStartY} className="rocket-shell"/>
+      ) : (
+        <>
+          <rect x={x} y={yBay} width={w} height={bayH} className="rocket-shell"/>
+          <rect x={x} y={yBody} width={w} height={bodyH} className="rocket-shell"/>
+        </>
+      )}
 
       <rect x={x} y={yBay + 12 * scale} width={w} height={15 * scale} className="reflective-band"/>
       <rect x={x} y={bottom - 116 * scale} width={w} height={15 * scale} className="reflective-band"/>
 
-      <line x1={x - 8} y1={yBay} x2={x + w + 8} y2={yBay} className="station"/>
-      <line x1={x - 8} y1={yBody} x2={x + w + 8} y2={yBody} className="station"/>
+      {useAssembly ? (
+        [noseStation!, c1Station!, c2Station!].map((station) => (
+          <line
+            key={station.key}
+            x1={x - 8}
+            y1={top + Number(station.x_end_mm) * scale}
+            x2={x + w + 8}
+            y2={top + Number(station.x_end_mm) * scale}
+            className="station"
+          />
+        ))
+      ) : (
+        <>
+          <line x1={x - 8} y1={yBay} x2={x + w + 8} y2={yBay} className="station"/>
+          <line x1={x - 8} y1={yBody} x2={x + w + 8} y2={yBody} className="station"/>
+        </>
+      )}
 
       <polygon
         points={`${x},${finLeadY} ${x},${finRootTrailY} ${finOutLeft},${finTipTrailY} ${finOutLeft},${finTipLeadY}`}
@@ -215,10 +275,10 @@ export function RocketRealistic({
         className="nozzle"
       />
 
-      <text x={centerX} y={yBay + bayH / 2 - 3.5} className="module-label payload-label">{txt('CARGA ÚTIL', 'PAYLOAD')}</text>
-      <text x={centerX} y={yBay + bayH / 2 + 4.5} className="module-label electronics-label">{txt('ELECTRÓNICA', 'ELECTRONICS')}</text>
-      <text x={centerX} y={yBody + bodyH * .28} className="utn-mark">UTN</text>
-      <text x={centerX} y={yBody + bodyH * .28 + 12} className="module-label utn-submark">FRH · G07</text>
+      <text x={centerX} y={c1CenterY - 3.5} className="module-label payload-label">{txt('CARGA ÚTIL', 'PAYLOAD')}</text>
+      <text x={centerX} y={c1CenterY + 4.5} className="module-label electronics-label">{txt('ELECTRÓNICA', 'ELECTRONICS')}</text>
+      <text x={centerX} y={lowerMarkY} className="utn-mark">UTN</text>
+      <text x={centerX} y={lowerMarkY + 12} className="module-label utn-submark">FRH · G07</text>
 
       <line x1="365" y1={top + 18} x2="365" y2={supportY} className="datum-rail"/>
       <text x="365" y={supportY + 18} textAnchor="middle" className="datum-label">{txt('REFERENCIA R7', 'R7 REFERENCE')} · 0 mm</text>
@@ -277,9 +337,25 @@ export function RocketRealistic({
         </g>;
       })}
 
-      <text x={x - 34} y={top + noseH / 2} textAnchor="end" className="section-name">{txt('COFIA', 'NOSE')}</text>
-      <text x={x - 34} y={yBay + bayH / 2} textAnchor="end" className="section-name">{txt('COMPART.', 'BAY')}</text>
-      <text x={x - 34} y={yBody + bodyH / 2} textAnchor="end" className="section-name">{txt('CUERPO', 'BODY')}</text>
+      {useAssembly ? (
+        [noseStation!, c1Station!, c2Station!, tailStation!].map((station) => (
+          <text
+            key={'label-' + station.key}
+            x={x - 34}
+            y={top + (Number(station.x_start_mm) + Number(station.x_end_mm)) * scale / 2}
+            textAnchor="end"
+            className="section-name"
+          >
+            {assemblyLabel(station.key)}
+          </text>
+        ))
+      ) : (
+        <>
+          <text x={x - 34} y={top + noseH / 2} textAnchor="end" className="section-name">{txt('COFIA', 'NOSE')}</text>
+          <text x={x - 34} y={yBay + bayH / 2} textAnchor="end" className="section-name">{txt('COMPART.', 'BAY')}</text>
+          <text x={x - 34} y={yBody + bodyH / 2} textAnchor="end" className="section-name">{txt('CUERPO', 'BODY')}</text>
+        </>
+      )}
 
       <text x="112" y={bottom + 36} className="scale-note-svg">
         {txt('ESCALA GEOMÉTRICA ÚNICA', 'SINGLE GEOMETRIC SCALE')} · 1 px = {(1 / scale).toFixed(2)} mm
