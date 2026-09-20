@@ -386,7 +386,7 @@ function App() {
   };
 
   const selectPhase = (index: number) => {
-    const phases: Array<typeof mobileSection> = ['mdr', 'pdr', 'cdr', 'frr', 'lrr', 'pfr'];
+    const phases: Array<typeof mobileSection> = ['mdr', 'pdr', 'analysis', 'frr', 'lrr', 'pfr'];
     setPhaseFocusIndex(index);
     navigateMobile(phases[index]);
   };
@@ -874,7 +874,7 @@ function App() {
 
         <div className="mobile-guide-steps">
           <button type="button" className={geometryConsistent ? 'complete' : mobileGuideStep === 'vehicle' ? 'current' : ''} onClick={() => navigateMobile('pdr')}><b>PDR</b><span>{txt('DISEÑO', 'DESIGN')}</span><em>{geometryConsistent ? '✓' : '→'}</em></button>
-          <button type="button" className={analysisSummary ? 'complete' : ''} onClick={() => navigateMobile('cdr')}><b>CDR</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
+          <button type="button" className={analysisSummary ? 'complete' : ''} onClick={() => navigateMobile('analysis')}><b>CDR</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
         </div>
 
         <section className="mobile-home-dashboard" aria-label={txt('Resumen ejecutivo', 'Executive summary')}>
@@ -996,7 +996,7 @@ function App() {
 
         <button type="button" className="cdr-analysis-primary pdr-analysis-launch" disabled={!ready} onClick={() => {
           setRunToken((value) => value + 1);
-          navigateMobile('cdr');
+          navigateMobile('analysis');
         }}>
           <span className="cdr-analysis-primary-icon"><Sigma size={23}/></span>
           <span className="cdr-analysis-primary-copy">
@@ -1066,7 +1066,6 @@ function App() {
             {cdrPositionFocus === 'margin' && <><b>Δ CG–CP</b><span>{stabilityMargin != null ? txt('Separación equivalente: ', 'Equivalent separation: ') + (stabilityMargin * Number(vehicle.diameter)).toFixed(1) + ' mm · ' + stabilityMargin.toFixed(2) + ' cal' : txt('Ejecutá el análisis para obtener la separación y el margen.', 'Run analysis to obtain separation and margin.')}</span></>}
           </div>
           <button type="button" className="phase-secondary-link" onClick={() => navigateMobile('analysis')}><Sigma size={17}/><span>{txt('VER DESGLOSE MATEMÁTICO', 'VIEW MATH BREAKDOWN')}</span><b>→</b></button>
-          {analysisSummary?.mission_timeline?.length > 1 && <button type="button" className="phase-secondary-link flight-entry-link" onClick={() => navigateMobile('plots')}><Play size={17}/><span>{txt('ABRIR SIMULACIÓN DE VUELO', 'OPEN FLIGHT SIMULATION')}</span><b>→</b></button>}
         </section>}
 
         {cdrTab === 'trajectory' && <section className="phase-process-panel cdr-trajectory-panel">
@@ -1465,7 +1464,7 @@ function App() {
           <span className="mobile-nav-icon"><Rocket size={20} strokeWidth={1.8} /></span>
           <small>PDR</small>
         </button>
-        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('cdr')}>
+        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('analysis')}>
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
