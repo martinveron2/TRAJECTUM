@@ -513,7 +513,7 @@ function App() {
   };
 
   const selectPhase = (index: number) => {
-    const phases: Array<typeof mobileSection> = ['mdr', 'pdr', 'analysis', 'frr', 'lrr', 'pfr'];
+    const phases: Array<typeof mobileSection> = ['mdr', 'pdr', 'cdr', 'frr', 'lrr', 'pfr'];
     setPhaseFocusIndex(index);
     navigateMobile(phases[index]);
   };
@@ -1041,7 +1041,7 @@ function App() {
 
         <div className="mobile-guide-steps">
           <button type="button" className={geometryConsistent ? 'complete' : mobileGuideStep === 'vehicle' ? 'current' : ''} onClick={() => navigateMobile('pdr')}><b>PDR</b><span>{txt('DISEÑO', 'DESIGN')}</span><em>{geometryConsistent ? '✓' : '→'}</em></button>
-          <button type="button" className={analysisSummary ? 'complete' : ''} onClick={() => navigateMobile('analysis')}><b>CDR</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
+          <button type="button" className={analysisSummary ? 'complete' : ''} onClick={() => navigateMobile('cdr')}><b>CDR</b><span>{txt('ANÁLISIS', 'ANALYSIS')}</span><em>{analysisSummary ? '✓' : '→'}</em></button>
         </div>
 
         <section className="mobile-home-dashboard" aria-label={txt('Resumen ejecutivo', 'Executive summary')}>
@@ -1718,7 +1718,7 @@ function App() {
           <span className="mobile-nav-icon"><Rocket size={20} strokeWidth={1.8} /></span>
           <small>PDR</small>
         </button>
-        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('analysis')}>
+        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('cdr')}>
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
