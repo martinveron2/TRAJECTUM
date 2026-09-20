@@ -4856,16 +4856,16 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     display:flex;
     align-items:center;
     justify-content:center;
-    min-height:20px!important;
-    padding:3px 5px;
-    border:1px solid rgba(126,193,244,.30);
+    min-height:24px!important;
+    padding:4px 6px;
+    border:1px solid rgba(126,193,244,.34);
     border-radius:999px;
-    background:rgba(30,91,132,.20);
-    font-size:.52rem!important;
+    background:rgba(30,91,132,.22);
+    font-size:.66rem!important;
     font-weight:900!important;
-    line-height:1.05!important;
-    letter-spacing:.025em!important;
-    color:#A9D5F6!important;
+    line-height:1.08!important;
+    letter-spacing:.015em!important;
+    color:#C5E5FF!important;
     text-align:center;
     white-space:normal;
   }
