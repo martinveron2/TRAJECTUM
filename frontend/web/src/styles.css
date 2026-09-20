@@ -4755,7 +4755,7 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
   #engineering-analysis .analysis-run-row{
     width:100%;
     display:grid;
-    grid-template-columns:82px minmax(0,1fr);
+    grid-template-columns:minmax(0,1fr) 82px;
     gap:9px;
     align-items:stretch;
     margin-top:8px;
@@ -4802,22 +4802,26 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
   #engineering-analysis .analysis-cd-control.manual>div small{
     color:#E6B86C!important;
   }
-  #engineering-analysis .analysis-cd-control input{
+  #engineering-analysis .analysis-cd-control .numeric-wheel-control{
     width:100%;
-    min-width:0;
-    height:29px;
-    padding:0 2px;
-    border:0;
-    border-bottom:1px solid rgba(141,200,255,.42);
-    border-radius:0;
-    outline:none;
-    background:transparent;
-    color:#FFF;
-    text-align:center;
+  }
+  #engineering-analysis .analysis-cd-control .numeric-wheel-trigger{
+    min-height:31px!important;
+    padding:0 5px!important;
+    grid-template-columns:1fr auto!important;
+    gap:3px!important;
+    border-radius:7px!important;
+    border-color:#315A7C!important;
+    background:#071A2A!important;
+    box-shadow:none!important;
+  }
+  #engineering-analysis .analysis-cd-control .numeric-wheel-trigger span{
+    font-size:.82rem!important;
     font-family:"Space Mono"!important;
-    font-size:.96rem!important;
     font-weight:700!important;
-    font-variant-numeric:tabular-nums;
+  }
+  #engineering-analysis .analysis-cd-control .numeric-wheel-trigger b{
+    font-size:.72rem!important;
   }
   #engineering-analysis .analysis-cd-control em,
   #engineering-analysis .analysis-cd-control button{

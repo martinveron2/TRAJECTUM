@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { MissionSample } from './missionTypes';
 import { EngineeringEquations } from './EngineeringEquations';
 import { RocketRealistic } from './RocketRealistic';
@@ -48,6 +49,80 @@ type Analysis = {
   time_to_apogee_s?: number;
   mission_timeline?: MissionSample[];
 };
+
+function CdWheelSelector({ value, onChange }: { value: NumericField; onChange: (value: NumericField) => void }) {
+  const [open, setOpen] = useState(false);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const current = value === '' ? 0.345 : Number(value);
+  const [draft, setDraft] = useState(current);
+  const step = 0.005;
+  const min = 0.05;
+  const max = 1.5;
+  const radius = 120;
+  const start = Math.max(min, current - radius * step);
+  const end = Math.min(max, current + radius * step);
+  const count = Math.round((end - start) / step);
+  const options = Array.from({ length: count + 1 }, (_, index) => Number((start + index * step).toFixed(3)));
+
+  useEffect(() => {
+    if (!open) return;
+    setDraft(current);
+    window.requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>('.active')?.scrollIntoView({ block: 'center' }));
+  }, [open, current]);
+
+  const updateDraftFromScroll = () => {
+    const list = listRef.current;
+    if (!list) return;
+    const center = list.scrollTop + list.clientHeight / 2;
+    let bestValue = draft;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    list.querySelectorAll<HTMLButtonElement>('button[data-value]').forEach((button) => {
+      const buttonCenter = button.offsetTop + button.offsetHeight / 2;
+      const distance = Math.abs(buttonCenter - center);
+      const option = Number(button.dataset.value);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestValue = option;
+      }
+    });
+    setDraft(bestValue);
+  };
+
+  const confirm = () => {
+    onChange(Number(draft.toFixed(3)));
+    setOpen(false);
+  };
+
+  return <div className={open ? 'numeric-wheel-control editing' : 'numeric-wheel-control'}>
+    <button type="button" className={open ? 'numeric-wheel-trigger active' : 'numeric-wheel-trigger'} onClick={() => setOpen(true)} aria-expanded={open} aria-label="Seleccionar Cd">
+      <span>{value === '' ? '—' : Number(value).toFixed(3)}</span>
+      <b>↕</b>
+    </button>
+    {open && typeof document !== 'undefined' && createPortal(
+      <div className="numeric-wheel-overlay" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}>
+        <div className="numeric-wheel-sheet" role="dialog" aria-modal="true" aria-label="Seleccionar Cd" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
+          <div className="numeric-wheel-sheet-head"><span>SELECCIONAR Cd</span></div>
+          <div className="numeric-wheel-viewport">
+            <div className="numeric-wheel-list" ref={listRef} onScroll={updateDraftFromScroll}>
+              {options.map((option) => <button type="button" key={option} data-value={option} className={Math.abs(option - draft) < 1e-9 ? 'active' : ''} onClick={(event) => {
+                event.stopPropagation();
+                setDraft(option);
+                window.requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>('button[data-value="' + option + '"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+              }}>{option.toFixed(3)}</button>)}
+            </div>
+            <div className="numeric-wheel-focus-band" aria-hidden="true"/>
+            <div className="numeric-wheel-fade top"/><div className="numeric-wheel-fade bottom"/>
+          </div>
+          <div className="numeric-wheel-actions">
+            <button type="button" className="cancel" onClick={() => setOpen(false)}>CANCELAR</button>
+            <button type="button" className="confirm" onClick={confirm}>✓ OK</button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )}
+  </div>;
+}
 
 function AnimatedValue({ value, decimals = 1, suffix = '' }: { value?: number; decimals?: number; suffix?: string }) {
   const [shown, setShown] = useState(0);
@@ -287,26 +362,6 @@ export function LiveAnalysisPanel({
   return <div className={running ? 'panel mass-panel analysis-running' : 'panel mass-panel'} id="engineering-analysis" aria-busy={running}>
     <div className="panel-title compact"><div><p>{txt('PROPIEDADES DE MASA DERIVADAS DE LA GEOMETRÍA', 'GEOMETRY-DERIVED MASS PROPERTIES')}</p><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
       <div className="analysis-run-row">
-        <div className={cdIsEstimated ? 'analysis-cd-control estimated' : 'analysis-cd-control manual'} title={txt('Cd usado por la simulación', 'Cd used by the simulation')}>
-          <div><span>Cd</span><small>{cdIsEstimated ? txt('EST.', 'EST.') : txt('MAN.', 'MAN.')}</small></div>
-          <input
-            aria-label={txt('Cd para simulación', 'Cd for simulation')}
-            type="number"
-            min="0"
-            step="0.001"
-            inputMode="decimal"
-            value={vehicle.cd}
-            onFocus={keepInputVisible}
-            onChange={(event) => {
-              const value = event.target.value;
-              onCdChange?.(value === '' ? '' : Number(value));
-              setAnalysis(null);
-            }}
-          />
-          {cdIsEstimated
-            ? <em>NISK.</em>
-            : <button type="button" onClick={() => { onCdChange?.(estimatedCd); setAnalysis(null); }} aria-label={txt('Restaurar Cd estimado', 'Restore estimated Cd')}>↺ EST</button>}
-        </div>
         <button
           className="run"
           disabled={!massStationsReady || !planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
@@ -315,6 +370,16 @@ export function LiveAnalysisPanel({
           {running && <span className="run-spinner" aria-hidden="true" />}
           <span>{running ? txt('EJECUTANDO ANÁLISIS…', 'RUNNING ANALYSIS…') : !massStationsReady ? txt('FIJAR xCG REALES PARA CONTINUAR', 'SET REAL xCG TO CONTINUE') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</span>
         </button>
+        <div className={cdIsEstimated ? 'analysis-cd-control estimated' : 'analysis-cd-control manual'} title={txt('Cd usado por la simulación', 'Cd used by the simulation')}>
+          <div><span>Cd</span><small>{cdIsEstimated ? txt('EST.', 'EST.') : txt('MAN.', 'MAN.')}</small></div>
+          <CdWheelSelector value={vehicle.cd} onChange={(value) => {
+            onCdChange?.(value);
+            setAnalysis(null);
+          }}/>
+          {cdIsEstimated
+            ? <em>NISK.</em>
+            : <button type="button" onClick={() => { onCdChange?.(estimatedCd); setAnalysis(null); }} aria-label={txt('Restaurar Cd estimado', 'Restore estimated Cd')}>↺ EST</button>}
+        </div>
       </div></div>
     {running && <div className="analysis-execution-live">
       <div className="analysis-execution-orbit"><i/><i/><b>Σ</b></div>
