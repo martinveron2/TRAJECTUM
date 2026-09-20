@@ -809,6 +809,31 @@ function App() {
         </div>
       </header>
 
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          padding: '8px 12px',
+          background: '#0b1f3a',
+          borderTop: '1px solid #28558c',
+          borderBottom: '1px solid #28558c',
+          color: '#e8f2ff',
+          fontSize: '12px',
+          fontWeight: 800,
+          letterSpacing: '.06em',
+          textAlign: 'center',
+          flexWrap: 'wrap',
+        }}
+        aria-label="TRAJECTUM development twin status"
+      >
+        <span>DEV · GEMELO ACTUAL</span>
+        <strong>{twinAssembly?.total_length_mm != null ? Math.round(twinAssembly.total_length_mm) + ' mm' : 'CARGANDO…'}</strong>
+        <span>Ø{currentTwin?.geometry?.outer_diameter_mm?.value ?? '—'} mm</span>
+        <span>{currentTwin?.masses?.measured_structure_total_g ?? '—'} g estructura</span>
+      </div>
+
       <nav className="status-strip" aria-label={txt('Navegación rápida del proyecto', 'Project quick navigation')}>
         <button className="status-item" type="button" onClick={() => document.getElementById('vehicle-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
           <span>{txt('PROYECTO', 'PROJECT')}</span><strong>UTN-FRH-G07 / CDR</strong><i>↘</i>
