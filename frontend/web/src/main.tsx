@@ -764,7 +764,7 @@ function App() {
               <span className="brand-name">TRAJECTUM</span>
               <span className="brand-subline">{txt('INGENIERÍA · SIMULACIÓN · ANÁLISIS', 'ENGINEERING · SIMULATION · ANALYSIS')}</span>
             </div>
-            <span className="brand-version">V0.1.0-CDR</span>
+            <span className="brand-version">{twinAssembly?.resolved ? 'DEV · TWIN ' + Math.round(twinAssembly.total_length_mm ?? 0) + ' mm' : 'V0.1.0-CDR'}</span>
             <div className="mobile-header-tools">
               <button
                 type="button"
@@ -814,7 +814,7 @@ function App() {
           <span>{txt('PROYECTO', 'PROJECT')}</span><strong>UTN-FRH-G07 / CDR</strong><i>↘</i>
         </button>
         <button className="status-item" type="button" onClick={() => document.getElementById('geometry-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-          <span>{txt('GEOMETRÍA', 'GEOMETRY')}</span><strong className={geometryConsistent ? 'ok' : 'bad'}>{geometryConsistent ? txt('CONSISTENTE', 'CONSISTENT') : txt('REVISAR LONGITUDES', 'CHECK LENGTHS')}</strong><i>↘</i>
+          <span>{txt('GEOMETRÍA', 'GEOMETRY')}</span><strong className={twinAssembly?.resolved ? 'ok' : geometryConsistent ? 'ok' : 'bad'}>{twinAssembly?.resolved ? 'GEMELO ' + Math.round(twinAssembly.total_length_mm ?? 0) + ' mm' : geometryConsistent ? txt('CONSISTENTE', 'CONSISTENT') : txt('REVISAR LONGITUDES', 'CHECK LENGTHS')}</strong><i>↘</i>
         </button>
         <button className="status-item" type="button" onClick={() => document.getElementById('fins-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
           <span>{txt('PERFIL', 'AIRFOIL')}</span><strong>{vehicle.airfoil}</strong><i>↘</i>
@@ -932,9 +932,9 @@ function App() {
             <button type="button" onClick={() => navigateMobile('mdr')}>{txt('VER MDR', 'VIEW MDR')} →</button>
           </div>
           <div className="mobile-home-metrics design-metrics">
-            <article><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><strong>{vehicle.totalLength} mm</strong><small>R5 ≥ 800 mm</small></article>
-            <article><span>{txt('DIÁMETRO', 'DIAMETER')}</span><strong>Ø{vehicle.diameter} mm</strong><small>{txt('envolvente de diseño', 'design envelope')}</small></article>
-            <article><span>{txt('MASA DE DISEÑO', 'DESIGN MASS')}</span><strong>{componentRows.reduce((sum,row)=>sum+(Number(row.massG)||0),0).toFixed(0)} g</strong><small>{txt('editable en PDR', 'editable in PDR')}</small></article>
+            <article><span>{txt('LARGO TOTAL · GEMELO', 'TOTAL LENGTH · TWIN')}</span><strong>{twinAssembly?.total_length_mm != null ? Math.round(twinAssembly.total_length_mm) : vehicle.totalLength} mm</strong><small>{txt('ensamblaje CAD actual', 'current CAD assembly')}</small></article>
+            <article><span>{txt('DIÁMETRO', 'DIAMETER')}</span><strong>Ø{currentTwin?.geometry?.outer_diameter_mm?.value ?? vehicle.diameter} mm</strong><small>{txt('envolvente CAD', 'CAD envelope')}</small></article>
+            <article><span>{txt('MASA ESTRUCTURAL MEDIDA', 'MEASURED STRUCTURAL MASS')}</span><strong>{currentTwin?.masses?.measured_structure_total_g ?? componentRows.reduce((sum,row)=>sum+(Number(row.massG)||0),0).toFixed(0)} g</strong><small>{txt('piezas impresas medidas', 'measured printed parts')}</small></article>
             <article><span>{txt('REQUERIMIENTOS', 'REQUIREMENTS')}</span><strong>{requirementVerified}/11</strong><small>{requirementProgress} {txt('en proceso', 'in progress')}</small></article>
           </div>
           <button type="button" className="mobile-home-telemetry-link design-link" onClick={() => navigateMobile('pdr')}>
