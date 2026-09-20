@@ -6,7 +6,9 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test:smoke": "tsx --test tests/*.spec.ts",
+    "check:boundaries": "node scripts/check-platform-boundaries.mjs"
   },
   "dependencies": {
     "@types/plotly.js": "^3.0.13",
@@ -24,6 +26,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
+    "tsx": "^4.23.13",
     "typescript": "latest",
     "vite": "latest"
   }
