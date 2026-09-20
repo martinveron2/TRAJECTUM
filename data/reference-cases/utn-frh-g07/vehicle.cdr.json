@@ -217,12 +217,33 @@
   },
   "aerodynamics": {
     "cd": {
-      "value": null,
-      "status": "tbd"
+      "value": 0.345,
+      "status": "estimated-niskanen-openrocket-v2",
+      "method": "single-effective-cd-at-qmax-iterated",
+      "reference_velocity_m_s": 130.682,
+      "reference_altitude_m": 33.673,
+      "reference_mach": 0.38417,
+      "reference_reynolds": 7040101,
+      "components": {
+        "skin_friction": 0.18075,
+        "nose_pressure": 0.0,
+        "fin_pressure": 0.02473,
+        "base_drag": 0.13919
+      },
+      "assumptions": [
+        "subsonic",
+        "alpha approximately zero",
+        "smooth surface",
+        "fully turbulent boundary layer",
+        "no parasitic launch-guide drag included",
+        "tangent-ogive smooth body transition",
+        "NACA 0012 rounded leading edge and tapered trailing edge"
+      ],
+      "source": "Niskanen/OpenRocket Technical Documentation: Eq. 3.78, 3.82, 3.85, 3.89, 3.91, 3.94, 3.97"
     },
-    "note": "Drag coefficient intentionally remains TBD until a defensible CDR assumption or source is selected."
+    "note": "Estimated effective Cd for the current 789 mm geometry. Iteration: seed Cd=0.55 -> preliminary trajectory -> V at q_max -> analytical/empirical drag estimate -> repeat to convergence. Converged raw estimate 0.344660888; stored as 0.345 (3 significant figures). This is an engineering estimate, not a measured Cd."
   },
-  "revision": "2026-09-20-fusion-geometry-mapped",
+  "revision": "2026-09-20-fusion-geometry-cd-estimated",
   "datum": "nose_tip_x0_positive_aft",
   "sources": {
     "cad_and_drawings_date": "2026-09-19",
