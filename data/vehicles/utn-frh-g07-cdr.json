@@ -1,6 +1,6 @@
 {
   "id": "utn-frh-g07-cdr",
-  "revision": "working",
+  "revision": "superseded-by-reference-case-2026-09-19",
   "datum": "nose_tip_x0_positive_aft",
   "geometry_mm": {
     "length_total": 860.0,
@@ -8,16 +8,37 @@
     "modular_bay": 180.0,
     "lower_body": 500.0,
     "outer_diameter": 63.0,
-    "wall": {"value": 2.0, "status": "provisional"}
+    "wall": {
+      "value": 2.0,
+      "status": "provisional"
+    }
   },
   "launch_angle_deg": 85.0,
   "fins": {
     "count": 4,
-    "root_chord_mm": {"value": 80.0, "status": "provisional_legacy_pdr"},
-    "span_mm": {"value": 50.0, "status": "provisional_legacy_pdr"},
-    "tip_chord_mm": {"value": null, "status": "tbd"},
-    "sweep_length_mm": {"value": null, "status": "tbd"},
-    "leading_edge_x_mm": {"value": null, "status": "tbd"}
+    "root_chord_mm": {
+      "value": 80.0,
+      "status": "provisional_legacy_pdr"
+    },
+    "span_mm": {
+      "value": 50.0,
+      "status": "provisional_legacy_pdr"
+    },
+    "tip_chord_mm": {
+      "value": null,
+      "status": "tbd"
+    },
+    "sweep_length_mm": {
+      "value": null,
+      "status": "tbd"
+    },
+    "leading_edge_x_mm": {
+      "value": null,
+      "status": "tbd"
+    }
   },
-  "mass_properties": {"status": "tbd_current_design"}
+  "mass_properties": {
+    "status": "tbd_current_design"
+  },
+  "note": "Current CAD/PDF/measured-mass truth is maintained in data/reference-cases/utn-frh-g07/vehicle.cdr.json. Values in this file are legacy compatibility data."
 }
