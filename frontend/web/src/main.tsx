@@ -93,7 +93,13 @@ type CurrentTwin = {
     sweep_length_mm?: TwinValue;
     leading_edge_x_mm?: TwinValue;
   };
-  masses?: { measured_structure_total_g?: number };
+  aerodynamics?: { cd?: TwinValue };
+  masses?: {
+    status?: string;
+    measured_structure_total_g?: number;
+    measured_items?: Array<{ name: string; mass_g: number; status: string }>;
+    known_internal_items?: Array<{ name: string; mass_g: number; status: string }>;
+  };
 };
 
 const initialVehicle: Vehicle = {
@@ -112,7 +118,7 @@ const initialVehicle: Vehicle = {
   airfoil: 'NACA 0012',
   noseProfile: 'tangent_ogive',
   launchAngle: 85,
-  cd: 0.55,
+  cd: '',
   parachuteCd: 1.5,
   parachuteArea: 0.20,
   deployAltitude: '',
@@ -464,6 +470,7 @@ function App() {
             sweep: Number(source?.fins?.sweep_length_mm?.value ?? current.sweep),
             finX: Number(source?.fins?.leading_edge_x_mm?.value ?? current.finX),
             airfoil: 'NACA 0012',
+            cd: source?.aerodynamics?.cd?.value == null ? '' : Number(source.aerodynamics.cd.value),
           }));
         }
       }
@@ -557,6 +564,8 @@ function App() {
     });
   };
 
+  const realMassStationsReady = currentTwin?.masses?.status != null && !currentTwin.masses.status.includes('cg-stations-pending');
+
   const blockers = useMemo(() => {
     const result: string[] = [];
     if (vehicle.tipChord === '') result.push(txt('Cuerda de punta', 'Fin tip chord'));
@@ -568,8 +577,9 @@ function App() {
     if (motor.impulse === '' || Number(motor.impulse) <= 0) result.push(txt('Impulso total del motor', 'Motor total impulse'));
     if (motor.propellantMass === '' || Number(motor.propellantMass) < 0) result.push(txt('Masa de propelente', 'Propellant mass'));
     if (motor.dryMass === '' || Number(motor.dryMass) <= 0) result.push(txt('Masa seca del motor', 'Motor dry mass'));
+    if (currentTwin?.masses?.status?.includes('cg-stations-pending')) result.push(txt('Estaciones xCG de componentes reales', 'Real component xCG stations'));
     return result;
-  }, [vehicle, lang, motor]);
+  }, [vehicle, lang, motor, currentTwin]);
 
   const axialSum =
     (Number(vehicle.noseLength) || 0) +
@@ -1145,18 +1155,30 @@ function App() {
         </section>}
 
         {pdrTab === 'mass' && <section className="phase-process-panel pdr-mass-panel">
-          <div className="phase-panel-head"><div><span>{txt('MATERIALES Y MASA', 'MATERIALS & MASS')}</span><strong>{txt('Distribución preliminar del vehículo', 'Preliminary vehicle distribution')}</strong></div><b>{componentSummary?.total_mass_g ? Math.round(componentSummary.total_mass_g) + 'g' : '—'}</b></div>
+          <div className="phase-panel-head"><div><span>{txt('MASAS REALES', 'REAL MASSES')}</span><strong>{txt('Estructura pesada · xCG todavía por cerrar', 'Measured structure · xCG still pending')}</strong></div><b>{currentTwin?.masses?.measured_structure_total_g != null ? Math.round(currentTwin.masses.measured_structure_total_g) + 'g' : '—'}</b></div>
           <div className="pdr-mass-editor">
-            {componentRows.map((row) => <article key={row.id} className="pdr-component-card">
-              <div className="pdr-component-head"><strong>{row.name}</strong><span>{componentSummary?.components?.find((item: any) => item.name === row.name)?.x_cg_mm != null ? 'xCG ' + componentSummary.components.find((item: any) => item.name === row.name).x_cg_mm.toFixed(0) + ' mm' : 'xCG —'}</span></div>
+            {(currentTwin?.masses?.measured_items ?? []).map((item) => <article key={item.name} className="pdr-component-card">
+              <div className="pdr-component-head"><strong>{item.name}</strong><span>xCG —</span></div>
               <div className="pdr-component-fields">
-                <label><span>{txt('MASA', 'MASS')}</span><NumericStepper value={row.massG} onChange={(value) => updateComponentDesign(row.id,'massG',value)} unit="g" step={5}/></label>
-                <label><span>{txt('LARGO', 'LENGTH')}</span><NumericStepper value={row.lengthMm} onChange={(value) => updateComponentDesign(row.id,'lengthMm',value)} unit="mm" step={5}/></label>
-                <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><NumericStepper value={row.diameterMm} onChange={(value) => updateComponentDesign(row.id,'diameterMm',value)} unit="mm" step={1}/></label>
+                <label><span>{txt('MASA MEDIDA', 'MEASURED MASS')}</span><output>{item.mass_g.toFixed(0)} g</output></label>
+                <label><span>{txt('FUENTE', 'SOURCE')}</span><output>{txt('BALANZA', 'SCALE')}</output></label>
+                <label><span>xCG</span><output>{txt('PENDIENTE', 'PENDING')}</output></label>
+              </div>
+            </article>)}
+            {(currentTwin?.masses?.known_internal_items ?? []).map((item) => <article key={item.name} className="pdr-component-card">
+              <div className="pdr-component-head"><strong>{item.name}</strong><span>{txt('INTERNO', 'INTERNAL')} · xCG —</span></div>
+              <div className="pdr-component-fields">
+                <label><span>{txt('MASA', 'MASS')}</span><output>{item.mass_g.toFixed(0)} g</output></label>
+                <label><span>{txt('ESTADO', 'STATUS')}</span><output>{txt('CONFIRMADA', 'CONFIRMED')}</output></label>
+                <label><span>xCG</span><output>{txt('PENDIENTE', 'PENDING')}</output></label>
               </div>
             </article>)}
           </div>
-          <div className="pdr-mass-total"><span>{txt('MASA DE DISEÑO', 'DESIGN MASS')}</span><strong>{componentRows.reduce((sum,row)=>sum+(Number(row.massG)||0),0).toFixed(0)} g</strong><small>{txt('CDR la toma automáticamente', 'CDR consumes it automatically')}</small></div>
+          <div className="pdr-mass-total">
+            <span>{txt('ESTRUCTURA MEDIDA', 'MEASURED STRUCTURE')}</span>
+            <strong>{currentTwin?.masses?.measured_structure_total_g ?? '—'} g</strong>
+            <small>{txt('No se inventa CG: el análisis queda bloqueado hasta fijar las estaciones xCG reales.', 'CG is not invented: analysis stays blocked until real xCG stations are fixed.')}</small>
+          </div>
         </section>}
 
         <button type="button" className="cdr-analysis-primary pdr-analysis-launch" disabled={!ready} onClick={() => {
@@ -1525,6 +1547,8 @@ function App() {
             motor={motor}
             rows={componentRows}
             onRowsChange={setComponentRows}
+            massStationsReady={realMassStationsReady}
+            assemblyStations={twinAssembly?.stations ?? []}
             onOpenFlight={() => {
               if (analysisSummary?.mission_timeline?.length > 1) setMissionControlOpen(true);
               else {
@@ -1556,7 +1580,7 @@ function App() {
               <div className="ready-row complete"><b>01</b><span>{txt('Geometría principal', 'Principal geometry')}</span><em>{vehicle.totalLength} / 180 / C1 215 / C2 215 / COLA 225 / Ø{vehicle.diameter}</em></div>
               <div className="ready-row complete"><b>02</b><span>{txt('Perfil de aleta', 'Fin profile')}</span><em>{vehicle.airfoil}</em></div>
               <div className={`ready-row ${vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'complete' : ''}`}><b>03</b><span>{txt('Planta de aleta', 'Fin planform')}</span><em>{vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? txt('LISTA', 'READY') : txt('POR DEFINIR', 'TBD')}</em></div>
-              <div className="ready-row complete"><b>04</b><span>{txt('Tabla de masas', 'Mass table')}</span><em>{txt('PRECARGADA · EDITABLE', 'PRELOADED · EDITABLE')}</em></div>
+              <div className={`ready-row ${realMassStationsReady ? 'complete' : ''}`}><b>04</b><span>{txt('Masas / xCG', 'Masses / xCG')}</span><em>{realMassStationsReady ? txt('LISTO', 'READY') : txt('870 g MEDIDOS · xCG PENDIENTE', '870 g MEASURED · xCG PENDING')}</em></div>
               <div className={`ready-row ${vehicle.cd !== '' ? 'complete' : ''}`}><b>05</b><span>{txt('Modelo de resistencia', 'Drag model')}</span><em>{vehicle.cd === '' ? txt('POR DEFINIR', 'TBD') : `Cd ${vehicle.cd}`}</em></div>
             </div>
             <div className="blocker-box">

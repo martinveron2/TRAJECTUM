@@ -15,6 +15,7 @@ type VehicleLike = {
 };
 export type ComponentRow = { id: number; name: string; massG: NumericField; lengthMm: NumericField; diameterMm: NumericField; kind: string; note: string };
 type ComponentOut = { name: string; mass_g: number; x_cg_mm: number; source: string };
+type AssemblyStation = { key: string; name: string; x_start_mm: number | null; x_end_mm: number | null; raw_length_mm: number };
 type UnifiedComponentOut = {
   name: string;
   mass_g: number;
@@ -90,6 +91,8 @@ export function LiveAnalysisPanel({
   rows,
   onRowsChange,
   onOpenFlight,
+  massStationsReady = true,
+  assemblyStations = [],
   lang = 'es',
 }: {
   vehicle: VehicleLike;
@@ -100,6 +103,8 @@ export function LiveAnalysisPanel({
   rows: ComponentRow[];
   onRowsChange: React.Dispatch<React.SetStateAction<ComponentRow[]>>;
   onOpenFlight?: () => void;
+  massStationsReady?: boolean;
+  assemblyStations?: AssemblyStation[];
   lang?: 'es' | 'en';
 }) {
   const isEs = lang === 'es';
@@ -168,7 +173,7 @@ export function LiveAnalysisPanel({
 
   useEffect(() => {
     setAnalysis(null);
-    if (!massesReady) { setComponentResult(null); return; }
+    if (!massStationsReady || !massesReady) { setComponentResult(null); return; }
     setComponentResult(null);
     const timer = window.setTimeout(async () => {
       try {
@@ -180,7 +185,7 @@ export function LiveAnalysisPanel({
       } catch { setComponentResult(null); }
     }, 180);
     return () => window.clearTimeout(timer);
-  }, [componentPayload, massesReady]);
+  }, [componentPayload, massesReady, massStationsReady]);
 
   const updateMass = (id: number, value: NumericField) => {
     onRowsChange((current) => current.map((row) => row.id === id ? { ...row, massG: value, note: 'mass edited locally; xCG remains geometry-derived' } : row));
@@ -193,7 +198,7 @@ export function LiveAnalysisPanel({
   };
 
     const run = async () => {
-    if (!planformReady || !componentResult || componentPayload.length !== rows.length) return;
+    if (!massStationsReady || !planformReady || !componentResult || componentPayload.length !== rows.length) return;
     setRunning(true);
     setError('');
     try {
@@ -278,11 +283,11 @@ export function LiveAnalysisPanel({
     <div className="panel-title compact"><div><p>{txt('PROPIEDADES DE MASA DERIVADAS DE LA GEOMETRÍA', 'GEOMETRY-DERIVED MASS PROPERTIES')}</p><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
       <button
         className="run"
-        disabled={!planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
+        disabled={!massStationsReady || !planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
         onClick={run}
       >
         {running && <span className="run-spinner" aria-hidden="true" />}
-        <span>{running ? txt('EJECUTANDO ANÁLISIS…', 'RUNNING ANALYSIS…') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</span>
+        <span>{running ? txt('EJECUTANDO ANÁLISIS…', 'RUNNING ANALYSIS…') : !massStationsReady ? txt('FIJAR xCG REALES PARA CONTINUAR', 'SET REAL xCG TO CONTINUE') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</span>
       </button></div>
     {running && <div className="analysis-execution-live">
       <div className="analysis-execution-orbit"><i/><i/><b>Σ</b></div>
@@ -361,20 +366,21 @@ export function LiveAnalysisPanel({
           cgMm={totalCgFromNose ?? null}
           cpMm={analysis.cp_x_mm_from_nose ?? null}
           componentCgs={componentResult?.components ?? []}
+          assemblyStations={assemblyStations}
           showComponentCgs
           lang={lang}
         />
       </section>
     </section>}
-    <div className="mass-editor-gate">
+    {massStationsReady ? <div className="mass-editor-gate">
       <div>
         <span>{txt('MASAS Y xCG', 'MASSES & xCG')}</span>
         <strong>{txt('Derivados automáticamente desde PDR', 'Automatically derived from PDR')}</strong>
         <small>{txt('No necesitás volver a cargar datos. Abrí este editor sólo si querés ajustar una masa.', 'No re-entry required. Open only if you want to adjust a mass.')}</small>
       </div>
       <button type="button" onClick={() => setShowMassEditor((value) => !value)}>{showMassEditor ? txt('OCULTAR', 'HIDE') : txt('AJUSTAR', 'ADJUST')}</button>
-    </div>
-    {showMassEditor && <div className="mass-editor-collapsible">
+    </div> : <div className="demo-banner">{txt('Geometría Fusion y masas medidas cargadas. El modelo de CG queda bloqueado hasta fijar xCG de Cofia, C1, C2, Cola + aletas, Portamotor e internos.', 'Fusion geometry and measured masses are loaded. CG stays blocked until xCG is fixed for Nose, C1, C2, Tail + fins, motor mount and internals.')}</div>}
+    {massStationsReady && showMassEditor && <div className="mass-editor-collapsible">
       <div className="demo-banner">{txt('El backend conserva xCG derivado de la geometría; sólo la masa es editable.', 'The backend keeps geometry-derived xCG; only mass is editable.')}</div>
       <div className="mass-head derived"><span>{txt('Componente', 'Component')}</span><span>{txt('Masa [g]', 'Mass [g]')}</span><span>xCG {txt('CÁTEDRA', 'COURSE')} [mm]</span></div>
       <div className="mass-table">{rows.map((row) => {
@@ -387,7 +393,7 @@ export function LiveAnalysisPanel({
       })}</div>
     </div>}
     {!planformReady && <div className="analysis-note">{txt('El xCG de las aletas y el CP permanecen bloqueados hasta definir cuerda de punta, desplazamiento del borde de ataque y posición axial de la aleta.', 'Fin xCG and CP remain blocked until tip chord, sweep and fin X are defined.')}</div>}
-    {planformReady && vehicle.cd === '' && <div className="analysis-note">{txt('CG + CP disponibles. Ingresá Cd para habilitar trayectoria, apogeo, Q máx y Mach.', 'CG + CP available. Enter Cd to unlock trajectory, apogee, MaxQ and Mach.')}</div>}
+    {massStationsReady && planformReady && vehicle.cd === '' && <div className="analysis-note">{txt('CG + CP disponibles. Ingresá Cd para habilitar trayectoria, apogeo, Q máx y Mach.', 'CG + CP available. Enter Cd to unlock trajectory, apogee, MaxQ and Mach.')}</div>}
     {error && <div className="analysis-error">{txt('Error de API', 'API error')}: {error}</div>}
     <EngineeringEquations lang={lang} />
   </div>;
