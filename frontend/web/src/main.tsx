@@ -45,6 +45,27 @@ type Vehicle = {
   nozzleExitDiameter: NumericField;
 };
 
+type TwinStation = {
+  key: string;
+  name: string;
+  x_start_mm: number | null;
+  x_end_mm: number | null;
+  raw_length_mm: number;
+};
+
+type TwinAssembly = {
+  datum: string;
+  resolved: boolean;
+  total_length_mm: number | null;
+  blockers: string[];
+  stations: TwinStation[];
+};
+
+type CurrentTwin = {
+  geometry?: { outer_diameter_mm?: { value?: number | null } };
+  masses?: { measured_structure_total_g?: number };
+};
+
 const initialVehicle: Vehicle = {
   totalLength: 860,
   diameter: 63,
@@ -344,6 +365,8 @@ function App() {
   const [analysisSummary, setAnalysisSummary] = useState<any>(null);
   const [componentSummary, setComponentSummary] = useState<any>(null);
   const [componentRows, setComponentRows] = useState<ComponentRow[]>(initialComponentRows);
+  const [currentTwin, setCurrentTwin] = useState<CurrentTwin | null>(null);
+  const [twinAssembly, setTwinAssembly] = useState<TwinAssembly | null>(null);
   const [motorConfigs, setMotorConfigs] = useState<MotorConfig[]>(initialMotorConfigs);
   const [activeMotorId, setActiveMotorId] = useState('motor-1');
   const [showMotorEditor, setShowMotorEditor] = useState(false);
@@ -373,6 +396,20 @@ function App() {
   const [pendingMissionLaunch, setPendingMissionLaunch] = useState(false);
   const motor = motorConfigs.find((item) => item.id === activeMotorId) ?? motorConfigs[0];
   const averageThrust = motorAverageThrust(motor);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    Promise.all([
+      fetch('/api/v1/digital-twin/current', { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
+      fetch('/api/v1/digital-twin/assembly', { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
+    ]).then(([design, assembly]) => {
+      if (design) setCurrentTwin(design as CurrentTwin);
+      if (assembly) setTwinAssembly(assembly as TwinAssembly);
+    }).catch((error) => {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+    });
+    return () => controller.abort();
+  }, []);
 
   const updateRequirementStatus = (id: string, status: RequirementStatus) => {
     setRequirementStatusOverrides((current) => {
@@ -478,6 +515,12 @@ function App() {
     (Number(vehicle.bodyLength) || 0);
   const geometryConsistent = vehicle.totalLength !== '' && axialSum === Number(vehicle.totalLength);
   const ready = blockers.length === 0;
+  const twinStationLabel = (key: string) => ({
+    nose: txt('Cofia', 'Nose'),
+    c1_parachute_payload: 'C1',
+    c2: 'C2',
+    tail_fin_can: txt('Cola + aletas', 'Tail + fins'),
+  } as Record<string, string>)[key] ?? key;
   const mobileGuideStep = !geometryConsistent ? 'vehicle' : !activeMotorReady ? 'motor' : !analysisSummary ? 'analysis' : 'results';
   const mobileGuideCompleted = analysisSummary ? 4 : activeMotorReady && geometryConsistent ? 3 : geometryConsistent ? 2 : 1;
 
@@ -943,7 +986,28 @@ function App() {
         </div>
 
         {pdrTab === 'geometry' && <section className="phase-process-panel pdr-geometry-panel">
-          <div className="phase-panel-head"><div><span>{txt('GEOMETRÍA Y PARÁMETROS', 'GEOMETRY & PARAMETERS')}</span><strong>{txt('Una sola fuente de verdad', 'One source of truth')}</strong></div><b className={geometryConsistent ? 'ok' : 'warn'}>{geometryConsistent ? '✓' : '!'}</b></div>
+          <div className="phase-panel-head"><div><span>{txt('GEOMETRÍA Y PARÁMETROS', 'GEOMETRY & PARAMETERS')}</span><strong>{txt('Una sola fuente de verdad', 'One source of truth')}</strong></div><b className={twinAssembly?.resolved ? 'ok' : 'warn'}>{twinAssembly?.resolved ? '✓' : '!'}</b></div>
+
+          {twinAssembly && <div className="pdr-mass-editor" aria-label={txt('Gemelo digital actual', 'Current digital twin')}>
+            {twinAssembly.stations.map((station) => <article key={station.key} className="pdr-component-card">
+              <div className="pdr-component-head">
+                <strong>{twinStationLabel(station.key)}</strong>
+                <span>{station.x_start_mm != null && station.x_end_mm != null ? 'x ' + station.x_start_mm.toFixed(0) + '–' + station.x_end_mm.toFixed(0) + ' mm' : 'x —'}</span>
+              </div>
+              <div className="pdr-component-fields">
+                <label><span>{txt('LARGO PIEZA', 'PART LENGTH')}</span><output>{station.raw_length_mm.toFixed(0)} mm</output></label>
+                <label><span>{txt('INICIO', 'START')}</span><output>{station.x_start_mm?.toFixed(0) ?? '—'} mm</output></label>
+                <label><span>{txt('FIN', 'END')}</span><output>{station.x_end_mm?.toFixed(0) ?? '—'} mm</output></label>
+              </div>
+            </article>)}
+          </div>}
+
+          {twinAssembly && <div className="pdr-mass-total">
+            <span>{txt('GEMELO CAD ACTUAL', 'CURRENT CAD TWIN')}</span>
+            <strong>{twinAssembly.total_length_mm?.toFixed(0) ?? '—'} mm · Ø{currentTwin?.geometry?.outer_diameter_mm?.value ?? '—'} mm</strong>
+            <small>{txt('Ensamblaje real · masa estructural medida ', 'Real assembly · measured structural mass ')}{currentTwin?.masses?.measured_structure_total_g ?? '—'} g</small>
+          </div>}
+
           <div className="pdr-input-grid">
             <label><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><NumericStepper value={vehicle.totalLength} onChange={(value) => update('totalLength', value)} unit="mm" step={5}/></label>
             <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><NumericStepper value={vehicle.diameter} onChange={(value) => update('diameter', value)} unit="mm" step={1}/></label>

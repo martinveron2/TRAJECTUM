@@ -4,9 +4,9 @@
   "status": "cdr-cad-baseline-in-progress",
   "geometry": {
     "total_length_mm": {
-      "value": null,
-      "status": "tbd-assembled-cad",
-      "note": "Do not reuse the former 860 mm test vehicle. Final assembled length must account for threaded/press-fit overlaps."
+      "value": 789.0,
+      "status": "derived-from-drawing-assembly",
+      "note": "180 + 215 + 215 + 225 - 15 - 15 - 16 = 789 mm. Portamotor is internal."
     },
     "outer_diameter_mm": {
       "value": 63.0,
@@ -77,24 +77,24 @@
           "upstream": "nose",
           "downstream": "c1_parachute_payload",
           "overlap_mm": {
-            "value": null,
-            "status": "tbd-cad-interface"
+            "value": 15.0,
+            "status": "derived-drawing-shoulder-engagement"
           }
         },
         {
           "upstream": "c1_parachute_payload",
           "downstream": "c2",
           "overlap_mm": {
-            "value": null,
-            "status": "tbd-thread-engagement"
+            "value": 15.0,
+            "status": "derived-drawing-thread-engagement"
           }
         },
         {
           "upstream": "c2",
           "downstream": "tail_fin_can",
           "overlap_mm": {
-            "value": null,
-            "status": "tbd-cad-interface"
+            "value": 16.0,
+            "status": "derived-drawing-socket-depth"
           }
         }
       ],
@@ -105,7 +105,7 @@
           "status": "pending-axial-station"
         }
       ],
-      "note": "Serial stations are solved only after every adjacent engagement is verified. Portamotor is internal and does not add to external vehicle length."
+      "note": "Axial engagement is derived from the dated drawings: 15 mm nose shoulder into C1, 15 mm C2 male thread into C1 female thread, and 16 mm C2-to-tail socket engagement. Portamotor is internal."
     }
   },
   "launch_angle_deg": 85.0,
