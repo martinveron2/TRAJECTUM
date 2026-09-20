@@ -943,7 +943,7 @@ function App() {
         </div>
 
         {pdrTab === 'geometry' && <section className="phase-process-panel pdr-geometry-panel">
-          <div className="phase-panel-head"><div><span>{txt('GEOMETRÍA Y PARÁMETROS', 'GEOMETRY & PARAMETERS')}</span><strong>{txt('Una sola fuente de verdad', 'One source of truth')}</strong></div><b className={geometryConsistent ? 'ok' : 'warn'}>{geometryConsistent ? '✓' : '!'}</b></div>
+          <div className="phase-panel-head"><div><span>{txt('GEOMETRÍA Y PARÁMETROS', 'GEOMETRY & PARAMETERS')}</span></div><b className={geometryConsistent ? 'ok' : 'warn'}>{geometryConsistent ? '✓' : '!'}</b></div>
           <div className="pdr-input-grid">
             <label><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><NumericStepper value={vehicle.totalLength} onChange={(value) => update('totalLength', value)} unit="mm" step={5}/></label>
             <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><NumericStepper value={vehicle.diameter} onChange={(value) => update('diameter', value)} unit="mm" step={1}/></label>
