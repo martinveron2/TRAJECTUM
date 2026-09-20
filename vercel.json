@@ -4,7 +4,7 @@
   "functions": {
     "main.py": {
       "maxDuration": 60,
-      "includeFiles": "frontend/web/dist/**",
+      "includeFiles": "{frontend/web/dist/**,data/reference-cases/utn-frh-g07/vehicle.cdr.json}",
       "excludeFiles": "{**/tests/**,**/__pycache__/**,.venv/**}"
     }
   }

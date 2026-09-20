@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+from typing import Any
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -233,6 +237,19 @@ class FullAnalysisResponse(BaseModel):
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     return HealthResponse(status="ok", service="trajectum-api", version="0.2.0-dev0")
+
+
+CURRENT_DESIGN_PATH = Path(__file__).resolve().parents[4] / "data" / "reference-cases" / "utn-frh-g07" / "vehicle.cdr.json"
+
+
+def _load_current_design() -> dict[str, Any]:
+    return json.loads(CURRENT_DESIGN_PATH.read_text(encoding="utf-8"))
+
+
+@app.get("/v1/digital-twin/current")
+def current_digital_twin() -> dict[str, Any]:
+    """Return the current-design engineering baseline with verification/TBD markers intact."""
+    return _load_current_design()
 
 
 @app.get("/v1/capabilities", response_model=list[Capability])

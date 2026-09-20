@@ -11,6 +11,21 @@ def test_health():
     assert response.json()["status"] == "ok"
 
 
+def test_current_digital_twin_exposes_verified_cad_and_measured_masses():
+    response = client.get("/v1/digital-twin/current")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["geometry"]["outer_diameter_mm"]["value"] == 63.0
+    assert data["geometry"]["nose_length_mm"]["value"] == 180.0
+    assert data["geometry"]["total_length_mm"]["value"] is None
+    masses = data["masses"]
+    assert masses["measured_structure_total_g"] == 870.0
+    assert sum(item["mass_g"] for item in masses["measured_items"]) == 870.0
+    assert data["fins"]["airfoil"]["designation"]["value"] == "NACA 0012"
+    assert data["fins"]["root_chord_mm"]["value"] is None
+    assert data["legacy_test_vehicle"]["status"] == "simulation-fixture-only-not-current-design"
+
+
 def test_capabilities_are_explicit_contracts():
     response = client.get("/v1/capabilities")
     assert response.status_code == 200
