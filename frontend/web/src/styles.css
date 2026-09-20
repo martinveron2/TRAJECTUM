@@ -6257,3 +6257,43 @@ input[type="number"],
 @media(max-width:820px){
   .desktop-flight-results{display:none!important}
 }
+
+@media(max-width:820px){
+  /* PDR geometry below CP: keep the same readable cockpit scale as the cards above. */
+  .pdr-geometry-panel .pdr-input-grid label>span{
+    font-family:"Space Grotesk",sans-serif!important;
+    font-size:16px!important;
+    font-weight:700!important;
+    line-height:1.2!important;
+    letter-spacing:.01em!important;
+  }
+  .pdr-geometry-panel .pdr-input-grid .pdr-cad-locked output{
+    min-height:48px!important;
+    padding:0 12px!important;
+    border-radius:10px!important;
+    font-family:"Space Mono",monospace!important;
+    font-size:18px!important;
+    font-weight:700!important;
+    line-height:1!important;
+  }
+  .pdr-geometry-panel .pdr-input-grid .pdr-cad-locked output b{
+    font-family:"Space Grotesk",sans-serif!important;
+    font-size:12px!important;
+    font-weight:800!important;
+    letter-spacing:.05em!important;
+  }
+  .pdr-geometry-panel .pdr-input-grid .numeric-wheel-trigger{
+    min-height:48px!important;
+  }
+  .pdr-geometry-panel .pdr-input-grid .numeric-wheel-trigger span{
+    font-family:"Space Mono",monospace!important;
+    font-size:19px!important;
+    font-weight:700!important;
+  }
+  .pdr-geometry-panel .pdr-input-grid .numeric-wheel-trigger em,
+  .pdr-geometry-panel .pdr-input-grid .numeric-wheel-trigger b{
+    font-family:"Space Grotesk",sans-serif!important;
+    font-size:13px!important;
+    font-weight:700!important;
+  }
+}
