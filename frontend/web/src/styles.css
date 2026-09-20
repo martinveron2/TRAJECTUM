@@ -4798,14 +4798,14 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    min-height:18px;
-    padding:2px 5px;
+    min-height:20px;
+    padding:3px 6px;
     border:1px solid rgba(126,193,244,.34);
     border-radius:999px;
     background:rgba(30,91,132,.26);
-    font-size:.50rem!important;
+    font-size:.58rem!important;
     font-weight:900!important;
-    letter-spacing:.055em!important;
+    letter-spacing:.04em!important;
     color:#8FD0FF!important;
   }
   #engineering-analysis .analysis-cd-control.manual .analysis-cd-head small{
@@ -4861,7 +4861,7 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     border:1px solid rgba(126,193,244,.34);
     border-radius:999px;
     background:rgba(30,91,132,.22);
-    font-size:.75rem!important;
+    font-size:.58rem!important;
     font-weight:900!important;
     line-height:1.08!important;
     letter-spacing:.01em!important;
@@ -4870,11 +4870,11 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     white-space:normal;
   }
   #engineering-analysis .analysis-cd-restore{
-    min-height:18px!important;
-    font-size:.48rem!important;
+    min-height:20px!important;
+    font-size:.58rem!important;
     font-weight:900!important;
     line-height:1.05!important;
-    letter-spacing:.03em!important;
+    letter-spacing:.02em!important;
     color:#F2C77D!important;
   }
   #engineering-analysis .run{

@@ -377,7 +377,7 @@ export function LiveAnalysisPanel({
             setAnalysis(null);
           }}/>
           {cdIsEstimated
-            ? <em className="analysis-cd-source">NISKANEN / OPENROCKET</em>
+            ? <em className="analysis-cd-source">OPENROCKET</em>
             : <button className="analysis-cd-restore" type="button" onClick={() => { onCdChange?.(estimatedCd); setAnalysis(null); }} aria-label={txt('Restaurar Cd estimado', 'Restore estimated Cd')}>{txt('↺ USAR ESTIMADO', '↺ USE ESTIMATED')}</button>}
         </div>
       </div></div>
