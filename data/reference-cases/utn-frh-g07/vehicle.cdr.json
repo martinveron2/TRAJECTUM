@@ -1,57 +1,157 @@
 {
   "schema_version": "0.1",
   "id": "utn-frh-g07-cdr",
-  "status": "cdr-working-baseline",
+  "status": "cdr-cad-baseline-in-progress",
   "geometry": {
-    "total_length_mm": 860.0,
-    "outer_diameter_mm": 63.0,
-    "nose_length_mm": 180.0,
-    "modular_bay_length_mm": 180.0,
-    "lower_body_length_mm": 500.0,
-    "wall_thickness_mm": {
-      "value": 2.0,
-      "status": "provisional"
-    }
+    "total_length_mm": {
+      "value": null,
+      "status": "tbd-assembled-cad",
+      "note": "Do not reuse the former 860 mm test vehicle. Final assembled length must account for threaded/press-fit overlaps."
+    },
+    "outer_diameter_mm": {
+      "value": 63.0,
+      "status": "verified-drawing"
+    },
+    "nose_length_mm": {
+      "value": 180.0,
+      "status": "verified-cad-filename-and-drawing"
+    },
+    "parts": {
+      "nose": {
+        "length_mm": 180.0,
+        "outer_diameter_mm": 63.0,
+        "interface_diameter_mm": 55.0,
+        "profile": "tangent_ogive",
+        "radii_mm": [
+          561.54,
+          559.04
+        ],
+        "status": "verified-drawing"
+      },
+      "c1_parachute_payload": {
+        "raw_part_length_mm": 215.0,
+        "outer_diameter_mm": 63.0,
+        "diameters_mm": [
+          59.0,
+          52.0,
+          24.0,
+          8.0
+        ],
+        "thread": "M58x4 6H",
+        "status": "verified-drawing"
+      },
+      "c2": {
+        "raw_part_length_mm": 215.0,
+        "dimensioned_body_mm": 200.0,
+        "outer_diameter_mm": 63.0,
+        "inner_diameter_mm": 58.0,
+        "thread": "M58x4 6g",
+        "status": "verified-drawing"
+      },
+      "tail_fin_can": {
+        "raw_part_length_mm": 225.0,
+        "outer_diameter_mm": 63.0,
+        "overall_fin_span_mm": 168.0,
+        "airfoil": "NACA 0012",
+        "status": "verified-drawing",
+        "note": "Fin-planform variables remain unmapped until drawing dimensions are assigned unambiguously to root chord, tip chord, radial span and sweep."
+      },
+      "motor_mount": {
+        "raw_part_length_mm": 190.0,
+        "outer_diameter_mm": 54.0,
+        "inner_diameter_mm": 33.0,
+        "status": "verified-drawing"
+      }
+    },
+    "assembly_note": "Raw part lengths are not summed as vehicle length because interfaces overlap when assembled."
   },
   "launch_angle_deg": 85.0,
   "fins": {
-    "count": 4,
+    "count": {
+      "value": 4,
+      "status": "verified-cad"
+    },
     "root_chord_mm": {
-      "value": 80.0,
-      "status": "provisional-legacy-pdr"
+      "value": null,
+      "status": "tbd-map-from-drawing"
     },
     "span_mm": {
-      "value": 50.0,
-      "status": "provisional-legacy-pdr"
+      "value": null,
+      "status": "tbd-map-from-drawing"
     },
     "tip_chord_mm": {
       "value": null,
-      "status": "tbd"
+      "status": "tbd-map-from-drawing"
     },
     "sweep_length_mm": {
       "value": null,
-      "status": "tbd"
+      "status": "tbd-map-from-drawing"
     },
     "leading_edge_x_mm": {
       "value": null,
-      "status": "tbd"
+      "status": "tbd-after-assembly-stations"
     },
     "airfoil": {
-      "type": "naca4-or-custom",
+      "type": "naca4",
       "designation": {
-        "value": null,
-        "status": "tbd-professor-specified"
+        "value": "NACA 0012",
+        "status": "verified-cad-and-filename"
       },
       "custom_coordinates": {
         "value": null,
-        "status": "optional"
+        "status": "not-required-for-barrowman-planform"
       },
-      "note": "Enter a standard NACA 4-digit designation or normalized custom profile coordinates. Planform dimensions are entered separately."
+      "note": "Barrowman CP uses fin planform and axial location; NACA 0012 remains the physical section definition."
     }
   },
   "masses": {
-    "status": "tbd-current-design",
-    "note": "Legacy PDR masses are intentionally not promoted to the CDR baseline."
+    "status": "measured-structure-cg-stations-pending",
+    "measured_structure_total_g": 870.0,
+    "measured_items": [
+      {
+        "name": "Cofia",
+        "mass_g": 126.0,
+        "status": "measured"
+      },
+      {
+        "name": "C1",
+        "mass_g": 190.0,
+        "status": "measured"
+      },
+      {
+        "name": "C2",
+        "mass_g": 146.0,
+        "status": "measured"
+      },
+      {
+        "name": "Cola + aletas",
+        "mass_g": 260.0,
+        "status": "measured"
+      },
+      {
+        "name": "Portamotor",
+        "mass_g": 148.0,
+        "status": "measured"
+      }
+    ],
+    "known_internal_items": [
+      {
+        "name": "Paracaidas",
+        "mass_g": 30.0,
+        "status": "project-confirmed"
+      },
+      {
+        "name": "Electronica",
+        "mass_g": 80.0,
+        "status": "project-confirmed"
+      },
+      {
+        "name": "Carga util",
+        "mass_g": 100.0,
+        "status": "project-confirmed"
+      }
+    ],
+    "note": "Measured masses are authoritative for the current printed structure. Numeric CG remains blocked until each item has an axial CG station referenced to the nose tip."
   },
   "motor": {
     "designation": "A-100 RN (29%H)",
@@ -70,5 +170,38 @@
       "status": "tbd"
     },
     "note": "Drag coefficient intentionally remains TBD until a defensible CDR assumption or source is selected."
+  },
+  "revision": "2026-09-19-cad-pdf-mass-ingest",
+  "datum": "nose_tip_x0_positive_aft",
+  "sources": {
+    "cad_and_drawings_date": "2026-09-19",
+    "drawings": [
+      "Modelado de nariz - ojiva tangente R31.5 L180 (mm).pdf",
+      "Modelado 2 de Cuerpo - C1 (porta paracaidas y carga util).pdf",
+      "Modelado 2 de cuerpo - C2.pdf",
+      "Modelado 2 de cola - perfil NACA 0012.pdf",
+      "Modelado 2 de Portamotor.pdf"
+    ],
+    "native_cad": [
+      "Modelado de nariz - ojiva tangente R31.5 L180 (mm).f3d",
+      "Modelado 2 de CUERPO - C1 (porta paracaidas).f3d",
+      "Modelado 2 de CUERPO - C2.f3z",
+      "Modelado 2 de cola - perfil NACA 0012.f3d",
+      "Modelado 2 de Portamotor.f3d"
+    ],
+    "mass_source": "team measured-mass note supplied 2026-09-20"
+  },
+  "legacy_test_vehicle": {
+    "status": "simulation-fixture-only-not-current-design",
+    "total_length_mm": 860.0,
+    "nose_length_mm": 180.0,
+    "modular_bay_length_mm": 180.0,
+    "lower_body_length_mm": 500.0,
+    "fin_root_chord_mm": 80.0,
+    "fin_tip_chord_mm": 40.0,
+    "fin_span_mm": 50.0,
+    "fin_sweep_mm": 40.0,
+    "fin_leading_edge_x_mm": 780.0,
+    "note": "Retained only to document the former functional test configuration. Do not use these values as CDR design truth."
   }
 }
