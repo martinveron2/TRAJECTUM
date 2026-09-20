@@ -14,7 +14,7 @@ type VehicleLike = {
   noseProfile: string;
   airfoil: string;
 };
-export type ComponentRow = { id: number; name: string; massG: NumericField; lengthMm: NumericField; diameterMm: NumericField; kind: string; note: string };
+export type ComponentRow = { id: number; name: string; massG: NumericField; lengthMm: NumericField; diameterMm: NumericField; xCgMm?: NumericField; kind: string; note: string };
 type ComponentOut = { name: string; mass_g: number; x_cg_mm: number; source: string };
 type AssemblyStation = { key: string; name: string; x_start_mm: number | null; x_end_mm: number | null; raw_length_mm: number };
 type UnifiedComponentOut = {
@@ -25,7 +25,7 @@ type UnifiedComponentOut = {
   source: string;
 };
 type ComponentResponse = { components: ComponentOut[]; total_mass_g: number; total_cg_mm: number };
-type ComponentPayload = { name: string; mass_g: number; kind: string; x_start_mm?: number; x_end_mm?: number; length_mm?: number; base_radius_mm?: number; leading_edge_x_mm?: number; root_chord_mm?: number; tip_chord_mm?: number; span_mm?: number; sweep_mm?: number; profile?: string; power_exponent?: number };
+type ComponentPayload = { name: string; mass_g: number; kind: string; x_start_mm?: number; x_end_mm?: number; x_cg_mm?: number; length_mm?: number; base_radius_mm?: number; leading_edge_x_mm?: number; root_chord_mm?: number; tip_chord_mm?: number; span_mm?: number; sweep_mm?: number; profile?: string; power_exponent?: number };
 type Analysis = {
   total_mass_g: number;
   components?: UnifiedComponentOut[];
@@ -148,13 +148,15 @@ function AnimatedValue({ value, decimals = 1, suffix = '' }: { value?: number; d
 }
 
 export const initialComponentRows: ComponentRow[] = [
-  { id: 1, name: 'Cofia', massG: 100, lengthMm: 180, diameterMm: 63, kind: 'nose', note: 'xCG from selected nose-profile shell' },
-  { id: 2, name: 'Cuerpo principal', massG: 330, lengthMm: 500, diameterMm: 63, kind: 'body', note: 'xCG from axial shell envelope' },
-  { id: 3, name: 'Motor', massG: 490, lengthMm: 190, diameterMm: 50, kind: 'motor', note: 'xCG from motor axial envelope' },
-  { id: 4, name: 'Paracaídas', massG: 30, lengthMm: 60, diameterMm: 50, kind: 'parachute', note: 'upper third of modular bay · demo geometry' },
-  { id: 5, name: 'Electrónica', massG: 80, lengthMm: 60, diameterMm: 50, kind: 'electronics', note: 'middle third of modular bay · demo geometry' },
-  { id: 6, name: 'Carga útil', massG: 100, lengthMm: 60, diameterMm: 50, kind: 'payload', note: 'lower third of modular bay · demo geometry' },
-  { id: 7, name: 'Aletas · 4 total', massG: 20, lengthMm: 80, diameterMm: 0, kind: 'fins', note: 'xCG from trapezoidal planform' },
+  { id: 1, name: 'Cofia', massG: 126, lengthMm: 180, diameterMm: 63, kind: 'nose', note: 'masa medida · xCG de envolvente de ojiva tangente' },
+  { id: 2, name: 'C1', massG: 190, lengthMm: 215, diameterMm: 63, xCgMm: 272.5, kind: 'point_mass', note: 'masa medida · xCG provisional por centro de pieza ensamblada' },
+  { id: 3, name: 'C2', massG: 146, lengthMm: 215, diameterMm: 63, xCgMm: 472.5, kind: 'point_mass', note: 'masa medida · xCG provisional por centro de pieza ensamblada' },
+  { id: 4, name: 'Cola + aletas', massG: 260, lengthMm: 225, diameterMm: 63, xCgMm: 700.8, kind: 'point_mass', note: 'masa medida · xCG geométrico estimado con densidad de impresión uniforme' },
+  { id: 5, name: 'Portamotor', massG: 148, lengthMm: 190, diameterMm: 54, xCgMm: 694, kind: 'point_mass', note: 'masa medida · xCG provisional en el centro del portamotor' },
+  { id: 6, name: 'Paracaídas', massG: 30, lengthMm: 70, diameterMm: 52, xCgMm: 215, kind: 'point_mass', note: 'primero bajo la cofia · centro de cavidad delantera de 70 mm' },
+  { id: 7, name: 'Carga útil', massG: 100, lengthMm: 50, diameterMm: 52, xCgMm: 285, kind: 'point_mass', note: 'primera mitad de la cavidad trasera de C1' },
+  { id: 8, name: 'Electrónica', massG: 80, lengthMm: 50, diameterMm: 52, xCgMm: 335, kind: 'point_mass', note: 'al fondo de la cavidad trasera de C1' },
+  { id: 9, name: 'Motor', massG: 490, lengthMm: 190, diameterMm: 50, kind: 'motor', note: 'xCG en el centro axial del motor' },
 ];
 
 export function LiveAnalysisPanel({
@@ -192,6 +194,7 @@ export function LiveAnalysisPanel({
   const displaySource = (source: string) => {
     if (!isEs) return source;
     if (source === 'geometry:axial_uniform') return 'geometría: distribución axial uniforme';
+    if (source === 'estimate:drawing-derived-station') return 'estimado desde plano / estación axial';
     if (source === 'geometry:trapezoidal_fin_planform') return 'geometría: planta trapezoidal de aletas';
     if (source.startsWith('geometry:') && source.endsWith('_shell')) return 'geometría: envolvente de cofia ' + source.slice(9, -6).replace(/_/g, ' ');
     return source;
@@ -231,6 +234,7 @@ export function LiveAnalysisPanel({
   const componentPayload = useMemo<ComponentPayload[]>(() => rows.flatMap<ComponentPayload>((row) => {
     const common = { name: row.name, mass_g: Number(row.massG) };
     if (row.kind === 'nose') return [{ ...common, kind: 'profile_shell', profile: vehicle.noseProfile, length_mm: Number(row.lengthMm) || Number(vehicle.noseLength), base_radius_mm: (Number(row.diameterMm) || Number(vehicle.diameter)) / 2, power_exponent: 0.75 }];
+    if (row.kind === 'point_mass' && row.xCgMm !== '' && row.xCgMm != null) return [{ ...common, kind: 'point_mass', x_cg_mm: Number(row.xCgMm) }];
     if (row.kind === 'body') {
       const xStart = Number(vehicle.noseLength) + Number(vehicle.bayLength);
       return [{ ...common, kind: 'axial_uniform', x_start_mm: xStart, x_end_mm: Math.min(xStart + (Number(row.lengthMm) || Number(vehicle.bodyLength)), Number(vehicle.totalLength)) }];

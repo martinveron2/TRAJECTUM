@@ -107,8 +107,8 @@ type CurrentTwin = {
   masses?: {
     status?: string;
     measured_structure_total_g?: number;
-    measured_items?: Array<{ name: string; mass_g: number; status: string }>;
-    known_internal_items?: Array<{ name: string; mass_g: number; status: string }>;
+    measured_items?: Array<{ name: string; mass_g: number; status: string; x_cg_mm_from_nose?: number; x_cg_status?: string }>;
+    known_internal_items?: Array<{ name: string; mass_g: number; status: string; x_cg_mm_from_nose?: number; x_cg_status?: string }>;
   };
 };
 
@@ -1178,29 +1178,29 @@ function App() {
         </section>}
 
         {pdrTab === 'mass' && <section className="phase-process-panel pdr-mass-panel">
-          <div className="phase-panel-head"><div><span>{txt('MASAS REALES', 'REAL MASSES')}</span><strong>{txt('Estructura pesada · xCG todavía por cerrar', 'Measured structure · xCG still pending')}</strong></div><b>{currentTwin?.masses?.measured_structure_total_g != null ? Math.round(currentTwin.masses.measured_structure_total_g) + 'g' : '—'}</b></div>
+          <div className="phase-panel-head"><div><span>{txt('MASAS REALES', 'REAL MASSES')}</span><strong>{txt('Estructura pesada · xCG provisional desde planos', 'Measured structure · provisional xCG from drawings')}</strong></div><b>{currentTwin?.masses?.measured_structure_total_g != null ? Math.round(currentTwin.masses.measured_structure_total_g) + 'g' : '—'}</b></div>
           <div className="pdr-mass-editor">
             {(currentTwin?.masses?.measured_items ?? []).map((item) => <article key={item.name} className="pdr-component-card">
-              <div className="pdr-component-head"><strong>{item.name}</strong><span>xCG —</span></div>
+              <div className="pdr-component-head"><strong>{item.name}</strong><span>{item.x_cg_mm_from_nose != null ? `xCG ≈ ${item.x_cg_mm_from_nose.toFixed(1)} mm` : 'xCG —'}</span></div>
               <div className="pdr-component-fields">
                 <label><span>{txt('MASA MEDIDA', 'MEASURED MASS')}</span><output>{item.mass_g.toFixed(0)} g</output></label>
                 <label><span>{txt('FUENTE', 'SOURCE')}</span><output>{txt('BALANZA', 'SCALE')}</output></label>
-                <label><span>xCG</span><output>{txt('PENDIENTE', 'PENDING')}</output></label>
+                <label><span>xCG</span><output>{item.x_cg_mm_from_nose != null ? `≈ ${item.x_cg_mm_from_nose.toFixed(1)} mm` : txt('PENDIENTE', 'PENDING')}</output></label>
               </div>
             </article>)}
             {(currentTwin?.masses?.known_internal_items ?? []).map((item) => <article key={item.name} className="pdr-component-card">
-              <div className="pdr-component-head"><strong>{item.name}</strong><span>{txt('INTERNO', 'INTERNAL')} · xCG —</span></div>
+              <div className="pdr-component-head"><strong>{item.name}</strong><span>{txt('INTERNO', 'INTERNAL')} · {item.x_cg_mm_from_nose != null ? `xCG ≈ ${item.x_cg_mm_from_nose.toFixed(1)} mm` : 'xCG —'}</span></div>
               <div className="pdr-component-fields">
                 <label><span>{txt('MASA', 'MASS')}</span><output>{item.mass_g.toFixed(0)} g</output></label>
                 <label><span>{txt('ESTADO', 'STATUS')}</span><output>{txt('CONFIRMADA', 'CONFIRMED')}</output></label>
-                <label><span>xCG</span><output>{txt('PENDIENTE', 'PENDING')}</output></label>
+                <label><span>xCG</span><output>{item.x_cg_mm_from_nose != null ? `≈ ${item.x_cg_mm_from_nose.toFixed(1)} mm` : txt('PENDIENTE', 'PENDING')}</output></label>
               </div>
             </article>)}
           </div>
           <div className="pdr-mass-total">
             <span>{txt('ESTRUCTURA MEDIDA', 'MEASURED STRUCTURE')}</span>
             <strong>{currentTwin?.masses?.measured_structure_total_g ?? '—'} g</strong>
-            <small>{txt('No se inventa CG: el análisis queda bloqueado hasta fijar las estaciones xCG reales.', 'CG is not invented: analysis stays blocked until real xCG stations are fixed.')}</small>
+            <small>{txt('xCG provisional estimado desde planos; reemplazar por propiedades de masa CAD o medición de balance antes de congelar el CDR.', 'Provisional xCG estimated from drawings; replace with CAD mass properties or balance measurement before freezing the CDR.')}</small>
           </div>
         </section>}
 

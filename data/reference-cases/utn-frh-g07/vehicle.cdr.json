@@ -156,53 +156,69 @@
     }
   },
   "masses": {
-    "status": "measured-structure-cg-stations-pending",
+    "status": "measured-structure-cg-stations-estimated",
     "measured_structure_total_g": 870.0,
     "measured_items": [
       {
         "name": "Cofia",
         "mass_g": 126.0,
-        "status": "measured"
+        "status": "measured",
+        "x_cg_mm_from_nose": 111.7,
+        "x_cg_status": "geometry-derived"
       },
       {
         "name": "C1",
         "mass_g": 190.0,
-        "status": "measured"
+        "status": "measured",
+        "x_cg_mm_from_nose": 272.5,
+        "x_cg_status": "estimated-from-drawing"
       },
       {
         "name": "C2",
         "mass_g": 146.0,
-        "status": "measured"
+        "status": "measured",
+        "x_cg_mm_from_nose": 472.5,
+        "x_cg_status": "estimated-from-drawing"
       },
       {
         "name": "Cola + aletas",
         "mass_g": 260.0,
-        "status": "measured"
+        "status": "measured",
+        "x_cg_mm_from_nose": 700.8,
+        "x_cg_status": "estimated-from-drawing"
       },
       {
         "name": "Portamotor",
         "mass_g": 148.0,
-        "status": "measured"
+        "status": "measured",
+        "x_cg_mm_from_nose": 694.0,
+        "x_cg_status": "estimated-from-drawing"
       }
     ],
     "known_internal_items": [
       {
         "name": "Paracaidas",
         "mass_g": 30.0,
-        "status": "project-confirmed"
+        "status": "project-confirmed",
+        "x_cg_mm_from_nose": 215.0,
+        "x_cg_status": "estimated-from-c1-cavities"
       },
       {
         "name": "Electronica",
         "mass_g": 80.0,
-        "status": "project-confirmed"
+        "status": "project-confirmed",
+        "x_cg_mm_from_nose": 335.0,
+        "x_cg_status": "estimated-from-c1-cavities"
       },
       {
         "name": "Carga util",
         "mass_g": 100.0,
-        "status": "project-confirmed"
+        "status": "project-confirmed",
+        "x_cg_mm_from_nose": 285.0,
+        "x_cg_status": "estimated-from-c1-cavities"
       }
     ],
-    "note": "Measured masses are authoritative for the current printed structure. Numeric CG remains blocked until each item has an axial CG station referenced to the nose tip."
+    "note": "Measured masses are authoritative. xCG stations are provisional engineering estimates from the 19/09/2026 drawings and the agreed internal order: parachute first; payload then electronics at the aft end of C1. Replace with CAD mass properties or balance measurements when available."
   },
   "motor": {
     "designation": "A-100 RN (29%H)",
@@ -213,7 +229,9 @@
     "max_thrust_n": 600.0,
     "propellant_mass_g": 140.0,
     "dry_mass_g": 350.0,
-    "status": "tp-specified"
+    "status": "tp-specified",
+    "x_cg_mm_from_nose": 694.0,
+    "x_cg_status": "estimated-center-of-190mm-aft-installation"
   },
   "aerodynamics": {
     "cd": {
@@ -243,7 +261,7 @@
     },
     "note": "Estimated effective Cd for the current 789 mm geometry. Iteration: seed Cd=0.55 -> preliminary trajectory -> V at q_max -> analytical/empirical drag estimate -> repeat to convergence. Converged raw estimate 0.344660888; stored as 0.345 (3 significant figures). This is an engineering estimate, not a measured Cd."
   },
-  "revision": "2026-09-20-fusion-geometry-cd-estimated",
+  "revision": "2026-09-20-fusion-geometry-cg-estimated",
   "datum": "nose_tip_x0_positive_aft",
   "sources": {
     "cad_and_drawings_date": "2026-09-19",

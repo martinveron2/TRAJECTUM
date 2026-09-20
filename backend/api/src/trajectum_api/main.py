@@ -68,6 +68,7 @@ class ComponentGeometryIn(BaseModel):
     mass_g: float = Field(gt=0)
     x_start_mm: float | None = None
     x_end_mm: float | None = None
+    x_cg_mm: float | None = None
     length_mm: float | None = None
     base_radius_mm: float | None = None
     leading_edge_x_mm: float | None = None
@@ -244,7 +245,7 @@ def health() -> HealthResponse:
 
 
 CURRENT_DESIGN_PATH = Path(__file__).resolve().parents[4] / "data" / "reference-cases" / "utn-frh-g07" / "vehicle.cdr.json"
-CURRENT_DESIGN_REVISION = "2026-09-20-fusion-geometry-mapped"
+CURRENT_DESIGN_REVISION = "2026-09-20-fusion-geometry-cg-estimated"
 
 
 def _load_current_design() -> dict[str, Any]:
@@ -406,6 +407,11 @@ def _calculate_component_mass_properties(request: list[ComponentGeometryIn]) -> 
                 raise ValueError("axial_uniform requires x_start_mm and x_end_mm")
             x = axial_uniform_cg(x_start_m=item.x_start_mm / 1000.0, x_end_m=item.x_end_mm / 1000.0)
             source = "geometry:axial_uniform"
+        elif item.kind == "point_mass":
+            if item.x_cg_mm is None:
+                raise ValueError("point_mass requires x_cg_mm")
+            x = item.x_cg_mm / 1000.0
+            source = "estimate:drawing-derived-station"
         elif item.kind in {"tangent_ogive_shell", "profile_shell"}:
             if item.length_mm is None or item.base_radius_mm is None:
                 raise ValueError("nose shell requires length_mm and base_radius_mm")
