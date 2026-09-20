@@ -93,6 +93,8 @@ export function LiveAnalysisPanel({
   onOpenFlight,
   massStationsReady = true,
   assemblyStations = [],
+  estimatedCd = 0.345,
+  onCdChange,
   lang = 'es',
 }: {
   vehicle: VehicleLike;
@@ -105,6 +107,8 @@ export function LiveAnalysisPanel({
   onOpenFlight?: () => void;
   massStationsReady?: boolean;
   assemblyStations?: AssemblyStation[];
+  estimatedCd?: number;
+  onCdChange?: (value: NumericField) => void;
   lang?: 'es' | 'en';
 }) {
   const isEs = lang === 'es';
@@ -136,6 +140,7 @@ export function LiveAnalysisPanel({
   const [running, setRunning] = useState(false);
   const [showMassEditor, setShowMassEditor] = useState(false);
   const lastAutoRunToken = useRef(0);
+  const cdIsEstimated = vehicle.cd !== '' && Math.abs(Number(vehicle.cd) - estimatedCd) < 1e-6;
 
   useEffect(() => {
     if (resetToken > 0) {
@@ -281,14 +286,36 @@ export function LiveAnalysisPanel({
 
   return <div className={running ? 'panel mass-panel analysis-running' : 'panel mass-panel'} id="engineering-analysis" aria-busy={running}>
     <div className="panel-title compact"><div><p>{txt('PROPIEDADES DE MASA DERIVADAS DE LA GEOMETRÍA', 'GEOMETRY-DERIVED MASS PROPERTIES')}</p><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
-      <button
-        className="run"
-        disabled={!massStationsReady || !planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
-        onClick={run}
-      >
-        {running && <span className="run-spinner" aria-hidden="true" />}
-        <span>{running ? txt('EJECUTANDO ANÁLISIS…', 'RUNNING ANALYSIS…') : !massStationsReady ? txt('FIJAR xCG REALES PARA CONTINUAR', 'SET REAL xCG TO CONTINUE') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</span>
-      </button></div>
+      <div className="analysis-run-row">
+        <div className={cdIsEstimated ? 'analysis-cd-control estimated' : 'analysis-cd-control manual'} title={txt('Cd usado por la simulación', 'Cd used by the simulation')}>
+          <div><span>Cd</span><small>{cdIsEstimated ? txt('EST.', 'EST.') : txt('MAN.', 'MAN.')}</small></div>
+          <input
+            aria-label={txt('Cd para simulación', 'Cd for simulation')}
+            type="number"
+            min="0"
+            step="0.001"
+            inputMode="decimal"
+            value={vehicle.cd}
+            onFocus={keepInputVisible}
+            onChange={(event) => {
+              const value = event.target.value;
+              onCdChange?.(value === '' ? '' : Number(value));
+              setAnalysis(null);
+            }}
+          />
+          {cdIsEstimated
+            ? <em>NISK.</em>
+            : <button type="button" onClick={() => { onCdChange?.(estimatedCd); setAnalysis(null); }} aria-label={txt('Restaurar Cd estimado', 'Restore estimated Cd')}>↺ EST</button>}
+        </div>
+        <button
+          className="run"
+          disabled={!massStationsReady || !planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
+          onClick={run}
+        >
+          {running && <span className="run-spinner" aria-hidden="true" />}
+          <span>{running ? txt('EJECUTANDO ANÁLISIS…', 'RUNNING ANALYSIS…') : !massStationsReady ? txt('FIJAR xCG REALES PARA CONTINUAR', 'SET REAL xCG TO CONTINUE') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</span>
+        </button>
+      </div></div>
     {running && <div className="analysis-execution-live">
       <div className="analysis-execution-orbit"><i/><i/><b>Σ</b></div>
       <div><span>{txt('PROCESANDO MODELO', 'PROCESSING MODEL')}</span><strong>{txt('Calculando CG · CP · estabilidad…', 'Calculating CG · CP · stability…')}</strong></div>
