@@ -4755,7 +4755,7 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
   #engineering-analysis .analysis-run-row{
     width:100%;
     display:grid;
-    grid-template-columns:minmax(0,1fr) 82px;
+    grid-template-columns:minmax(0,1fr) 108px;
     gap:9px;
     align-items:stretch;
     margin-top:8px;
@@ -4794,13 +4794,24 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     font-weight:700!important;
     color:#D9EEFF!important;
   }
-  #engineering-analysis .analysis-cd-control>div small{
-    font-size:.42rem!important;
-    letter-spacing:.07em!important;
-    color:#7EC1F4!important;
+  #engineering-analysis .analysis-cd-head small{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:18px;
+    padding:2px 5px;
+    border:1px solid rgba(126,193,244,.34);
+    border-radius:999px;
+    background:rgba(30,91,132,.26);
+    font-size:.50rem!important;
+    font-weight:900!important;
+    letter-spacing:.055em!important;
+    color:#8FD0FF!important;
   }
-  #engineering-analysis .analysis-cd-control.manual>div small{
-    color:#E6B86C!important;
+  #engineering-analysis .analysis-cd-control.manual .analysis-cd-head small{
+    border-color:rgba(230,184,108,.46);
+    background:rgba(119,79,26,.24);
+    color:#F2C77D!important;
   }
   #engineering-analysis .analysis-cd-control .numeric-wheel-control{
     width:100%;
@@ -4840,6 +4851,24 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     cursor:pointer;
     color:#E6B86C;
     font-weight:700;
+  }
+  #engineering-analysis .analysis-cd-source{
+    display:block;
+    min-height:auto!important;
+    font-size:.46rem!important;
+    font-weight:800!important;
+    line-height:1.05!important;
+    letter-spacing:.025em!important;
+    color:#8FB8D8!important;
+    white-space:normal;
+  }
+  #engineering-analysis .analysis-cd-restore{
+    min-height:18px!important;
+    font-size:.48rem!important;
+    font-weight:900!important;
+    line-height:1.05!important;
+    letter-spacing:.03em!important;
+    color:#F2C77D!important;
   }
   #engineering-analysis .run{
     min-height:58px!important;

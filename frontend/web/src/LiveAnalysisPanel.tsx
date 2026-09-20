@@ -371,14 +371,14 @@ export function LiveAnalysisPanel({
           <span>{running ? txt('EJECUTANDO ANÁLISIS…', 'RUNNING ANALYSIS…') : !massStationsReady ? txt('FIJAR xCG REALES PARA CONTINUAR', 'SET REAL xCG TO CONTINUE') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</span>
         </button>
         <div className={cdIsEstimated ? 'analysis-cd-control estimated' : 'analysis-cd-control manual'} title={txt('Cd usado por la simulación', 'Cd used by the simulation')}>
-          <div><span>Cd</span><small>{cdIsEstimated ? txt('EST.', 'EST.') : txt('MAN.', 'MAN.')}</small></div>
+          <div className="analysis-cd-head"><span>Cd</span><small>{cdIsEstimated ? txt('ESTIMADO', 'ESTIMATED') : txt('MANUAL', 'MANUAL')}</small></div>
           <CdWheelSelector value={vehicle.cd} onChange={(value) => {
             onCdChange?.(value);
             setAnalysis(null);
           }}/>
           {cdIsEstimated
-            ? <em>NISK.</em>
-            : <button type="button" onClick={() => { onCdChange?.(estimatedCd); setAnalysis(null); }} aria-label={txt('Restaurar Cd estimado', 'Restore estimated Cd')}>↺ EST</button>}
+            ? <em className="analysis-cd-source">NISKANEN / OPENROCKET</em>
+            : <button className="analysis-cd-restore" type="button" onClick={() => { onCdChange?.(estimatedCd); setAnalysis(null); }} aria-label={txt('Restaurar Cd estimado', 'Restore estimated Cd')}>{txt('↺ USAR ESTIMADO', '↺ USE ESTIMATED')}</button>}
         </div>
       </div></div>
     {running && <div className="analysis-execution-live">
