@@ -4878,11 +4878,16 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     border:1px solid rgba(230,184,108,.46)!important;
     border-radius:999px!important;
     background:rgba(119,79,26,.24)!important;
-    font-size:.58rem!important;
-    font-weight:900!important;
-    line-height:1.05!important;
-    letter-spacing:.02em!important;
     color:#F2C77D!important;
+  }
+  #engineering-analysis .analysis-cd-control .analysis-cd-head small,
+  #engineering-analysis .analysis-cd-control .analysis-cd-source,
+  #engineering-analysis .analysis-cd-control .analysis-cd-restore{
+    font-family:"Space Grotesk",sans-serif!important;
+    font-size:.60rem!important;
+    font-weight:900!important;
+    line-height:1.08!important;
+    letter-spacing:.02em!important;
   }
   #engineering-analysis .run{
     min-height:58px!important;
