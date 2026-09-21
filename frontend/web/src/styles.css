@@ -8548,3 +8548,144 @@ output,
     max-width:none!important;
   }
 }
+
+
+/* === FLIGHT CHART FINAL POLISH: strong section, beautiful idle states, actions at bottom === */
+.flight-plot-hero-head{
+  margin-top:14px!important;
+  padding:16px!important;
+  border-radius:16px!important;
+  background:
+    radial-gradient(circle at 14% 0%,rgba(0,240,255,.10),transparent 42%),
+    linear-gradient(180deg,rgba(11,29,49,.94),rgba(7,18,31,.98))!important;
+  border:1px solid rgba(70,154,214,.42)!important;
+  box-shadow:
+    0 14px 32px rgba(0,0,0,.24),
+    0 0 0 1px rgba(0,240,255,.025),
+    inset 0 1px 0 rgba(255,255,255,.055)!important;
+}
+.flight-plot-hero-head span{
+  color:#83B8E6!important;
+  font-size:11px!important;
+  letter-spacing:.12em!important;
+}
+.flight-plot-hero-head strong{
+  color:#FFFFFF!important;
+  font-size:20px!important;
+  line-height:1.12!important;
+}
+.flight-plot-hero-head>b{
+  color:#00F0FF!important;
+  padding:7px 10px!important;
+  border:1px solid rgba(0,240,255,.24)!important;
+  border-radius:10px!important;
+  background:rgba(8,24,40,.66)!important;
+}
+
+.flight-chart-tabs{
+  margin-bottom:10px!important;
+}
+.flight-chart-tab{
+  position:relative!important;
+  min-height:54px!important;
+  border:1px solid rgba(70,154,214,.28)!important;
+  border-radius:14px!important;
+  background:
+    linear-gradient(180deg,rgba(14,31,51,.88),rgba(8,20,34,.94))!important;
+  color:#B9CCE0!important;
+  box-shadow:
+    0 7px 16px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+.flight-chart-tab::after{
+  content:""!important;
+  position:absolute!important;
+  left:12px!important;
+  right:12px!important;
+  bottom:7px!important;
+  height:2px!important;
+  border-radius:99px!important;
+  background:linear-gradient(90deg,transparent,rgba(0,240,255,.22),transparent)!important;
+  opacity:.7!important;
+}
+.flight-chart-tab:hover,
+.flight-chart-tab:active{
+  color:#F4FBFF!important;
+  border-color:rgba(0,240,255,.38)!important;
+  background:linear-gradient(180deg,rgba(17,39,63,.92),rgba(9,25,42,.96))!important;
+  box-shadow:
+    0 10px 22px rgba(0,0,0,.16),
+    0 0 14px rgba(0,240,255,.08),
+    inset 0 1px 0 rgba(255,255,255,.045)!important;
+}
+.flight-chart-tab.active{
+  color:#04111A!important;
+  border-color:#00F0FF!important;
+  background:linear-gradient(90deg,#198CFF,#17DDF0)!important;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.18),
+    0 0 24px rgba(0,240,255,.22)!important;
+}
+.flight-chart-tab.active::after{
+  opacity:0!important;
+}
+
+/* Bottom action row: same visual family as metric cards, compact and balanced. */
+.flight-chart-tabs + .flight-chart-action-row{
+  margin:10px 0 2px!important;
+}
+.flight-chart-tabs + .flight-chart-action-row .trajectory-chip{
+  min-height:46px!important;
+  border-radius:14px!important;
+  border:1px solid rgba(70,154,214,.28)!important;
+  background:linear-gradient(180deg,rgba(14,31,51,.88),rgba(8,20,34,.94))!important;
+  color:#C5D6E4!important;
+  box-shadow:
+    0 7px 16px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+.flight-chart-tabs + .flight-chart-action-row .trajectory-chip:hover,
+.flight-chart-tabs + .flight-chart-action-row .trajectory-chip:active{
+  color:#FFFFFF!important;
+  border-color:rgba(0,240,255,.38)!important;
+  box-shadow:0 0 15px rgba(0,240,255,.08),inset 0 1px 0 rgba(255,255,255,.045)!important;
+}
+.flight-chart-tabs + .flight-chart-action-row .trajectory-chip.active{
+  color:#04111A!important;
+  border-color:#00F0FF!important;
+  background:linear-gradient(90deg,#198CFF,#17DDF0)!important;
+  box-shadow:0 0 22px rgba(0,240,255,.22)!important;
+}
+.flight-chart-tabs + .flight-chart-action-row .flight-chart-toolbar>button{
+  width:46px!important;
+  min-width:46px!important;
+  height:46px!important;
+  min-height:46px!important;
+  border-radius:14px!important;
+  border:1px solid rgba(70,154,214,.30)!important;
+  background:linear-gradient(180deg,rgba(20,46,73,.94),rgba(9,27,47,.98))!important;
+  color:#AFC8DE!important;
+  box-shadow:
+    0 7px 16px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+.flight-chart-tabs + .flight-chart-action-row .flight-chart-toolbar>button:hover,
+.flight-chart-tabs + .flight-chart-action-row .flight-chart-toolbar>button:active{
+  color:#00F0FF!important;
+  border-color:rgba(0,240,255,.42)!important;
+  box-shadow:0 0 15px rgba(0,240,255,.10),inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+
+@media(max-width:820px){
+  .flight-plot-hero-head strong{font-size:19px!important}
+  .flight-chart-tab{
+    min-height:52px!important;
+    font-size:11px!important;
+  }
+  .flight-chart-tabs + .flight-chart-action-row{
+    gap:8px!important;
+  }
+  .flight-chart-tabs + .flight-chart-action-row .trajectory-chip{
+    min-height:46px!important;
+  }
+}
