@@ -109,7 +109,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
   const eventShapes = useMemo(() => {
     const events = [
       { x: motorBurnTimeS, label: txt('FIN DE COMBUSTIÓN · Burnout', 'BURNOUT') },
-      { x: samples[maxQIndex]?.t_s, label: 'Qmáx' },
+      { x: samples[maxQIndex]?.t_s, label: 'q<sub>max</sub>' },
       { x: analysis.time_to_apogee_s, label: 'Hmáx' },
       { x: analysis.deployment_time_s ?? undefined, label: txt('DESPLIEGUE', 'DEPLOY') },
     ].filter((event): event is { x: number; label: string } => Number.isFinite(event.x));
@@ -182,11 +182,11 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
     };
   }, [active, altitude, eventShapes, mach, qKpa, range, speed, times, lang]);
 
-  const tabs: Array<[ChartKey, string]> = [
+  const tabs: Array<[ChartKey, React.ReactNode]> = [
     ['altitude', txt('ALTITUD', 'ALTITUDE')],
     ['speed', txt('VELOCIDAD', 'SPEED')],
     ['mach', 'MACH'],
-    ['q', txt('PRESIÓN DINÁMICA · Qmáx', 'DYNAMIC PRESSURE · Qmax')],
+    ['q', <>{txt('PRESIÓN DINÁMICA · ', 'DYNAMIC PRESSURE · ')}q<sub>max</sub></>],
     ['trajectory', txt('TRAYECTORIA', 'TRAJECTORY')],
   ];
 
@@ -256,7 +256,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
           <small>{txt('ALTURA MÁXIMA','MAX ALTITUDE')}</small>
         </article>
         <article className="flight-metric-card">
-          <span className="flight-symbol">Q<sub>max</sub></span>
+          <span className="flight-symbol">q<sub>max</sub></span>
           <strong>{((analysis.max_q_pa ?? Math.max(...samples.map((sample) => sample.q_pa))) / 1000).toFixed(2)}<em>kPa</em></strong>
           <small>{txt('PRESIÓN DINÁMICA','DYNAMIC PRESSURE')}</small>
         </article>
@@ -274,7 +274,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
 
       <div className="flight-secondary-grid">
         <article className="flight-metric-card secondary">
-          <span className="flight-symbol">{txt('MASA','MASS')}</span>
+          <span className="flight-symbol">m</span>
           <strong>{initialMassKg != null ? initialMassKg.toFixed(3) : '—'}<em>{initialMassKg != null ? 'kg' : ''}</em></strong>
           <small>{txt('MASA TOTAL','TOTAL MASS')}</small>
         </article>
