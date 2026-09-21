@@ -218,7 +218,7 @@ export function LiveAnalysisPanel({
   const [running, setRunning] = useState(false);
   const [showMassEditor, setShowMassEditor] = useState(false);
   const [datumMode, setDatumMode] = useState<'support' | 'nose'>('support');
-  const [stabilityView, setStabilityView] = useState<'low' | 'stable' | 'high'>('low');
+  const [stabilityStatusSelected, setStabilityStatusSelected] = useState(false);
   const lastAutoRunToken = useRef(0);
   const cdIsEstimated = vehicle.cd !== '' && Math.abs(Number(vehicle.cd) - estimatedCd) < 1e-6;
 
@@ -354,11 +354,6 @@ export function LiveAnalysisPanel({
     onAnalysisUpdate?.(analysis, componentResult);
   }, [analysis, componentResult, onAnalysisUpdate]);
 
-  useEffect(() => {
-    if (!analysis) return;
-    const margin = analysis.static_margin_calibers;
-    setStabilityView(margin < 1.5 ? 'low' : margin <= 2 ? 'stable' : 'high');
-  }, [analysis?.static_margin_calibers]);
 
   const totalMass = analysis?.total_mass_g ?? componentResult?.total_mass_g;
   const totalCgFromNose = analysis?.cg_x_mm_from_nose ?? componentResult?.total_cg_mm;
@@ -437,11 +432,36 @@ export function LiveAnalysisPanel({
         <div><span>{txt('SEPARACIÓN CG–CP', 'CG–CP SEPARATION')}</span><strong><AnimatedValue value={cgCpSeparation} decimals={1} suffix=" mm"/></strong></div>
         <div><span>{txt('MARGEN ESTÁTICO', 'STATIC MARGIN')}</span><strong><AnimatedValue value={analysis.static_margin_calibers} decimals={2} suffix=" cal"/></strong></div>
       </div>
-      <div className="stability-view-selector" role="group" aria-label={txt('Vista de margen estático', 'Static-margin view')}>
-        <button type="button" className={stabilityView === 'low' ? 'active low' : 'low'} onClick={() => setStabilityView('low')}>{txt('MARGEN BAJO', 'LOW MARGIN')}</button>
-        <button type="button" className={stabilityView === 'stable' ? 'active stable' : 'stable'} onClick={() => setStabilityView('stable')}>{txt('ESTABLE', 'STABLE')}</button>
-        <button type="button" className={stabilityView === 'high' ? 'active high' : 'high'} onClick={() => setStabilityView('high')}>{txt('MARGEN ALTO', 'HIGH MARGIN')}</button>
-      </div>
+      <button
+        type="button"
+        className={
+          'stability-status selectable ' +
+          (analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
+            ? 'stable '
+            : analysis.static_margin_calibers < 1.5
+              ? 'warning '
+              : 'review ') +
+          (stabilityStatusSelected ? 'selected' : '')
+        }
+        onClick={() => setStabilityStatusSelected((value) => !value)}
+        aria-pressed={stabilityStatusSelected}
+      >
+        <i />
+        <strong>{
+          analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
+            ? txt('ESTABLE', 'STABLE')
+            : analysis.static_margin_calibers < 1.5
+              ? txt('MARGEN BAJO', 'LOW MARGIN')
+              : txt('MARGEN ALTO', 'HIGH MARGIN')
+        }</strong>
+        <span>{
+          analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
+            ? txt('Dentro del rango objetivo 1.5–2.0 cal', 'Within target range 1.5–2.0 cal')
+            : analysis.static_margin_calibers < 1.5
+              ? txt('Aumentá la separación CG–CP', 'Increase CG–CP separation')
+              : txt('Margen superior al rango objetivo', 'Margin above target range')
+        }</span>
+      </button>
 
       <div className="cdr-metrics-section-head">
         <span>{txt('MÉTRICAS DE VUELO', 'FLIGHT METRICS')}</span>
