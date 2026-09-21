@@ -186,7 +186,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
     ['altitude', txt('ALTITUD', 'ALTITUDE')],
     ['speed', txt('VELOCIDAD', 'SPEED')],
     ['mach', 'MACH'],
-    ['q', <>{txt('PRESIÓN DINÁMICA · ', 'DYNAMIC PRESSURE · ')}q<sub>max</sub></>],
+    ['q', <>q<sub>max</sub></>],
     ['trajectory', txt('TRAYECTORIA', 'TRAJECTORY')],
   ];
 
@@ -371,7 +371,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
           paper_bgcolor: 'rgba(0,0,0,0)',
           plot_bgcolor: '#081321',
           font: { family: 'Space Grotesk, sans-serif', color: '#9ab0d2', size: 11 },
-          margin: { l: 62, r: 20, t: 24, b: 56 },
+          margin: { l: 54, r: 12, t: 12, b: 46 },
           hovermode: active === 'trajectory' ? 'closest' : 'x unified',
           xaxis: {
             title: { text: chart.xTitle, font: { size: 10, color: '#819cc4' } },
