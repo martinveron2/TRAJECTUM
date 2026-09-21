@@ -237,7 +237,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
         <p>{txt('ANÁLISIS DE VUELO', 'FLIGHT ANALYSIS')}</p>
         <h2>{txt('Simulación de misión', 'Mission simulation')}</h2>
       </div>
-      <span className="rk4-global-badge">{txt('RUNGE–KUTTA 4º ORDEN · 500 Hz', '4TH-ORDER RUNGE–KUTTA · 500 Hz')}</span>
+      <span className="rk4-global-badge">{txt('CÁLCULO DE ALTA PRECISIÓN (RK4)', 'HIGH-PRECISION CALCULATION (RK4)')}</span>
     </div>
 
     <section className="flight-primary-grid">
