@@ -9824,3 +9824,61 @@ output,
   .mission-stage-time-hud strong{font-size:1.02rem}
   .mission-stage-time-hud em{font-size:.48rem}
 }
+
+/* === FLIGHT MICRO-POLISH: HUD seconds inline + clearer mission events + full results label === */
+@media(max-width:820px){
+  .mission-stage-time-hud{
+    min-width:102px!important;
+    padding:7px 10px 6px!important;
+  }
+  .mission-stage-time-hud strong{
+    display:flex!important;
+    align-items:baseline!important;
+    justify-content:flex-end!important;
+    gap:4px!important;
+    font-size:1.04rem!important;
+    white-space:nowrap!important;
+  }
+  .mission-stage-time-hud strong em{
+    margin:0!important;
+    font-size:.52rem!important;
+    line-height:1!important;
+    color:#00F0FF!important;
+    transform:translateX(1px)!important;
+  }
+
+  .mission-section-title span{
+    font-size:.49rem!important;
+    letter-spacing:.085em!important;
+  }
+  .mission-event{
+    min-height:40px!important;
+    padding:5px 6px!important;
+  }
+  .mission-event strong{
+    font-size:.51rem!important;
+    line-height:1.08!important;
+    letter-spacing:.015em!important;
+  }
+  .mission-event small{
+    font-size:.43rem!important;
+    line-height:1.08!important;
+    color:#86A2BF!important;
+  }
+
+  .mission-results-inline{
+    grid-column:2 / 4!important;
+    min-width:0!important;
+    padding:7px 8px!important;
+  }
+  .mission-results-inline span{
+    display:none!important;
+  }
+  .mission-results-inline strong{
+    font-size:.56rem!important;
+    line-height:1.05!important;
+    letter-spacing:.018em!important;
+    white-space:normal!important;
+    text-align:center!important;
+  }
+}

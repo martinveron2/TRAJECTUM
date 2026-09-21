@@ -129,8 +129,7 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
         <section className="mission-flight-stage">
           <div className="mission-stage-time-hud" aria-label={txt('Tiempo de vuelo', 'Flight time')}>
             <span>{txt('TIEMPO', 'TIME')}</span>
-            <strong>T+{timeS.toFixed(1)}</strong>
-            <em>s</em>
+            <strong>T {timeS.toFixed(1)}<em>s</em></strong>
           </div>
           <div className="mission-grid" />
           <svg viewBox="0 0 360 470" aria-label={txt('Vuelo simulado', 'Simulated flight')}>
@@ -176,7 +175,7 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
           <button type="button" className={missionCompleted ? 'mission-results-inline mission-complete' : 'mission-results-inline'} onClick={onViewResults}>
             <Gauge size={17}/>
             <span>{txt('RESULTADOS', 'RESULTS')}</span>
-            <strong>{txt('VER COMPLETOS', 'VIEW FULL')}</strong>
+            <strong>{txt('VER RESULTADOS COMPLETOS', 'VIEW FULL RESULTS')}</strong>
           </button>
         </section>
 
