@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import Plotly from 'plotly.js-basic-dist-min';
 import type { MissionSample } from './missionTypes';
@@ -44,6 +45,20 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
     media.addEventListener?.('change', sync);
     return () => media.removeEventListener?.('change', sync);
   }, []);
+
+  useEffect(() => {
+    if (!previewUrl) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closePreview();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [previewUrl]);
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
 
@@ -443,18 +458,27 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
       </div>
     </div>
 
-{previewUrl && <div className="chart-preview-backdrop" role="dialog" aria-modal="true" aria-label={txt('Vista previa del gráfico', 'Chart preview')}>
-      <div className="chart-preview-modal">
-        <div className="chart-preview-head">
-          <div><span>{txt('VISTA PREVIA PARA IMPRESIÓN', 'PRINT PREVIEW')}</span><strong>{previewName}</strong></div>
-          <button type="button" onClick={closePreview} aria-label={txt('Cerrar vista previa', 'Close preview')}>×</button>
+{previewUrl && createPortal(
+      <div
+        className="chart-preview-backdrop"
+        role="dialog"
+        aria-modal="true"
+        aria-label={txt('Vista previa del gráfico', 'Chart preview')}
+        onPointerDown={(event) => { if (event.target === event.currentTarget) closePreview(); }}
+      >
+        <div className="chart-preview-modal">
+          <div className="chart-preview-head">
+            <div><span>{txt('VISTA PREVIA PARA IMPRESIÓN', 'PRINT PREVIEW')}</span><strong>{previewName}</strong></div>
+            <button type="button" onClick={closePreview} aria-label={txt('Cerrar vista previa', 'Close preview')}>×</button>
+          </div>
+          <div className="chart-preview-canvas"><img src={previewUrl} alt={txt('Gráfico técnico TRAJECTUM', 'TRAJECTUM engineering plot')} /></div>
+          <div className="chart-preview-actions">
+            <button type="button" onClick={closePreview}>{txt('VOLVER', 'BACK')}</button>
+            <button type="button" className="primary" onClick={savePng}>⇩ {txt('DESCARGAR PNG', 'DOWNLOAD PNG')}</button>
+          </div>
         </div>
-        <div className="chart-preview-canvas"><img src={previewUrl} alt={txt('Gráfico técnico TRAJECTUM', 'TRAJECTUM engineering plot')} /></div>
-        <div className="chart-preview-actions">
-          <button type="button" onClick={closePreview}>{txt('VOLVER', 'BACK')}</button>
-          <button type="button" className="primary" onClick={savePng}>⇩ {txt('DESCARGAR PNG', 'DOWNLOAD PNG')}</button>
-        </div>
-      </div>
-    </div>}
+      </div>,
+      document.body
+    )}
   </section>;
 }
