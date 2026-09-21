@@ -7876,3 +7876,75 @@ output,
 .cad-status-card{
   text-transform:none!important;
 }
+
+
+/* === CARD SIZE CEMENTING — CDR + FLIGHT ===
+   The CG/CP result card is the dimensional reference.
+   Related metric cards inherit the same height, padding and radius.
+   Burnout keeps only its warm accent; geometry stays identical. */
+.cdr-hero-values article,
+.cdr-result-widgets>button,
+.cdr-stability-summary>div,
+.cdr-secondary-clean article,
+.flight-metric-card,
+.flight-metric-card.secondary,
+.burnout-card{
+  min-height:122px!important;
+  height:100%!important;
+  padding:13px 11px!important;
+  border-radius:14px!important;
+  box-sizing:border-box!important;
+}
+
+.cdr-result-widgets,
+.cdr-secondary-clean,
+.flight-square-grid,
+.flight-secondary-grid,
+.burnout-square-grid{
+  grid-auto-rows:1fr!important;
+}
+
+/* Burnout may differ in hue, never in size or visual weight. */
+.burnout-card{
+  min-height:122px!important;
+  padding:13px 11px!important;
+  border-radius:14px!important;
+}
+
+/* SI unit casing: never let uppercase UI labels convert millimetres to "MM". */
+.cdr-result-widgets>button strong,
+.cdr-hero-values article strong,
+.cdr-stability-summary strong,
+.cdr-secondary-results strong,
+.cdr-secondary-clean strong,
+.cdr-position-detail span,
+.cdr-position-detail b,
+.stability-axis em,
+.cdr-stability-rail em,
+.schematic-meta,
+.schematic-meta span,
+.mobile-home-metrics strong,
+.pdr-component-head span,
+.ready-row em{
+  text-transform:none!important;
+}
+
+/* Preserve lowercase unit glyphs even inside otherwise uppercase cards/buttons. */
+.cdr-result-widgets>button strong::first-letter,
+.cdr-hero-values article strong::first-letter{
+  text-transform:none!important;
+}
+
+@media(max-width:820px){
+  .cdr-hero-values article,
+  .cdr-result-widgets>button,
+  .cdr-stability-summary>div,
+  .cdr-secondary-clean article,
+  .flight-metric-card,
+  .flight-metric-card.secondary,
+  .burnout-card{
+    min-height:122px!important;
+    padding:13px 11px!important;
+    border-radius:14px!important;
+  }
+}
