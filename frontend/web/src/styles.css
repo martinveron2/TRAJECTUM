@@ -8962,3 +8962,25 @@ output,
 .flight-chart-picker-head span{
   color:rgba(214,235,250,.88)!important;
 }
+
+/* === NUMERIC COLOR HARMONY: use the CG/CP result palette for calculated values === */
+.cdr-secondary-clean article strong,
+.cdr-stability-summary strong,
+.cdr-result-widgets>button strong,
+.flight-metric-card>strong,
+.performance-clean .performance-score>b,
+.analysis-metrics strong{
+  color:#B9DFFF!important;
+  text-shadow:0 0 14px rgba(116,185,255,.18)!important;
+}
+.flight-metric-card>strong em,
+.cdr-secondary-clean article strong em{
+  color:#83B8E6!important;
+}
+/* Keep the two reference values semantic: CG cyan, CP ice-blue. */
+.cdr-hero-values article.cg strong{
+  color:#00F0FF!important;
+}
+.cdr-hero-values article.cp strong{
+  color:#B9DFFF!important;
+}
