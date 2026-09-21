@@ -14,19 +14,22 @@ type AnalysisMeta = {
   apogee_m?: number;
   max_speed_m_s?: number;
   max_q_pa?: number;
+  max_mach?: number;
   impact_speed_m_s?: number;
+  total_mass_g?: number;
 };
 
 type Props = {
   samples: MissionSample[];
   motorBurnTimeS: number;
   analysis: AnalysisMeta;
+  hReqM?: number | null;
   lang?: 'es' | 'en';
 };
 
 type ChartKey = 'altitude' | 'speed' | 'mach' | 'q' | 'trajectory';
 
-export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang = 'es' }: Props) {
+export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM = null, lang = 'es' }: Props) {
   const [active, setActive] = useState<ChartKey>('altitude');
   const [dragMode, setDragMode] = useState<'zoom' | 'pan'>('zoom');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -57,6 +60,51 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
     }
     return index;
   }, [samples]);
+
+  const gMax = useMemo(() => Math.max(...samples.map((sample) => sample.acceleration_g ?? 0)), [samples]);
+  const machMax = analysis.max_mach ?? Math.max(...mach);
+  const initialMassKg = analysis.total_mass_g != null ? analysis.total_mass_g / 1000 : null;
+  const burnoutSample = useMemo(() => {
+    if (!samples.length) return null;
+    return samples.reduce((best, sample) =>
+      Math.abs(sample.t_s - motorBurnTimeS) < Math.abs(best.t_s - motorBurnTimeS) ? sample : best,
+    samples[0]);
+  }, [samples, motorBurnTimeS]);
+
+  const timeAboveHReq = useMemo(() => {
+    if (hReqM == null || !Number.isFinite(hReqM) || samples.length < 2) return null;
+    let seconds = 0;
+    for (let i = 1; i < samples.length; i += 1) {
+      const a = samples[i - 1];
+      const b = samples[i];
+      const dt = Math.max(0, b.t_s - a.t_s);
+      if (a.altitude_m > hReqM && b.altitude_m > hReqM) {
+        seconds += dt;
+      } else if ((a.altitude_m - hReqM) * (b.altitude_m - hReqM) < 0) {
+        const fraction = Math.abs((hReqM - a.altitude_m) / (b.altitude_m - a.altitude_m));
+        seconds += a.altitude_m > hReqM ? dt * fraction : dt * (1 - fraction);
+      }
+    }
+    return seconds;
+  }, [hReqM, samples]);
+
+  const performance = useMemo(() => {
+    const clamp = (value: number) => Math.max(0, Math.min(100, value));
+    const values: number[] = [];
+    const h = analysis.apogee_m ?? Math.max(...altitude);
+    const v = analysis.max_speed_m_s ?? Math.max(...speed);
+    const q = analysis.max_q_pa ?? Math.max(...samples.map((sample) => sample.q_pa));
+    const impact = analysis.impact_speed_m_s ?? samples[samples.length - 1]?.speed_m_s;
+    values.push(clamp((h / 700) * 100));
+    values.push(clamp((v / 150) * 100));
+    values.push(clamp((machMax / 0.45) * 100));
+    values.push(clamp(100 - (q / 20000) * 100));
+    values.push(clamp(100 - ((impact ?? 15) / 15) * 100));
+    values.push(clamp(100 - (gMax / 50) * 100));
+    if (initialMassKg != null) values.push(clamp(100 - ((initialMassKg - 1) / 1.5) * 100));
+    if (timeAboveHReq != null) values.push(clamp((timeAboveHReq / 10) * 100));
+    return Math.round(values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1));
+  }, [analysis, altitude, gMax, initialMassKg, machMax, samples, speed, timeAboveHReq]);
 
   const eventShapes = useMemo(() => {
     const events = [
@@ -203,6 +251,40 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
       <button type="button" className="active">{txt('NUMÉRICO · RK4', 'NUMERICAL · RK4')}</button>
       <button type="button" disabled title={txt('Se habilita al importar telemetría medida.', 'Enabled when measured telemetry is imported.')}>{txt('MEDIDO', 'MEASURED')} · {txt('SIN DATOS', 'NO DATA')}</button>
     </div>
+
+    <section className="flight-scoreboard">
+      <div className="flight-scoreboard-head">
+        <div><span>{txt('MÉTRICAS DE PUNTAJE', 'SCORING METRICS')}</span><strong>{txt('Performance de misión', 'Mission performance')}</strong></div>
+        <b>{txt('NUMÉRICO · RK4', 'NUMERICAL · RK4')}</b>
+      </div>
+      <div className="flight-score-grid">
+        <article><span>{txt('ALTURA MÁXIMA', 'MAX ALTITUDE')} · hmax</span><strong>{(analysis.apogee_m ?? Math.max(...altitude)).toFixed(1)}<em> m</em></strong></article>
+        <article><span>{txt('VELOCIDAD DE IMPACTO', 'IMPACT SPEED')} · Vimpacto</span><strong>{(analysis.impact_speed_m_s ?? samples[samples.length - 1].speed_m_s).toFixed(2)}<em> m/s</em></strong></article>
+        <article><span>{txt('VELOCIDAD MÁXIMA', 'MAX SPEED')} · Vmax</span><strong>{(analysis.max_speed_m_s ?? Math.max(...speed)).toFixed(1)}<em> m/s</em></strong></article>
+        <article><span>{txt('MASA INICIAL', 'INITIAL MASS')} · m0</span><strong>{initialMassKg != null ? initialMassKg.toFixed(3) : '—'}<em>{initialMassKg != null ? ' kg' : ''}</em></strong></article>
+        <article><span>{txt('PRESIÓN DINÁMICA MÁXIMA', 'MAX DYNAMIC PRESSURE')} · qmax</span><strong>{((analysis.max_q_pa ?? Math.max(...samples.map((sample) => sample.q_pa))) / 1000).toFixed(2)}<em> kPa</em></strong></article>
+        <article><span>{txt('ACELERACIÓN MÁXIMA', 'MAX ACCELERATION')} · Gmax</span><strong>{gMax.toFixed(2)}<em> g</em></strong></article>
+        <article><span>{txt('MACH MÁXIMO', 'MAX MACH')} · Mmax</span><strong>{machMax.toFixed(3)}</strong></article>
+        <article className={timeAboveHReq == null ? 'pending' : ''}><span>{txt('TIEMPO SOBRE ALTURA REQUERIDA', 'TIME ABOVE REQUIRED ALTITUDE')} · t(h&gt;hreq)</span><strong>{timeAboveHReq == null ? '—' : timeAboveHReq.toFixed(2)}<em>{timeAboveHReq == null ? '' : ' s'}</em></strong><small>{hReqM == null ? txt('hreq pendiente de definir', 'hreq not defined yet') : 'hreq = ' + hReqM.toFixed(1) + ' m'}</small></article>
+      </div>
+
+      <div className="burnout-strip">
+        <div><span>{txt('FIN DE COMBUSTIÓN', 'BURNOUT')} · Burnout</span><strong>{motorBurnTimeS.toFixed(2)} s</strong></div>
+        <i/>
+        <div><span>h</span><strong>{burnoutSample ? burnoutSample.altitude_m.toFixed(1) + ' m' : '—'}</strong></div>
+        <div><span>V</span><strong>{burnoutSample ? burnoutSample.speed_m_s.toFixed(1) + ' m/s' : '—'}</strong></div>
+      </div>
+    </section>
+
+    <section className="performance-index">
+      <div className="performance-copy">
+        <span>{txt('ÍNDICE TRAJECTUM · NO OFICIAL', 'TRAJECTUM INDEX · UNOFFICIAL')}</span>
+        <strong>{txt('PERFORMANCE GLOBAL', 'GLOBAL PERFORMANCE')}</strong>
+        <small>{txt('Síntesis interna 0–100 de las métricas disponibles. No reemplaza el puntaje oficial de la cátedra.', 'Internal 0–100 summary of available metrics. It does not replace the official course score.')}</small>
+      </div>
+      <div className="performance-score"><strong>{performance}</strong><span>/100</span></div>
+      <div className="performance-meter" aria-label={txt('Índice de performance', 'Performance index')}><i style={{ width: performance + '%' }}/></div>
+    </section>
 
     <div className="flight-chart-picker-head">
       <span>{txt('SELECCIONÁ VARIABLE', 'SELECT VARIABLE')}</span>
