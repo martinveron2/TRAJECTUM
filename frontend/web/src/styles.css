@@ -8910,3 +8910,18 @@ output,
     touch-action:pan-y!important;
   }
 }
+
+
+/* === UNIT CASING: engineering symbols stay SI-correct (mm, not MM) === */
+.dev-twin-status,
+.status-item strong,
+.pdr-mass-total strong,
+.pdr-input-grid output,
+.pdr-station-grid output,
+.cdr-hero-values strong,
+.cdr-stability-summary strong,
+.cdr-stability-rail em,
+.mass-row output,
+.analysis-metrics strong{
+  text-transform:none!important;
+}

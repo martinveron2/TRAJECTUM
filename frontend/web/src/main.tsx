@@ -918,6 +918,7 @@ function App() {
           textAlign: 'center',
           flexWrap: 'wrap',
         }}
+        className="dev-twin-status"
         aria-label="TRAJECTUM development twin status"
       >
         <span>DEV · GEMELO ACTUAL</span>
