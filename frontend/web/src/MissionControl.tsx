@@ -166,7 +166,7 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
           <div className="instrument"><span>{txt('VELOCIDAD', 'SPEED')}</span><strong>{current.speed_m_s.toFixed(1)}</strong><em>m/s</em></div>
           <div className="instrument"><span>MACH</span><strong>{current.mach.toFixed(3)}</strong><em>M</em></div>
           <div className="instrument alertable"><span>{txt('ACELERACIÓN', 'ACCELERATION')}</span><strong>{current.acceleration_g.toFixed(2)}</strong><em>G</em></div>
-          <div className="instrument"><span>MAX Q</span><strong>{(current.q_pa/1000).toFixed(2)}</strong><em>kPa</em></div>
+          <div className="instrument"><span>q<sub>max</sub></span><strong>{(current.q_pa/1000).toFixed(2)}</strong><em>kPa</em></div>
           <div className="instrument"><span>{txt('DISTANCIA', 'RANGE')}</span><strong>{current.x_m.toFixed(1)}</strong><em>m</em></div>
         </section>
 
