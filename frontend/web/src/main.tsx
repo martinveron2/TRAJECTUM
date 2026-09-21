@@ -639,7 +639,7 @@ function App() {
   })();
 
   const triggerNavHaptic = () => {
-    if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(40);
+    if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(100);
   };
   const handleNavPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     triggerNavHaptic();
