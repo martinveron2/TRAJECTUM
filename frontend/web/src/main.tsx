@@ -1200,36 +1200,13 @@ function App() {
           <div
             className={`mobile-pdr-model pdr-view-${pdrViewIndex}`}
             onTouchStart={(event) => {
-              if (event.touches.length === 2) {
-                const [a, b] = [event.touches[0], event.touches[1]];
-                event.currentTarget.dataset.pinching = '1';
-                event.currentTarget.dataset.pinchDistance = String(Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY));
-                event.currentTarget.dataset.pinchZoom = String(pdrZoom);
-                event.currentTarget.dataset.touchX = '';
-                return;
-              }
-              event.currentTarget.dataset.pinching = '';
               event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0);
             }}
-            onTouchMove={(event) => {
-              if (event.touches.length !== 2) return;
-              event.preventDefault();
-              const [a, b] = [event.touches[0], event.touches[1]];
-              const startDistance = Number(event.currentTarget.dataset.pinchDistance || 0);
-              const startZoom = Number(event.currentTarget.dataset.pinchZoom || pdrZoom);
-              if (!startDistance) return;
-              const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-              setPdrZoom(Math.max(.7, Math.min(2.6, startZoom * distance / startDistance)));
-            }}
             onTouchEnd={(event) => {
-              if (event.currentTarget.dataset.pinching === '1') {
-                if (event.touches.length < 2) event.currentTarget.dataset.pinching = '';
-                return;
-              }
               const start = Number(event.currentTarget.dataset.touchX ?? 0);
               const end = event.changedTouches[0]?.clientX ?? start;
               const delta = end - start;
-              if (start && Math.abs(delta) > 42) {
+              if (Math.abs(delta) > 42) {
                 setPdrViewIndex((current) => delta < 0 ? Math.min(2, current + 1) : Math.max(0, current - 1));
                 setPdrZoom(1);
               }

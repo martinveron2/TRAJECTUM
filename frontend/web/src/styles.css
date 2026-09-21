@@ -9315,3 +9315,15 @@ output,
   transform-origin:center center!important;
   transition:transform .18s cubic-bezier(.2,.8,.2,1)!important;
 }
+
+/* === PDR MOBILE LOCK: keep the viewport rigid, no pinch deformation === */
+@media(max-width:820px){
+  .pdr-schematic-panel,
+  .pdr-schematic-panel .mobile-pdr-model,
+  .pdr-schematic-panel .pdr-flip-stage,
+  .pdr-schematic-panel .schematic.realistic,
+  .pdr-schematic-panel .pdr-cad-image-frame{
+    touch-action:pan-y!important;
+    overscroll-behavior:auto!important;
+  }
+}
