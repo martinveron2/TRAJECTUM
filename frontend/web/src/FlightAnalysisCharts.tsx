@@ -264,7 +264,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
     </section>
 
     <div className="flight-mission-banner">
-      <div><span>M<sub>0</sub></span><strong>{initialMassKg != null ? initialMassKg.toFixed(3) + ' kg' : '—'}</strong></div>
+      <div><span>{txt('MASA TOTAL', 'TOTAL MASS')}</span><strong>{initialMassKg != null ? initialMassKg.toFixed(3) + ' kg' : '—'}</strong></div>
       <i/>
       <div><span>{txt('TIEMPO TOTAL DE VUELO', 'TOTAL FLIGHT TIME')}</span><strong>{analysis.landing_time_s != null ? analysis.landing_time_s.toFixed(2) + ' s' : samples[samples.length - 1].t_s.toFixed(2) + ' s'}</strong></div>
       <i/>
@@ -281,11 +281,22 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
         <article className={timeAboveHReq == null ? 'pending' : ''}><span>t<sub>h&gt;hreq</sub></span><strong>{timeAboveHReq == null ? '—' : timeAboveHReq.toFixed(2)}<em>{timeAboveHReq == null ? '' : ' s'}</em></strong><small>{hReqM == null ? txt('hreq pendiente', 'hreq pending') : 'hreq = ' + hReqM.toFixed(1) + ' m'}</small></article>
       </div>
 
-      <div className="burnout-strip">
-        <div><span>{txt('FIN DE COMBUSTIÓN', 'BURNOUT')} · Burnout</span><strong>{motorBurnTimeS.toFixed(2)} s</strong></div>
-        <i/>
-        <div><span>H</span><strong>{burnoutSample ? burnoutSample.altitude_m.toFixed(1) + ' m' : '—'}</strong></div>
-        <div><span>V</span><strong>{burnoutSample ? burnoutSample.speed_m_s.toFixed(1) + ' m/s' : '—'}</strong></div>
+      <div className="burnout-grid">
+        <article>
+          <span>{txt('FIN DE COMBUSTIÓN', 'BURNOUT')} · Burnout</span>
+          <strong>{motorBurnTimeS.toFixed(2)}<em> s</em></strong>
+          <small>{txt('Tiempo de combustión', 'Burn duration')}</small>
+        </article>
+        <article>
+          <span>{txt('ALTURA EN BURNOUT', 'BURNOUT ALTITUDE')}</span>
+          <strong>{burnoutSample ? burnoutSample.altitude_m.toFixed(1) : '—'}<em>{burnoutSample ? ' m' : ''}</em></strong>
+          <small>{txt('Altura al corte de empuje', 'Altitude at thrust cutoff')}</small>
+        </article>
+        <article>
+          <span>{txt('VELOCIDAD EN BURNOUT', 'BURNOUT SPEED')}</span>
+          <strong>{burnoutSample ? burnoutSample.speed_m_s.toFixed(1) : '—'}<em>{burnoutSample ? ' m/s' : ''}</em></strong>
+          <small>{txt('Velocidad al corte de empuje', 'Speed at thrust cutoff')}</small>
+        </article>
       </div>
     </section>
 
