@@ -251,19 +251,19 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
 
       <div className="flight-square-grid">
         <article className="flight-metric-card">
-          <span className="flight-symbol">H<sub>{txt('máx','max')}</sub></span>
+          <span className="flight-symbol">{txt('ALTURA MÁXIMA','MAX ALTITUDE')}</span>
           <strong>{(analysis.apogee_m ?? Math.max(...altitude)).toFixed(1)}<em>m</em></strong>
         </article>
         <article className="flight-metric-card">
-          <span className="flight-symbol">Q<sub>{txt('máx','max')}</sub></span>
+          <span className="flight-symbol">{txt('PRESIÓN DINÁMICA','DYNAMIC PRESSURE')}</span>
           <strong>{((analysis.max_q_pa ?? Math.max(...samples.map((sample) => sample.q_pa))) / 1000).toFixed(2)}<em>kPa</em></strong>
         </article>
         <article className="flight-metric-card">
-          <span className="flight-symbol">V<sub>{txt('máx','max')}</sub></span>
+          <span className="flight-symbol">{txt('VELOCIDAD MÁXIMA','MAX SPEED')}</span>
           <strong>{(analysis.max_speed_m_s ?? Math.max(...speed)).toFixed(1)}<em>m/s</em></strong>
         </article>
         <article className="flight-metric-card">
-          <span className="flight-symbol">V<sub>{txt('impacto','impact')}</sub></span>
+          <span className="flight-symbol">{txt('VELOCIDAD DE IMPACTO','IMPACT SPEED')}</span>
           <strong>{(analysis.impact_speed_m_s ?? samples[samples.length - 1].speed_m_s).toFixed(2)}<em>m/s</em></strong>
         </article>
       </div>
@@ -291,22 +291,22 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
 
       <div className="flight-square-grid">
         <article className="flight-metric-card">
-          <span className="flight-symbol">G<sub>{txt('máx','max')}</sub></span>
+          <span className="flight-symbol">{txt('ACELERACIÓN MÁXIMA','MAX ACCELERATION')}</span>
           <strong>{gMax.toFixed(2)}<em>g</em></strong>
         </article>
         <article className="flight-metric-card">
-          <span className="flight-symbol">M<sub>{txt('máx','max')}</sub></span>
+          <span className="flight-symbol">{txt('MACH MÁXIMO','MAX MACH')}</span>
           <strong>{machMax.toFixed(3)}</strong>
         </article>
         <article className="flight-metric-card">
           <span className="flight-symbol">{txt('PARACAÍDAS', 'PARACHUTE')}</span>
           <strong className="status-value">{analysis.deployment_time_s != null ? txt('OK', 'OK') : txt('—', '—')}</strong>
-          <small>{analysis.deployment_time_s != null ? 't = ' + analysis.deployment_time_s.toFixed(2) + ' s' : txt('SIN DESPLIEGUE', 'NOT DEPLOYED')}</small>
+          
         </article>
         <article className="flight-metric-card">
           <span className="flight-symbol">{txt('TIEMPO SOBRE ALTURA REQUERIDA', 'TIME ABOVE REQUIRED ALTITUDE')}</span>
           <strong>{timeAboveHReq == null ? '—' : timeAboveHReq.toFixed(2)}<em>{timeAboveHReq == null ? '' : 's'}</em></strong>
-          <small>{hReqM == null ? txt('hreq pendiente', 'hreq pending') : 'hreq = ' + hReqM.toFixed(1) + ' m'}</small>
+          
         </article>
       </div>
     </section>
