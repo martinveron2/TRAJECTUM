@@ -113,18 +113,18 @@ type CurrentTwin = {
 };
 
 const initialVehicle: Vehicle = {
-  totalLength: 789,
+  totalLength: 820,
   diameter: 63,
-  noseLength: 180,
-  bayLength: 200,
-  bodyLength: 409,
+  noseLength: 195,
+  bayLength: 185,
+  bodyLength: 440,
   wall: '',
   finCount: 4,
   rootChord: 97.67,
   tipChord: 39.96,
   span: 52.5,
   sweep: 42,
-  finX: 689,
+  finX: 720,
   airfoil: 'NACA 0012',
   noseProfile: 'tangent_ogive',
   launchAngle: 85,
