@@ -8443,3 +8443,108 @@ output,
     font-size:11px!important;
   }
 }
+
+
+/* === POWERFUL FLIGHT PLOT PRESENTATION === */
+.flight-plot-hero-head{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  margin:10px 0 9px!important;
+  padding:14px 15px!important;
+  border:1px solid rgba(70,154,214,.32)!important;
+  border-radius:15px!important;
+  background:
+    radial-gradient(circle at 18% 0%,rgba(0,240,255,.08),transparent 42%),
+    linear-gradient(180deg,rgba(11,29,49,.92),rgba(7,18,31,.96))!important;
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+.flight-plot-hero-head>div{
+  min-width:0!important;
+}
+.flight-plot-hero-head span{
+  display:block!important;
+  color:#83B8E6!important;
+  font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.11em!important;
+  text-transform:uppercase!important;
+}
+.flight-plot-hero-head strong{
+  display:block!important;
+  margin-top:4px!important;
+  color:#FFFFFF!important;
+  font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  font-size:18px!important;
+  font-weight:800!important;
+  line-height:1.15!important;
+  letter-spacing:.01em!important;
+}
+.flight-plot-hero-head>b{
+  flex:0 0 auto!important;
+  color:#00F0FF!important;
+  font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+}
+
+.flight-chart-frame{
+  min-height:360px!important;
+  border-color:rgba(70,154,214,.42)!important;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(0,240,255,.06),transparent 35%),
+    linear-gradient(180deg,#0A1B2E,#06111D)!important;
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.28),
+    0 0 0 1px rgba(0,240,255,.025),
+    inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+
+.flight-chart-frame .main-svg{
+  background:transparent!important;
+}
+
+/* Controls now belong under the graph. */
+.flight-chart-frame + .flight-chart-action-row{
+  margin-top:10px!important;
+  margin-bottom:10px!important;
+}
+.flight-chart-frame + .flight-chart-action-row .trajectory-chip{
+  flex:1 1 auto!important;
+  max-width:190px!important;
+}
+
+/* Remove any legacy footer footprint if an older build/class remains. */
+.flight-chart-footer{
+  display:none!important;
+  margin:0!important;
+  padding:0!important;
+  height:0!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+
+@media(max-width:820px){
+  .flight-plot-hero-head{
+    align-items:flex-start!important;
+    padding:13px!important;
+  }
+  .flight-plot-hero-head strong{
+    font-size:17px!important;
+  }
+  .flight-plot-hero-head>b{
+    font-size:11px!important;
+  }
+  .flight-chart-frame{
+    min-height:410px!important;
+  }
+  .flight-chart-frame + .flight-chart-action-row .trajectory-chip{
+    max-width:none!important;
+  }
+}
