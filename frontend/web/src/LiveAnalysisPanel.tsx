@@ -371,7 +371,7 @@ export function LiveAnalysisPanel({
   const cpPct = analysis?.cp_x_mm_from_nose !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (analysis.cp_x_mm_from_nose / totalLengthMm) * 100)) : 50;
 
   return <div className={running ? 'panel mass-panel analysis-running' : 'panel mass-panel'} id="engineering-analysis" aria-busy={running}>
-    <div className="panel-title compact"><div><p>{txt('PROPIEDADES DE MASA DERIVADAS DE LA GEOMETRÍA', 'GEOMETRY-DERIVED MASS PROPERTIES')}</p><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
+    <div className="panel-title compact"><div><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
       <div className="analysis-run-row">
         <button
           className="run"

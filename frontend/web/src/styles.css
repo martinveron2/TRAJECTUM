@@ -10525,3 +10525,10 @@ output,
   0%,100%{opacity:.38;box-shadow:0 0 0 rgba(0,240,255,0)}
   50%{opacity:1;box-shadow:0 0 10px rgba(0,240,255,.10)}
 }
+
+/* === FINAL PDR SCHEMATIC CLEANUP: remove dark text halo/black stain === */
+.pdr-view-0 .label-plate{
+  paint-order:normal!important;
+  stroke:none!important;
+  stroke-width:0!important;
+}
