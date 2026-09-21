@@ -8217,3 +8217,47 @@ output,
     0 0 18px rgba(116,185,255,.10),
     inset 0 1px 0 rgba(255,255,255,.055)!important;
 }
+
+
+/* Metric hierarchy: short engineering symbol above, value center, plain-language label below. */
+.flight-metric-card{
+  justify-content:space-between!important;
+}
+.flight-metric-card>.flight-symbol{
+  display:block!important;
+  width:100%!important;
+  color:#83B8E6!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  letter-spacing:.04em!important;
+  line-height:1!important;
+  text-transform:none!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+.flight-metric-card>.flight-symbol sub{
+  font-size:10px!important;
+  vertical-align:sub!important;
+  line-height:0!important;
+  color:inherit!important;
+}
+.flight-metric-card>strong{
+  margin:10px 0 8px!important;
+}
+.flight-metric-card>small{
+  display:block!important;
+  width:100%!important;
+  margin:0!important;
+  color:#90A4AE!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  line-height:1.2!important;
+  letter-spacing:.07em!important;
+  text-transform:uppercase!important;
+  white-space:normal!important;
+}
+
+.burnout-card>.flight-symbol{
+  color:#F3A36A!important;
+}
