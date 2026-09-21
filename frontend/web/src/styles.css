@@ -7843,3 +7843,36 @@ input[type="number"],
     font-size:clamp(20px,5.8vw,24px)!important;
   }
 }
+
+
+/* Unit casing freeze — SI symbol millimetre must stay lowercase: mm.
+   Source strings already use "mm"; these overrides prevent inherited uppercase transforms
+   from turning the unit into the incorrect visual "MM". */
+.brand-version,
+.mobile-context-bar,
+.mobile-context-bar *,
+.mobile-home-metrics strong,
+.phase-panel-head>b,
+.stability-summary-grid strong,
+.cdr-result-widgets strong,
+.cdr-hero-values strong,
+.cdr-stability-summary strong,
+.cdr-secondary-results strong,
+.cdr-stability-rail em,
+.stability-axis em,
+.pdr-component-head span,
+.schematic-meta,
+.schematic-meta *,
+.metric-card strong,
+.flight-metric-card strong,
+.ready-row em,
+output,
+.numeric-wheel-trigger span,
+.input-wrap,
+.input-wrap *,
+.field-value,
+.field-value *,
+.cad-file-card,
+.cad-status-card{
+  text-transform:none!important;
+}
