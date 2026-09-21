@@ -8881,3 +8881,32 @@ output,
   .chart-preview-canvas{min-height:0!important;flex:1 1 auto!important}
   .chart-preview-actions{flex:0 0 auto!important}
 }
+
+
+/* === HARD MOBILE SCROLL SHIELD: Plotly never captures vertical swipes === */
+.flight-chart-frame{position:relative!important}
+.flight-chart-mobile-scroll-shield{
+  display:none;
+}
+@media(max-width:820px), (pointer:coarse){
+  .flight-chart-mobile-scroll-shield{
+    display:block!important;
+    position:absolute!important;
+    inset:0!important;
+    z-index:50!important;
+    background:transparent!important;
+    pointer-events:auto!important;
+    touch-action:pan-y!important;
+    overscroll-behavior:auto!important;
+    cursor:default!important;
+  }
+  .flight-chart-frame .js-plotly-plot,
+  .flight-chart-frame .plot-container,
+  .flight-chart-frame .svg-container,
+  .flight-chart-frame .main-svg,
+  .flight-chart-frame .draglayer,
+  .flight-chart-frame .nsewdrag{
+    pointer-events:none!important;
+    touch-action:pan-y!important;
+  }
+}
