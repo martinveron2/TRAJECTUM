@@ -1839,11 +1839,11 @@ function App() {
           }
         }}>
           <span className="mobile-nav-icon">{pendingMissionLaunch ? <i className="bottom-flight-spinner" aria-hidden="true" /> : <Play size={20} strokeWidth={1.8} />}</span>
-          <small>{pendingMissionLaunch ? txt('PREPARANDO VUELO', 'PREPARING FLIGHT') : txt('VUELO', 'FLIGHT')}</small>
+          <small>{pendingMissionLaunch ? txt('PREPARANDO', 'PREPARING') : txt('VUELO', 'FLIGHT')}</small>
         </button>
-        <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onPointerDown={handleNavPointerDown} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
-          <span className="mobile-nav-icon"><Download size={20} strokeWidth={1.8} /></span>
-          <small>{txt('EXPORTAR', 'EXPORT')}</small>
+        <button type="button" className={exportPreparing ? 'active export-nav-button preparing' : showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onPointerDown={handleNavPointerDown} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
+          <span className="mobile-nav-icon">{exportPreparing ? <i className="bottom-flight-spinner" aria-hidden="true" /> : <Download size={20} strokeWidth={1.8} />}</span>
+          <small>{exportPreparing ? txt('PREPARANDO', 'PREPARING') : txt('EXPORTAR', 'EXPORT')}</small>
         </button>
       </nav>
 
