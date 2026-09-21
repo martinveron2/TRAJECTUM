@@ -10267,3 +10267,80 @@ output,
     z-index:2;
   }
 }
+
+/* === BOTTOM NAV: restore localized micro-vibration at touch point === */
+@media(max-width:820px){
+  .mobile-command-bar>button.nav-pressing{
+    animation:nav-local-depth-pulse .16s ease-out 1!important;
+  }
+
+  .mobile-command-bar>button .nav-touch-ripple{
+    width:20px!important;
+    height:20px!important;
+    margin-left:-10px!important;
+    margin-top:-10px!important;
+    opacity:.9!important;
+    transform:scale(.18)!important;
+    background:
+      radial-gradient(circle,
+        rgba(210,250,255,.55) 0%,
+        rgba(0,240,255,.34) 20%,
+        rgba(67,170,255,.20) 46%,
+        rgba(0,119,255,.07) 68%,
+        rgba(0,119,255,0) 82%)!important;
+    box-shadow:
+      0 0 0 2px rgba(0,240,255,.08),
+      0 0 14px rgba(0,225,255,.24)!important;
+    transition:none!important;
+  }
+
+  .mobile-command-bar>button .nav-touch-ripple.expand{
+    animation:nav-touch-ripple-pulse .42s cubic-bezier(.18,.72,.22,1) forwards!important;
+  }
+}
+
+@keyframes nav-local-depth-pulse{
+  0%{
+    box-shadow:
+      inset 0 1px 4px rgba(0,0,0,.12),
+      inset 0 0 8px rgba(0,174,255,.03);
+  }
+  45%{
+    box-shadow:
+      inset 0 3px 12px rgba(0,0,0,.30),
+      inset 0 0 18px rgba(0,213,255,.09);
+  }
+  100%{
+    box-shadow:
+      inset 0 1px 5px rgba(0,0,0,.14),
+      inset 0 0 9px rgba(0,174,255,.03);
+  }
+}
+
+@keyframes nav-touch-ripple-pulse{
+  0%{
+    transform:scale(.18);
+    opacity:.92;
+    filter:brightness(1.16);
+  }
+  18%{
+    transform:scale(.72);
+    opacity:1;
+    filter:brightness(1.32);
+  }
+  34%{
+    transform:scale(.58);
+    opacity:.86;
+    filter:brightness(1.08);
+  }
+  56%{
+    transform:scale(1.9);
+    opacity:.50;
+    filter:brightness(1);
+  }
+  100%{
+    transform:scale(5.2);
+    opacity:0;
+    filter:brightness(.95);
+  }
+}
