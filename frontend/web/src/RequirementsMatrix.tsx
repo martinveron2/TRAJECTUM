@@ -92,7 +92,7 @@ export function RequirementsMatrix({
       : (isEs ? 'ABIERTO ⭕' : 'OPEN ⭕');
 
   const requirementExtra = (id: string) => id === 'R8' && maxQSample
-    ? `MaxQ ${maxQSample.q_pa.toFixed(0)} Pa · t ${maxQSample.t_s.toFixed(2)} s · h ${maxQSample.altitude_m.toFixed(1)} m`
+    ? `qmax ${maxQSample.q_pa.toFixed(0)} Pa · t ${maxQSample.t_s.toFixed(2)} s · h ${maxQSample.altitude_m.toFixed(1)} m`
     : id === 'R1' && analysis?.apogee_m != null
       ? `${analysis.apogee_m.toFixed(1)} m @ ${launchAngleDeg.toFixed(0)}°`
       : id === 'R2' && analysis?.impact_speed_m_s != null
