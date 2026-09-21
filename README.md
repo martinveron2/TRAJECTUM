@@ -101,7 +101,7 @@ TRAJECTUM/
 - [ ] Add aerodynamic analysis integrations
 - [ ] Expand trajectory and stability visualization
 - [ ] Publish reproducible validation cases
-- [ ] Release an interactive technical demonstration
+- [x] Release an interactive technical demonstration
 
 ## Engineering Principles
 
