@@ -8163,3 +8163,9 @@ output,
     gap:3px!important;
   }
 }
+
+
+/* Match the new CDR metrics heading to the existing upper-section accent color. */
+.cdr-metrics-section-head strong{
+  color:#83B8E6!important;
+}
