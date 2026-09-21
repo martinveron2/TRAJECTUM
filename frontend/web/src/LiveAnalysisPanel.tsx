@@ -454,13 +454,13 @@ export function LiveAnalysisPanel({
         }</span>
       </div>
 
-      <div className="cdr-secondary-results">
+      <div className="cdr-secondary-results cdr-secondary-clean">
         <article><span>{txt('MASA TOTAL', 'TOTAL MASS')}</span><strong><AnimatedValue value={totalMass} decimals={1} suffix=" g"/></strong></article>
-        <article><span>{txt('ALTURA MÁXIMA · hmax', 'MAXIMUM ALTITUDE · hmax')}</span><strong><AnimatedValue value={analysis.apogee_m} decimals={1} suffix=" m"/></strong></article>
-        <article><span>{txt('PRESIÓN DINÁMICA MÁX · qmax', 'MAX DYNAMIC PRESSURE · qmax')}</span><strong><AnimatedValue value={analysis.max_q_pa} decimals={0} suffix=" Pa"/></strong></article>
-        <article><span>{txt('VELOCIDAD MÁXIMA · Vmax', 'MAXIMUM SPEED · Vmax')}</span><strong><AnimatedValue value={analysis.max_speed_m_s} decimals={1} suffix=" m/s"/></strong></article>
-        <article><span>{txt('MACH MÁX', 'MAX MACH')}</span><strong><AnimatedValue value={analysis.max_mach} decimals={3}/></strong></article>
-        <article><span>{txt('VELOCIDAD FINAL · Vf', 'FINAL VELOCITY · Vf')}</span><strong><AnimatedValue value={analysis.impact_speed_m_s} decimals={2} suffix=" m/s"/></strong></article>
+        <article><span>{txt('ALTURA MÁXIMA', 'MAX ALTITUDE')}</span><strong><AnimatedValue value={analysis.apogee_m} decimals={1} suffix=" m"/></strong></article>
+        <article><span>{txt('PRESIÓN DINÁMICA', 'DYNAMIC PRESSURE')}</span><strong><AnimatedValue value={analysis.max_q_pa} decimals={0} suffix=" Pa"/></strong></article>
+        <article><span>{txt('VELOCIDAD MÁXIMA', 'MAX SPEED')}</span><strong><AnimatedValue value={analysis.max_speed_m_s} decimals={1} suffix=" m/s"/></strong></article>
+        <article><span>{txt('MACH MÁXIMO', 'MAX MACH')}</span><strong><AnimatedValue value={analysis.max_mach} decimals={3}/></strong></article>
+        <article><span>{txt('VELOCIDAD DE IMPACTO', 'IMPACT SPEED')}</span><strong><AnimatedValue value={analysis.impact_speed_m_s} decimals={2} suffix=" m/s"/></strong></article>
       </div>
 
       <section className="cdr-vehicle-map">
