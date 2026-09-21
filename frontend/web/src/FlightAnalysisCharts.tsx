@@ -191,7 +191,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
     </div>
 
     <div className="telemetry-source-toggle" aria-label={txt('Fuente de datos', 'Data source')}>
-      <button type="button" className="active">{txt('ANALÍTICO', 'ANALYTICAL')}</button>
+      <button type="button" className="active">{txt('NUMÉRICO · RK4', 'NUMERICAL · RK4')}</button>
       <button type="button" disabled title={txt('Se habilita al importar telemetría medida.', 'Enabled when measured telemetry is imported.')}>{txt('MEDIDO', 'MEASURED')} · {txt('SIN DATOS', 'NO DATA')}</button>
     </div>
 

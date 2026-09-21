@@ -262,7 +262,7 @@
     },
     "note": "Cd=0.345 se conserva sólo como valor provisional del caso anterior para permitir pruebas del gemelo. Debe recalcularse para la geometría ensamblada de 825.05 mm."
   },
-  "revision": "2026-09-21-assembly-drawing-825.05",
+  "revision": "2026-09-21-provisional-cg-cp-rk4-baseline",
   "datum": "nose_tip_x0_positive_aft",
   "sources": {
     "cad_and_drawings_date": "2026-09-19",
@@ -295,5 +295,32 @@
     "fin_sweep_mm": 40,
     "fin_leading_edge_x_mm": 780,
     "note": "Retained only to document the former functional test configuration. Do not use these values as CDR design truth."
+  },
+  "working_baseline": {
+    "status": "provisional-for-trajectory-simulation",
+    "note": "Baseline de trabajo para ejecutar la simulación. CG/CP se reemplazan cuando el equipo entregue valores definitivos.",
+    "initial_mass_g": 1590.0,
+    "cg_x_mm_from_nose": 567.75,
+    "cg_x_mm_from_support": 257.3,
+    "cp_x_mm_from_nose": 608.16,
+    "cp_x_mm_from_support": 216.89,
+    "static_margin_calibers": 0.64,
+    "method": {
+      "cg": "masas medidas + estaciones axiales estimadas de planos/cotas/distribución interna",
+      "cp": "Barrowman, ojiva tangente + 4 aletas trapezoidales",
+      "trajectory": "RK4 2D, dt=0.002 s, atmósfera ISA, masa variable y curva de empuje A-100 RN/KNDX",
+      "cd": "0.345 provisional"
+    },
+    "first_trajectory_run": {
+      "hmax_m": 662.14,
+      "time_to_hmax_s": 11.28,
+      "vmax_m_s": 128.95,
+      "max_mach": 0.379,
+      "qmax_pa": 10152.07,
+      "burnout_time_s": 0.5,
+      "burnout_altitude_m": 36.56,
+      "burnout_speed_m_s": 128.73,
+      "burnout_q_pa": 10114.74
+    }
   }
 }
