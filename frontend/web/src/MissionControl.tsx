@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Pause, Play, RotateCcw, X, Gauge, Rocket, Activity } from 'lucide-react';
+import { Pause, Play, RotateCcw, ArrowLeft, Gauge, Rocket, Activity } from 'lucide-react';
 import type { MissionSample } from './missionTypes';
 
 type AnalysisLike = {
@@ -117,7 +117,7 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
           <div><span>TRAJECTUM · {txt('MODO MISIÓN', 'MISSION MODE')}</span><strong>{txt('CENTRO DE CONTROL DE VUELO', 'FLIGHT CONTROL CENTER')}</strong></div>
         </div>
         <div className="mission-clock"><small>{txt('TIEMPO DE VUELO', 'FLIGHT TIME')}</small><strong>{clock}</strong></div>
-        <button type="button" className="mission-close" onClick={onClose} aria-label={txt('Cerrar', 'Close')}><X size={22} /></button>
+        <button type="button" className="mission-close" onClick={onClose} aria-label={txt('Volver', 'Back')}><ArrowLeft size={21} strokeWidth={1.9} /></button>
       </header>
 
       <div className="mission-statusline">
