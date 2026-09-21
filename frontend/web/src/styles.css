@@ -10057,3 +10057,68 @@ output,
     margin-top:4px!important;
   }
 }
+
+/* === LRR LAUNCH BUTTON: machine-like in-place initialization === */
+@media(max-width:820px){
+  .mission-launch-cta.preparing:disabled{
+    opacity:1!important;
+    filter:none!important;
+  }
+  .mission-launch-cta.preparing{
+    overflow:hidden!important;
+    border-color:#FF8A55!important;
+    background:
+      radial-gradient(circle at 22% 18%,rgba(255,255,255,.12),transparent 26%),
+      linear-gradient(135deg,#A83A13,#6F260D)!important;
+    box-shadow:
+      0 0 0 1px rgba(255,122,61,.12),
+      0 9px 24px rgba(149,47,11,.28),
+      inset 0 1px 0 rgba(255,255,255,.12)!important;
+  }
+  .mission-launch-cta.preparing::after{
+    content:"";
+    position:absolute;
+    left:10px;
+    right:10px;
+    bottom:7px;
+    height:4px;
+    border-radius:99px;
+    background:linear-gradient(90deg,#FFB36B,#FF6A2C 45%,#FFF0D8 70%,#FF6A2C);
+    box-shadow:0 0 10px rgba(255,106,44,.34);
+    transform:scaleX(0);
+    transform-origin:left center;
+    animation:mission-launch-progress 1.45s cubic-bezier(.2,.75,.2,1) forwards;
+  }
+  .mission-launch-cta.preparing .mission-launch-icon{
+    border-color:rgba(255,255,255,.36)!important;
+    box-shadow:0 0 16px rgba(255,112,54,.20)!important;
+    animation:mission-launch-icon-pulse .8s ease-in-out infinite!important;
+  }
+  .mission-launch-cta.preparing .mission-launch-copy strong{
+    letter-spacing:.055em!important;
+  }
+  .mission-launch-cta.preparing .mission-launch-spinner{
+    width:21px!important;
+    height:21px!important;
+    right:14px!important;
+    margin-top:-10.5px!important;
+    border-width:2.5px!important;
+    border-color:rgba(255,255,255,.22)!important;
+    border-top-color:#FFF6EE!important;
+    box-shadow:0 0 10px rgba(255,255,255,.10)!important;
+    animation:mission-spin .62s linear infinite!important;
+  }
+
+  .mobile-export-preparing i b{
+    animation-duration:.95s!important;
+  }
+}
+@keyframes mission-launch-progress{
+  0%{transform:scaleX(.06);opacity:.72}
+  65%{transform:scaleX(.76);opacity:1}
+  100%{transform:scaleX(1);opacity:1}
+}
+@keyframes mission-launch-icon-pulse{
+  0%,100%{transform:scale(.98);filter:brightness(.95)}
+  50%{transform:scale(1.035);filter:brightness(1.08)}
+}

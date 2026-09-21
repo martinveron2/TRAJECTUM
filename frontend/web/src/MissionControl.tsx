@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Pause, Play, RotateCcw, ArrowLeft, Gauge, Rocket, Activity, LoaderCircle } from 'lucide-react';
+import { Pause, Play, RotateCcw, ArrowLeft, Gauge, Rocket, Activity } from 'lucide-react';
 import type { MissionSample } from './missionTypes';
 
 type AnalysisLike = {
@@ -25,8 +25,7 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
   const [timeS, setTimeS] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [arming, setArming] = useState(true);
+  const [playing, setPlaying] = useState(true);
   const [rate, setRate] = useState(1);
   const frameRef = useRef<number | null>(null);
   const lastRealRef = useRef<number | null>(null);
@@ -34,14 +33,8 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
 
   useEffect(() => {
     setTimeS(0);
-    setPlaying(false);
-    setArming(true);
+    setPlaying(true);
     lastRealRef.current = null;
-    const launchTimer = window.setTimeout(() => {
-      setArming(false);
-      setPlaying(true);
-    }, 1100);
-    return () => window.clearTimeout(launchTimer);
   }, [samples]);
 
   useEffect(() => {
@@ -128,7 +121,7 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
       </header>
 
       <div className="mission-statusline">
-        <span className={playing ? 'live' : arming ? 'arming' : ''}><i />{arming ? txt('INICIANDO VUELO', 'INITIALIZING FLIGHT') : playing ? txt('SIMULACIÓN EN VIVO', 'LIVE SIMULATION') : txt('SIMULACIÓN EN PAUSA', 'SIMULATION PAUSED')}</span>
+        <span className={playing ? 'live' : ''}><i />{playing ? txt('SIMULACIÓN EN VIVO', 'LIVE SIMULATION') : txt('SIMULACIÓN EN PAUSA', 'SIMULATION PAUSED')}</span>
         <strong>{phaseMap[current.phase] ?? current.phase}</strong>
       </div>
 
@@ -138,11 +131,6 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
             <span>{txt('TIEMPO', 'TIME')}</span>
             <strong>T {timeS.toFixed(1)}<em>s</em></strong>
           </div>
-          {arming && <div className="mission-launch-sequence" role="status" aria-live="polite">
-            <div className="mission-launch-spinner"><LoaderCircle size={28}/></div>
-            <strong>{txt('INICIANDO VUELO', 'INITIALIZING FLIGHT')}</strong>
-            <span>{txt('SINCRONIZANDO TELEMETRÍA', 'SYNCING TELEMETRY')}</span>
-          </div>}
           <div className="mission-grid" />
           <svg viewBox="0 0 360 470" aria-label={txt('Vuelo simulado', 'Simulated flight')}>
             <defs>

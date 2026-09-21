@@ -641,7 +641,7 @@ function App() {
   const openExportSheet = () => {
     setShowExportMenu(true);
     setExportPreparing(true);
-    window.setTimeout(() => setExportPreparing(false), 650);
+    window.setTimeout(() => setExportPreparing(false), 1400);
   };
 
   const runFromTop = () => {
@@ -693,8 +693,10 @@ function App() {
     setAnalysisSummary(analysis);
     setComponentSummary(components);
     if (pendingMissionLaunch && analysis?.mission_timeline?.length > 1) {
-      setPendingMissionLaunch(false);
-      setMissionControlOpen(true);
+      window.setTimeout(() => {
+        setPendingMissionLaunch(false);
+        setMissionControlOpen(true);
+      }, 1200);
     }
   }, [pendingMissionLaunch]);
 
@@ -1431,18 +1433,21 @@ function App() {
           className={pendingMissionLaunch ? 'mission-launch-cta preparing' : 'mission-launch-cta lrr-primary'}
           disabled={!ready || pendingMissionLaunch}
           onClick={() => {
+            setPendingMissionLaunch(true);
             if (analysisSummary?.mission_timeline?.length > 1) {
-              setMissionControlOpen(true);
+              window.setTimeout(() => {
+                setPendingMissionLaunch(false);
+                setMissionControlOpen(true);
+              }, 1450);
               return;
             }
-            setPendingMissionLaunch(true);
             setRunToken((value) => value + 1);
           }}
         >
           <span className="mission-launch-icon"><Rocket size={24} strokeWidth={1.8} /></span>
           <span className="mission-launch-copy">
             <small>{txt('MODO MISIÓN', 'MISSION MODE')}</small>
-            <strong>{pendingMissionLaunch ? txt('PREPARANDO SIMULACIÓN…', 'PREPARING SIMULATION…') : txt('DESPEGAR / INICIAR SIMULACIÓN', 'LAUNCH / START SIMULATION')}</strong>
+            <strong>{pendingMissionLaunch ? txt('INICIANDO VUELO…', 'INITIALIZING FLIGHT…') : txt('DESPEGAR / INICIAR SIMULACIÓN', 'LAUNCH / START SIMULATION')}</strong>
           </span>
           {pendingMissionLaunch ? <i className="mission-launch-spinner" /> : <b>→</b>}
         </button>
