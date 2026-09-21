@@ -1291,7 +1291,7 @@ function App() {
           </div>
           <div className="propulsion-metrics">
             <div><span>{txt('APOGEO', 'APOGEE')}</span><strong>{analysisSummary?.apogee_m != null ? analysisSummary.apogee_m.toFixed(1) + ' m' : '—'}</strong></div>
-            <div><span>MAX Q</span><strong>{analysisSummary?.max_q_pa != null ? analysisSummary.max_q_pa.toFixed(0) + ' Pa' : '—'}</strong></div>
+            <div><span>q<sub>max</sub></span><strong>{analysisSummary?.max_q_pa != null ? analysisSummary.max_q_pa.toFixed(0) + ' Pa' : '—'}</strong></div>
             <div><span>{txt('V MÁX', 'MAX V')}</span><strong>{analysisSummary?.max_speed_m_s != null ? analysisSummary.max_speed_m_s.toFixed(1) + ' m/s' : '—'}</strong></div>
           </div>
           <button type="button" className="phase-secondary-link" onClick={() => { if (!analysisSummary && ready) setRunToken((value)=>value+1); else navigateMobile('plots'); }}><Play size={17}/><span>{analysisSummary ? txt('IR AL SIMULADOR DE VUELO', 'OPEN FLIGHT SIMULATOR') : txt('EJECUTAR CÁLCULO CDR', 'RUN CDR CALCULATION')}</span><b>→</b></button>
@@ -1555,7 +1555,7 @@ function App() {
               <small>{txt('resultado de trayectoria', 'trajectory result')}</small>
             </article>
             <article className="metric-card">
-              <span>{txt('Q MÁX', 'MAX Q')}</span>
+              <span>q<sub>max</sub></span>
               <strong>{analysisSummary?.max_q_pa !== undefined ? `${analysisSummary.max_q_pa.toFixed(0)} Pa` : '—'}</strong>
               <small>{txt('resultado de trayectoria', 'trajectory result')}</small>
             </article>
