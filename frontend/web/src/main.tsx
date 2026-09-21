@@ -1200,13 +1200,29 @@ function App() {
           <div
             className={`mobile-pdr-model pdr-view-${pdrViewIndex}`}
             onTouchStart={(event) => {
+              if (event.touches.length > 1) {
+                event.currentTarget.dataset.multiTouch = '1';
+                event.currentTarget.dataset.touchX = '';
+                return;
+              }
+              event.currentTarget.dataset.multiTouch = '';
               event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0);
             }}
+            onTouchMove={(event) => {
+              if (event.touches.length > 1) {
+                event.currentTarget.dataset.multiTouch = '1';
+                event.currentTarget.dataset.touchX = '';
+              }
+            }}
             onTouchEnd={(event) => {
+              if (event.currentTarget.dataset.multiTouch === '1') {
+                if (event.touches.length === 0) event.currentTarget.dataset.multiTouch = '';
+                return;
+              }
               const start = Number(event.currentTarget.dataset.touchX ?? 0);
               const end = event.changedTouches[0]?.clientX ?? start;
               const delta = end - start;
-              if (Math.abs(delta) > 42) {
+              if (start && Math.abs(delta) > 42) {
                 setPdrViewIndex((current) => delta < 0 ? Math.min(2, current + 1) : Math.max(0, current - 1));
                 setPdrZoom(1);
               }
