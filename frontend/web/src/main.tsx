@@ -641,6 +641,31 @@ function App() {
   const triggerNavHaptic = () => {
     if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(10);
   };
+  const handleNavPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    button.style.setProperty('--press-x', x + 'px');
+    button.style.setProperty('--press-y', y + 'px');
+    button.classList.remove('nav-releasing');
+    button.classList.add('nav-pressing');
+    triggerNavHaptic();
+
+    const ripple = document.createElement('span');
+    ripple.className = 'nav-touch-ripple';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    button.appendChild(ripple);
+    requestAnimationFrame(() => ripple.classList.add('expand'));
+    window.setTimeout(() => ripple.remove(), 460);
+  };
+  const handleNavPointerRelease = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const button = event.currentTarget;
+    button.classList.remove('nav-pressing');
+    button.classList.add('nav-releasing');
+    window.setTimeout(() => button.classList.remove('nav-releasing'), 220);
+  };
 
   const openExportSheet = () => {
     setShowExportMenu(true);
@@ -718,19 +743,30 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
+  const formatReportNumber = (value: unknown, decimals = 1) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number.toFixed(decimals) : '—';
+  };
+  const roundReportNumber = (value: unknown, decimals = 1) => {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return '';
+    const factor = 10 ** decimals;
+    return Math.round(number * factor) / factor;
+  };
+
   const exportReportPdf = async () => {
     const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.text('TRAJECTUM · UTN-FRH-G07', 16, 18);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text('Reporte técnico de misión / Cátedra', 16, 25);
     const lines = [
-      ['Masa total', (analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g ?? '—') + ' g'],
-      ['CG desde apoyo', (analysisSummary?.cg_x_mm_from_support ?? (componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : '—')) + ' mm'],
-      ['CP desde apoyo', (analysisSummary?.cp_x_mm_from_support ?? '—') + ' mm'],
-      ['Margen estático', (analysisSummary?.static_margin_calibers ?? '—') + ' calibres'],
-      ['Apogeo', (analysisSummary?.apogee_m ?? '—') + ' m'],
-      ['Max Q', (analysisSummary?.max_q_pa ?? '—') + ' Pa'],
-      ['Ángulo de lanzamiento', vehicle.launchAngle + '°'],
+      ['Masa total', formatReportNumber(analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g, 1) + ' g'],
+      ['CG desde apoyo', formatReportNumber(analysisSummary?.cg_x_mm_from_support ?? (componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : null), 1) + ' mm'],
+      ['CP desde apoyo', formatReportNumber(analysisSummary?.cp_x_mm_from_support, 1) + ' mm'],
+      ['Margen estático', formatReportNumber(analysisSummary?.static_margin_calibers, 2) + ' calibres'],
+      ['Apogeo', formatReportNumber(analysisSummary?.apogee_m, 1) + ' m'],
+      ['Max Q', formatReportNumber(analysisSummary?.max_q_pa, 1) + ' Pa'],
+      ['Ángulo de lanzamiento', formatReportNumber(vehicle.launchAngle, 1) + '°'],
       ['Motor', motor.designation || '—'],
     ];
     let y = 38;
@@ -806,12 +842,12 @@ function App() {
     const summary = [
       [header('TRAJECTUM — ENGINEERING EXPORT'), header('VALOR')],
       pair('Proyecto', 'UTN-FRH-G07 / CDR'), pair('Versión', 'v0.1.0-CDR'), pair('Exportado', new Date().toLocaleString()), pair('Motor activo', motor.designation || motor.label),
-      pair('Masa total [g]', analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g ?? ''),
-      pair('CG desde apoyo [mm]', componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : analysisSummary?.cg_x_mm_from_support ?? ''),
-      pair('CP desde apoyo [mm]', analysisSummary?.cp_x_mm_from_support ?? ''), pair('Margen estático [calibres]', analysisSummary?.static_margin_calibers ?? ''),
-      pair('Apogeo [m]', analysisSummary?.apogee_m ?? ''), pair('Velocidad máxima [m/s]', analysisSummary?.max_speed_m_s ?? ''), pair('Mach máximo', analysisSummary?.max_mach ?? ''),
-      pair('Q máxima [Pa]', analysisSummary?.max_q_pa ?? ''), pair('Tiempo al apogeo [s]', analysisSummary?.time_to_apogee_s ?? ''), pair('Tiempo de aterrizaje [s]', analysisSummary?.landing_time_s ?? ''),
-      pair('Velocidad de impacto [m/s]', analysisSummary?.impact_speed_m_s ?? ''),
+      pair('Masa total [g]', roundReportNumber(analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g, 1)),
+      pair('CG desde apoyo [mm]', roundReportNumber(componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : analysisSummary?.cg_x_mm_from_support, 1)),
+      pair('CP desde apoyo [mm]', roundReportNumber(analysisSummary?.cp_x_mm_from_support, 1)), pair('Margen estático [calibres]', roundReportNumber(analysisSummary?.static_margin_calibers, 2)),
+      pair('Apogeo [m]', roundReportNumber(analysisSummary?.apogee_m, 1)), pair('Velocidad máxima [m/s]', roundReportNumber(analysisSummary?.max_speed_m_s, 1)), pair('Mach máximo', roundReportNumber(analysisSummary?.max_mach, 2)),
+      pair('Q máxima [Pa]', roundReportNumber(analysisSummary?.max_q_pa, 1)), pair('Tiempo al apogeo [s]', roundReportNumber(analysisSummary?.time_to_apogee_s, 2)), pair('Tiempo de aterrizaje [s]', roundReportNumber(analysisSummary?.landing_time_s, 2)),
+      pair('Velocidad de impacto [m/s]', roundReportNumber(analysisSummary?.impact_speed_m_s, 2)),
     ];
     const geometry = [
       [header('PARÁMETRO'), header('VALOR'), header('UNIDAD')],
@@ -822,11 +858,11 @@ function App() {
       [cell('Desplazamiento borde de ataque Xf'), cell(vehicle.sweep), cell('mm')], [cell('Posición axial aleta'), cell(vehicle.finX), cell('mm')], [cell('Ángulo lanzamiento'), cell(vehicle.launchAngle), cell('deg')], [cell('Cd vehículo'), cell(vehicle.cd), cell('')],
     ];
     const comp = analysisSummary?.components ?? componentSummary?.components ?? [];
-    const masses = [[header('COMPONENTE'), header('MASA [g]'), header('xCG DESDE NARIZ [mm]'), header('xCG DESDE APOYO [mm]'), header('FUENTE')], ...comp.map((item: any) => [cell(item.name), cell(item.mass_g), cell(item.x_cg_mm_from_nose ?? item.x_cg_mm), cell(item.x_cg_mm_from_support ?? (item.x_cg_mm != null ? Number(vehicle.totalLength) - item.x_cg_mm : '')), cell(item.source)])];
-    const cp = [[header('PARÁMETRO CP'), header('VALOR'), header('UNIDAD')], [cell('Método'), cell('Barrowman / perfil axisimétrico'), cell('')], [cell('CP total desde nariz'), cell(analysisSummary?.cp_x_mm_from_nose), cell('mm')], [cell('CP total desde apoyo'), cell(analysisSummary?.cp_x_mm_from_support), cell('mm')], [cell('CP cofia desde nariz'), cell(analysisSummary?.nose_cp_x_mm_from_nose), cell('mm')], [cell('CP cofia desde apoyo'), cell(analysisSummary?.nose_cp_x_mm_from_support), cell('mm')], [cell('CP aletas desde nariz'), cell(analysisSummary?.fins_cp_x_mm_from_nose), cell('mm')], [cell('CP aletas desde apoyo'), cell(analysisSummary?.fins_cp_x_mm_from_support), cell('mm')], [cell('Margen estático'), cell(analysisSummary?.static_margin_calibers), cell('calibres')]];
+    const masses = [[header('COMPONENTE'), header('MASA [g]'), header('xCG DESDE NARIZ [mm]'), header('xCG DESDE APOYO [mm]'), header('FUENTE')], ...comp.map((item: any) => [cell(item.name), cell(roundReportNumber(item.mass_g, 1)), cell(roundReportNumber(item.x_cg_mm_from_nose ?? item.x_cg_mm, 1)), cell(roundReportNumber(item.x_cg_mm_from_support ?? (item.x_cg_mm != null ? Number(vehicle.totalLength) - item.x_cg_mm : null), 1)), cell(item.source)])];
+    const cp = [[header('PARÁMETRO CP'), header('VALOR'), header('UNIDAD')], [cell('Método'), cell('Barrowman / perfil axisimétrico'), cell('')], [cell('CP total desde nariz'), cell(roundReportNumber(analysisSummary?.cp_x_mm_from_nose, 1)), cell('mm')], [cell('CP total desde apoyo'), cell(roundReportNumber(analysisSummary?.cp_x_mm_from_support, 1)), cell('mm')], [cell('CP cofia desde nariz'), cell(roundReportNumber(analysisSummary?.nose_cp_x_mm_from_nose, 1)), cell('mm')], [cell('CP cofia desde apoyo'), cell(roundReportNumber(analysisSummary?.nose_cp_x_mm_from_support, 1)), cell('mm')], [cell('CP aletas desde nariz'), cell(roundReportNumber(analysisSummary?.fins_cp_x_mm_from_nose, 1)), cell('mm')], [cell('CP aletas desde apoyo'), cell(roundReportNumber(analysisSummary?.fins_cp_x_mm_from_support, 1)), cell('mm')], [cell('Margen estático'), cell(roundReportNumber(analysisSummary?.static_margin_calibers, 2)), cell('calibres')]];
     const trajectory = [[header('t [s]'),header('FASE'),header('x [m]'),header('ALTITUD [m]'),header('VELOCIDAD [m/s]'),header('V VERTICAL [m/s]'),header('MACH'),header('Q [Pa]'),header('ACELERACIÓN [g]'),header('PARACAÍDAS')], ...(analysisSummary?.mission_timeline ?? []).map((sample: any) => [cell(sample.t_s),cell(sample.phase),cell(sample.x_m),cell(sample.altitude_m),cell(sample.speed_m_s),cell(sample.vertical_speed_m_s),cell(sample.mach),cell(sample.q_pa),cell(sample.acceleration_g),cell(sample.parachute_deployed ? 'SI' : 'NO')])];
     const motorSheet = [[header('CONFIGURACIÓN'),header('DESIGNACIÓN'),header('PROPELENTE'),header('COMBUSTIÓN [s]'),header('IMPULSO [N·s]'),header('EMPUJE MEDIO DERIVADO [N]'),header('EMPUJE MÁX [N]'),header('PROPELENTE [g]'),header('SECA [g]'),header('ACTIVA')], ...motorConfigs.map((item) => [cell(item.label),cell(item.designation),cell(item.propellant),cell(item.burn),cell(item.impulse),cell(motorAverageThrust(item)),cell(item.maxThrust),cell(item.propellantMass),cell(item.dryMass),cell(item.id === activeMotorId ? 'SI' : 'NO')])];
-    const recovery = [[header('PARÁMETRO'),header('VALOR'),header('UNIDAD')],[cell('Cd paracaídas'),cell(vehicle.parachuteCd),cell('')],[cell('Área paracaídas'),cell(vehicle.parachuteArea),cell('m²')],[cell('Altitud despliegue configurada'),cell(vehicle.deployAltitude),cell('m')],[cell('Retardo despliegue'),cell(vehicle.deployDelay),cell('s')],[cell('Altitud despliegue simulada'),cell(analysisSummary?.deployment_altitude_m),cell('m')],[cell('Tiempo despliegue'),cell(analysisSummary?.deployment_time_s),cell('s')],[cell('Tiempo aterrizaje'),cell(analysisSummary?.landing_time_s),cell('s')],[cell('Velocidad impacto'),cell(analysisSummary?.impact_speed_m_s),cell('m/s')]];
+    const recovery = [[header('PARÁMETRO'),header('VALOR'),header('UNIDAD')],[cell('Cd paracaídas'),cell(roundReportNumber(vehicle.parachuteCd,2)),cell('')],[cell('Área paracaídas'),cell(roundReportNumber(vehicle.parachuteArea,2)),cell('m²')],[cell('Altitud despliegue configurada'),cell(roundReportNumber(vehicle.deployAltitude,1)),cell('m')],[cell('Retardo despliegue'),cell(roundReportNumber(vehicle.deployDelay,2)),cell('s')],[cell('Altitud despliegue simulada'),cell(roundReportNumber(analysisSummary?.deployment_altitude_m,1)),cell('m')],[cell('Tiempo despliegue'),cell(roundReportNumber(analysisSummary?.deployment_time_s,2)),cell('s')],[cell('Tiempo aterrizaje'),cell(roundReportNumber(analysisSummary?.landing_time_s,2)),cell('s')],[cell('Velocidad impacto'),cell(roundReportNumber(analysisSummary?.impact_speed_m_s,2)),cell('m/s')]];
     const model = [[header('MÓDULO'),header('MÉTODO / MODELO')],[cell('CG'),cell('Sumatoria de momentos de masa')],[cell('CP'),cell('Barrowman + perfil axisimétrico de cofia')],[cell('Trayectoria'),cell('Masa puntual 2D')],[cell('Integración'),cell('Runge–Kutta de cuarto orden (RK4)')],[cell('Resistencia'),cell('D = 1/2 ρ V² Cd A')],[cell('Atmósfera'),cell('ISA')],[cell('Recuperación'),cell('Modelo de descenso con paracaídas')]];
     const requirementsSheet = [
       [header('ID'),header('REQUERIMIENTO'),header('OBJETIVO'),header('MÉTODO'),header('ESTADO')],
@@ -1776,19 +1812,19 @@ function App() {
         style={{ '--nav-index': mobileNavIndex } as React.CSSProperties}
       >
         <i className="mobile-nav-slider" aria-hidden="true" />
-        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onTouchStart={triggerNavHaptic} onClick={() => navigateMobile('home')}>
+        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => navigateMobile('home')}>
           <span className="mobile-nav-icon"><Home size={20} strokeWidth={1.8} /></span>
           <small>{txt('INICIO', 'HOME')}</small>
         </button>
-        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onTouchStart={triggerNavHaptic} onClick={() => navigateMobile('pdr')}>
+        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => navigateMobile('pdr')}>
           <span className="mobile-nav-icon"><Rocket size={20} strokeWidth={1.8} /></span>
           <small>PDR</small>
         </button>
-        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onTouchStart={triggerNavHaptic} onClick={() => navigateMobile('analysis')}>
+        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => navigateMobile('analysis')}>
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
-        <button type="button" className={missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onTouchStart={triggerNavHaptic} onClick={() => {
+        <button type="button" className={missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => {
           if (analysisSummary?.mission_timeline?.length > 1) {
             setMissionControlOpen(true);
           } else {
@@ -1799,7 +1835,7 @@ function App() {
           <span className="mobile-nav-icon"><Play size={20} strokeWidth={1.8} /></span>
           <small>{txt('VUELO', 'FLIGHT')}</small>
         </button>
-        <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onTouchStart={triggerNavHaptic} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
+        <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
           <span className="mobile-nav-icon"><Download size={20} strokeWidth={1.8} /></span>
           <small>{txt('EXPORTAR', 'EXPORT')}</small>
         </button>
