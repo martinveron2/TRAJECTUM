@@ -6541,3 +6541,272 @@ input[type="number"],
   .performance-copy>strong{font-size:16px}
   .performance-score strong{font-size:40px}
 }
+
+
+/* === TRAJECTUM FLIGHT ANALYSIS — AEROSPACE GLASS REDESIGN === */
+.flight-analysis-head{
+  align-items:center!important;
+  gap:14px!important;
+}
+.rk4-global-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:30px;
+  padding:6px 10px;
+  border:1px solid rgba(0,240,255,.24);
+  border-radius:999px;
+  background:rgba(5,20,34,.58);
+  color:#9FEFFF;
+  font-family:"Space Grotesk"!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 0 16px rgba(0,240,255,.05);
+}
+
+.flight-primary-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:14px 0 12px;
+}
+.flight-primary-card{
+  position:relative;
+  min-height:142px;
+  padding:16px;
+  overflow:hidden;
+  border:1px solid rgba(0,240,255,.12);
+  border-radius:12px;
+  background:rgba(10,18,30,.45);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+  transition:all .25s cubic-bezier(.16,1,.3,1);
+}
+.flight-primary-card::before{
+  content:"";
+  position:absolute;
+  inset:-35%;
+  background:radial-gradient(circle at 50% 50%,rgba(0,240,255,.10),transparent 38%);
+  opacity:0;
+  transform:scale(.7);
+  transition:opacity .25s cubic-bezier(.16,1,.3,1),transform .25s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;
+}
+.flight-primary-card:hover,
+.flight-primary-card:focus-within{
+  border-color:rgba(0,240,255,.45);
+  box-shadow:0 0 25px rgba(0,240,255,.18),inset 0 0 15px rgba(0,240,255,.05);
+  transform:translateY(-2px);
+}
+.flight-primary-card:hover::before,
+.flight-primary-card:focus-within::before{
+  opacity:1;
+  transform:scale(1);
+}
+.flight-primary-card:active{
+  border-color:rgba(0,240,255,.45);
+  box-shadow:0 0 25px rgba(0,240,255,.18),inset 0 0 15px rgba(0,240,255,.05);
+  transform:scale(.995);
+}
+.flight-symbol{
+  position:relative;
+  z-index:1;
+  display:block;
+  font-family:"Space Grotesk"!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  letter-spacing:1.2px!important;
+  color:#8A99AD!important;
+  text-transform:uppercase!important;
+}
+.flight-symbol sub,
+.flight-mission-banner sub,
+.flight-score-grid sub{
+  font-size:.72em;
+  line-height:0;
+  vertical-align:sub;
+  text-transform:none!important;
+  letter-spacing:0!important;
+}
+.flight-primary-card>strong{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  margin-top:18px;
+  font-family:"Space Mono"!important;
+  font-size:36px!important;
+  font-weight:700!important;
+  line-height:1!important;
+  color:#FFFFFF!important;
+  text-shadow:0 0 10px rgba(0,240,255,.30);
+  font-variant-numeric:tabular-nums!important;
+}
+.flight-primary-card>strong em{
+  font-family:"Space Grotesk"!important;
+  font-size:18px!important;
+  font-weight:400!important;
+  font-style:normal!important;
+  color:#00F0FF!important;
+}
+.flight-primary-card>small{
+  position:relative;
+  z-index:1;
+  display:block;
+  margin-top:12px;
+  font-family:"Space Grotesk"!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+  color:#8092A8!important;
+}
+
+.flight-mission-banner{
+  display:grid;
+  grid-template-columns:1fr 1px 1.2fr 1px 1.2fr;
+  align-items:center;
+  gap:14px;
+  margin:0 0 14px;
+  padding:12px 14px;
+  border:1px solid rgba(0,240,255,.10);
+  border-radius:12px;
+  background:rgba(7,17,29,.36);
+  backdrop-filter:blur(14px) saturate(160%);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);
+}
+.flight-mission-banner>i{
+  width:1px;
+  height:32px;
+  background:rgba(124,166,230,.18);
+}
+.flight-mission-banner span{
+  display:block;
+  font-family:"Space Grotesk"!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  letter-spacing:.075em!important;
+  color:#7F91A6!important;
+  text-transform:uppercase!important;
+}
+.flight-mission-banner strong{
+  display:block;
+  margin-top:4px;
+  font-family:"Space Mono"!important;
+  font-size:16px!important;
+  font-weight:700!important;
+  color:#EAF9FF!important;
+  font-variant-numeric:tabular-nums!important;
+}
+.flight-mission-banner small{
+  display:block;
+  margin-top:2px;
+  font-size:10px!important;
+  color:#6F8EA8!important;
+}
+
+.flight-scoreboard.compact-metrics{
+  margin-top:6px;
+}
+.flight-score-grid.compact{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.flight-score-grid.compact article{
+  min-height:92px;
+}
+.flight-score-grid.compact article>span{
+  min-height:0;
+  font-size:12px!important;
+  text-transform:none!important;
+}
+.flight-score-grid.compact article>strong{
+  margin-top:9px;
+  font-size:23px!important;
+}
+.flight-score-grid.compact article>small{
+  font-size:10px!important;
+}
+
+@media(max-width:820px){
+  .flight-analysis-head{
+    align-items:flex-start!important;
+  }
+  .rk4-global-badge{
+    max-width:164px;
+    min-height:28px;
+    padding:5px 8px;
+    font-size:9px!important;
+    line-height:1.2!important;
+    text-align:center;
+  }
+  .flight-primary-grid{
+    gap:9px;
+    margin-top:12px;
+  }
+  .flight-primary-card{
+    min-height:132px;
+    padding:13px;
+  }
+  .flight-primary-card>strong{
+    margin-top:16px;
+    gap:6px;
+    font-size:30px!important;
+  }
+  .flight-primary-card>strong em{
+    font-size:15px!important;
+  }
+  .flight-primary-card>small{
+    margin-top:10px;
+    font-size:10px!important;
+  }
+  .flight-primary-card:hover{
+    transform:none;
+  }
+  .flight-primary-card:active{
+    border-color:rgba(0,240,255,.45)!important;
+    box-shadow:0 0 25px rgba(0,240,255,.18),inset 0 0 15px rgba(0,240,255,.05)!important;
+  }
+  .flight-mission-banner{
+    grid-template-columns:1fr 1fr;
+    gap:9px 12px;
+    padding:11px;
+  }
+  .flight-mission-banner>i{
+    display:none;
+  }
+  .flight-mission-banner>div:first-child{
+    grid-column:1 / 2;
+  }
+  .flight-mission-banner>div:last-child{
+    grid-column:1 / -1;
+    padding-top:8px;
+    border-top:1px solid rgba(124,166,230,.12);
+  }
+  .flight-score-grid.compact{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .flight-score-grid.compact article{
+    min-height:88px!important;
+    padding:10px!important;
+  }
+  .flight-score-grid.compact article>strong{
+    font-size:20px!important;
+  }
+}
+
+@media(max-width:470px){
+  .flight-primary-card>strong{
+    font-size:27px!important;
+  }
+  .flight-primary-card>strong em{
+    font-size:14px!important;
+  }
+  .flight-score-grid.compact{
+    grid-template-columns:1fr 1fr;
+  }
+  .flight-score-grid.compact article:last-child{
+    grid-column:1 / -1;
+  }
+}
