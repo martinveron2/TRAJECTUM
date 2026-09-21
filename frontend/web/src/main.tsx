@@ -638,6 +638,10 @@ function App() {
     }).join(' ');
   })();
 
+  const triggerNavHaptic = () => {
+    if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(10);
+  };
+
   const openExportSheet = () => {
     setShowExportMenu(true);
     setExportPreparing(true);
@@ -1772,19 +1776,19 @@ function App() {
         style={{ '--nav-index': mobileNavIndex } as React.CSSProperties}
       >
         <i className="mobile-nav-slider" aria-hidden="true" />
-        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onClick={() => navigateMobile('home')}>
+        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onTouchStart={triggerNavHaptic} onClick={() => navigateMobile('home')}>
           <span className="mobile-nav-icon"><Home size={20} strokeWidth={1.8} /></span>
           <small>{txt('INICIO', 'HOME')}</small>
         </button>
-        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onClick={() => navigateMobile('pdr')}>
+        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onTouchStart={triggerNavHaptic} onClick={() => navigateMobile('pdr')}>
           <span className="mobile-nav-icon"><Rocket size={20} strokeWidth={1.8} /></span>
           <small>PDR</small>
         </button>
-        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('analysis')}>
+        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onTouchStart={triggerNavHaptic} onClick={() => navigateMobile('analysis')}>
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
-        <button type="button" className={missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onClick={() => {
+        <button type="button" className={missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onTouchStart={triggerNavHaptic} onClick={() => {
           if (analysisSummary?.mission_timeline?.length > 1) {
             setMissionControlOpen(true);
           } else {
@@ -1795,7 +1799,7 @@ function App() {
           <span className="mobile-nav-icon"><Play size={20} strokeWidth={1.8} /></span>
           <small>{txt('VUELO', 'FLIGHT')}</small>
         </button>
-        <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
+        <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onTouchStart={triggerNavHaptic} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
           <span className="mobile-nav-icon"><Download size={20} strokeWidth={1.8} /></span>
           <small>{txt('EXPORTAR', 'EXPORT')}</small>
         </button>
