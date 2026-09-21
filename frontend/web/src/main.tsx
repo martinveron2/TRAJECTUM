@@ -14,7 +14,7 @@ import { PROJECT_REQUIREMENTS } from './projectRequirements';
 const FlightAnalysisCharts = React.lazy(() => import('./FlightAnalysisCharts').then((module) => ({ default: module.FlightAnalysisCharts })));
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
-  Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff, FileUp,
+  Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff, FileUp, ZoomIn, ZoomOut, Maximize2,
 } from 'lucide-react';
 
 type NumericField = number | '';
@@ -432,6 +432,8 @@ function App() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [mobileSection, setMobileSection] = useState<'home' | 'mdr' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status' | 'cad'>('home');
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
+  const [pdrZoom, setPdrZoom] = useState(1);
+  const [pdrSchematicFocused, setPdrSchematicFocused] = useState(false);
   const [phaseFocusIndex, setPhaseFocusIndex] = useState(2);
   const [phaseStoryDragX, setPhaseStoryDragX] = useState(0);
   const [phaseStoryDragging, setPhaseStoryDragging] = useState(false);
@@ -1155,8 +1157,12 @@ function App() {
         </section>}
 
         {pdrTab === 'schematic' && <section
-          className="phase-process-panel mobile-pdr-vehicle pdr-schematic-panel"
-          style={{ '--tilt-x': pdrTilt.x + 'deg', '--tilt-y': pdrTilt.y + 'deg' } as React.CSSProperties}
+          className={`phase-process-panel mobile-pdr-vehicle pdr-schematic-panel${pdrSchematicFocused ? ' focused' : ''}`}
+          style={{ '--tilt-x': pdrTilt.x + 'deg', '--tilt-y': pdrTilt.y + 'deg', '--pdr-zoom': pdrZoom } as React.CSSProperties}
+          onPointerDown={(event) => {
+            setPdrSchematicFocused(true);
+            event.currentTarget.focus?.({ preventScroll: true });
+          }}
           onPointerMove={(event) => {
             if (event.pointerType !== 'touch' && event.buttons === 0) return;
             const rect = event.currentTarget.getBoundingClientRect();
@@ -1167,7 +1173,15 @@ function App() {
           onPointerLeave={() => setPdrTilt({ x: 0, y: 0 })}
           onPointerUp={() => setPdrTilt({ x: 0, y: 0 })}
         >
-          <div className="mobile-pdr-vehicle-head"><div><span>{txt('ESQUEMA 2D ÚNICO', 'SINGLE 2D SCHEMATIC')}</span><strong>{txt('Geometría sincronizada en tiempo real', 'Real-time synchronized geometry')}</strong></div><Orbit size={19}/></div>
+          <div className="mobile-pdr-vehicle-head">
+            <div><span>{txt('ESQUEMA 2D ÚNICO', 'SINGLE 2D SCHEMATIC')}</span><strong>{txt('Geometría sincronizada en tiempo real', 'Real-time synchronized geometry')}</strong></div>
+            <div className="pdr-schematic-tools" onPointerDown={(event) => event.stopPropagation()}>
+              <button type="button" onClick={() => setPdrZoom((value) => Math.max(.82, +(value - .1).toFixed(2)))} aria-label={txt('Alejar esquema', 'Zoom out')}><ZoomOut size={16}/></button>
+              <button type="button" className="zoom-readout" onClick={() => setPdrZoom(1)} aria-label={txt('Restablecer zoom', 'Reset zoom')}>{Math.round(pdrZoom * 100)}%</button>
+              <button type="button" onClick={() => setPdrZoom((value) => Math.min(1.35, +(value + .1).toFixed(2)))} aria-label={txt('Acercar esquema', 'Zoom in')}><ZoomIn size={16}/></button>
+              <button type="button" onClick={() => { setPdrZoom(1); setPdrTilt({ x: 0, y: 0 }); }} aria-label={txt('Centrar esquema', 'Center schematic')}><Maximize2 size={16}/></button>
+            </div>
+          </div>
           <div className="mobile-pdr-model">
             <RocketRealistic vehicle={vehicle} cgMm={liveCgFromNose} cpMm={liveCpFromNose} componentCgs={componentSummary?.components ?? []} assemblyStations={twinAssembly?.stations ?? []} showComponentCgs={false} lang={lang}/>
           </div>

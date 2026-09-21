@@ -8996,3 +8996,112 @@ output,
   -webkit-text-fill-color:#B9DFFF!important;
   text-shadow:0 0 14px rgba(116,185,255,.20)!important;
 }
+
+/* === PDR SCHEMATIC: centered, selectable and zoomable === */
+.pdr-schematic-panel{
+  position:relative!important;
+  outline:none!important;
+  touch-action:pan-y!important;
+  transition:border-color .2s ease,box-shadow .2s ease,background .2s ease,transform .18s ease!important;
+}
+.pdr-schematic-panel:hover,
+.pdr-schematic-panel.focused,
+.pdr-schematic-panel:focus-within{
+  border-color:rgba(0,240,255,.48)!important;
+  box-shadow:0 16px 34px rgba(0,0,0,.24),0 0 24px rgba(0,240,255,.10),inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+.pdr-schematic-panel .mobile-pdr-vehicle-head{
+  gap:10px!important;
+  align-items:center!important;
+}
+.pdr-schematic-tools{
+  display:flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  flex:0 0 auto!important;
+}
+.pdr-schematic-tools button{
+  width:34px!important;
+  height:34px!important;
+  min-width:34px!important;
+  min-height:34px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid rgba(70,154,214,.32)!important;
+  border-radius:9px!important;
+  background:linear-gradient(180deg,rgba(17,39,63,.94),rgba(8,22,38,.98))!important;
+  color:#AFCDE7!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+.pdr-schematic-tools button:hover,
+.pdr-schematic-tools button:active{
+  color:#00F0FF!important;
+  border-color:rgba(0,240,255,.44)!important;
+  box-shadow:0 0 13px rgba(0,240,255,.10)!important;
+}
+.pdr-schematic-tools .zoom-readout{
+  width:48px!important;
+  min-width:48px!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  font-family:"Space Grotesk"!important;
+}
+.pdr-schematic-panel .mobile-pdr-model{
+  position:relative!important;
+  width:100%!important;
+  min-height:300px!important;
+  height:300px!important;
+  padding:8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  transform:none!important;
+}
+.pdr-schematic-panel .mobile-pdr-model .schematic.realistic{
+  width:min(100%,360px)!important;
+  height:100%!important;
+  max-width:360px!important;
+  margin:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  transform:scale(var(--pdr-zoom,1)) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))!important;
+  transform-origin:center center!important;
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),filter .18s ease!important;
+}
+.pdr-schematic-panel.focused .mobile-pdr-model .schematic.realistic{
+  filter:drop-shadow(0 0 16px rgba(0,240,255,.13))!important;
+}
+.pdr-schematic-panel .mobile-pdr-model .schematic.realistic svg{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  margin:auto!important;
+  object-fit:contain!important;
+  transform:none!important;
+}
+@media(max-width:820px){
+  .pdr-schematic-panel .mobile-pdr-model{
+    min-height:280px!important;
+    height:280px!important;
+    touch-action:pan-y!important;
+  }
+  .pdr-schematic-panel .mobile-pdr-model .schematic.realistic,
+  .pdr-schematic-panel .mobile-pdr-model svg{
+    pointer-events:none!important;
+  }
+  .pdr-schematic-tools button{
+    width:32px!important;
+    height:32px!important;
+    min-width:32px!important;
+    min-height:32px!important;
+  }
+  .pdr-schematic-tools .zoom-readout{
+    width:45px!important;
+    min-width:45px!important;
+  }
+}
