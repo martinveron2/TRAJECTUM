@@ -1,14 +1,17 @@
 name,unit,value,status,comment
-L_TOTAL,mm,860,frozen,total length
-D_EXT,mm,63,frozen,outer diameter
-L_NOSE,mm,180,frozen,tangent ogive
-L_BAY,mm,180,frozen,payload + electronics
-L_BODY,mm,500,frozen,lower body
-WALL,mm,2,provisional,printed shell
-FIN_COUNT,unitless,4,frozen,90 deg spacing
-FIN_ROOT,mm,80,provisional,legacy PDR
-FIN_SPAN,mm,50,provisional,legacy PDR
-FIN_TIP,mm,,TBD,required for final planform
-FIN_SWEEP,mm,,TBD,required for final planform
-FIN_X,mm,,TBD,leading-edge axial station from nose tip
-AIRFOIL,text,NACA 0012,professor/PDR,fin cross-section
+L_TOTAL,mm,825.05,verified-assembly-drawing,current assembled CDR baseline
+D_EXT,mm,63,verified-drawing,outer diameter
+L_NOSE,mm,200.05,derived-working-effective-length,effective assembled nose length
+L_C1,mm,185,team-confirmed-working-effective,C1 parachute/payload section
+L_C2,mm,215,verified-drawing,C2 section
+L_TAIL,mm,225,verified-drawing,tail and fin-can section
+MOTOR_MOUNT_L,mm,190,verified-drawing,internal motor mount length
+MOTOR_MOUNT_OD,mm,54,verified-drawing,motor mount outer diameter
+MOTOR_MOUNT_ID,mm,33,verified-drawing,motor mount inner diameter
+FIN_COUNT,unitless,4,verified-cad-and-drawing,90 deg spacing
+FIN_ROOT,mm,97.67,verified-drawing,root chord
+FIN_SPAN,mm,52.5,derived-drawing,radial span = (168-63)/2
+FIN_TIP,mm,39.96,verified-drawing,tip chord
+FIN_SWEEP,mm,42,derived-1to1-drawing-geometry,derived from 1:1 Fusion side view
+FIN_X,mm,725.05,derived-from-working-assembly,root leading-edge station from nose tip
+AIRFOIL,text,NACA 0012,verified-cad-and-filename,physical fin section
