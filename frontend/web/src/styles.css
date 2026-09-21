@@ -10027,3 +10027,33 @@ output,
     to{opacity:1}
   }
 }
+
+/* === FLIGHT ANALYSIS HEADER COMPACT PRECISION BADGE === */
+@media(max-width:820px){
+  .flight-analysis-head{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:start!important;
+    gap:8px!important;
+    margin-bottom:6px!important;
+  }
+  .flight-analysis-head>div{
+    min-width:0!important;
+  }
+  .rk4-global-badge{
+    justify-self:end!important;
+    align-self:start!important;
+    max-width:118px!important;
+    min-height:24px!important;
+    padding:4px 7px!important;
+    font-size:8px!important;
+    line-height:1.05!important;
+    letter-spacing:.06em!important;
+    white-space:normal!important;
+    text-align:right!important;
+    border-radius:9px!important;
+  }
+  .flight-dashboard-section{
+    margin-top:4px!important;
+  }
+}

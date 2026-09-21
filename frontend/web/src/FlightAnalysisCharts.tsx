@@ -252,7 +252,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
         <p>{txt('ANÁLISIS DE VUELO', 'FLIGHT ANALYSIS')}</p>
         <h2>{txt('Simulación de misión', 'Mission simulation')}</h2>
       </div>
-      <span className="rk4-global-badge">{txt('CÁLCULO DE ALTA PRECISIÓN (RK4)', 'HIGH-PRECISION CALCULATION (RK4)')}</span>
+      <span className="rk4-global-badge">{txt('CÁLCULO DE ALTA PRECISIÓN', 'HIGH-PRECISION CALCULATION')}</span>
     </div>
 
     <section className="flight-dashboard-section">
