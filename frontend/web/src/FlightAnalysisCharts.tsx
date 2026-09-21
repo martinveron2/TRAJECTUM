@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import Plotly from 'plotly.js-basic-dist-min';
 import type { MissionSample } from './missionTypes';
 import { buildEngineeringChartImages } from './engineeringChartExport';
-import { Download, Eye, Move, RotateCcw, ScanSearch, ZoomIn } from 'lucide-react';
+import { Download, Eye } from 'lucide-react';
 
 const Plot = createPlotlyComponent(Plotly as any);
 
@@ -32,11 +32,9 @@ type ChartKey = 'altitude' | 'speed' | 'mach' | 'q' | 'trajectory';
 
 export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM = null, lang = 'es' }: Props) {
   const [active, setActive] = useState<ChartKey>('altitude');
-  const [dragMode, setDragMode] = useState<'zoom' | 'pan'>('zoom');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState('');
   const [isMobile, setIsMobile] = useState(false);
-  const graphRef = useRef<any>(null);
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 820px), (pointer: coarse)');
@@ -205,12 +203,6 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
     ['trajectory', txt('TRAYECTORIA', 'TRAJECTORY')],
   ];
 
-  const setInteraction = (mode: 'zoom' | 'pan') => {
-    setDragMode(mode);
-    if (graphRef.current) Plotly.relayout(graphRef.current, { dragmode: mode });
-  };
-  const autoScale = () => graphRef.current && Plotly.relayout(graphRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
-  const resetView = () => graphRef.current && Plotly.relayout(graphRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true, dragmode: dragMode });
   const getActivePng = async () => {
     const indexByChart: Record<ChartKey, number> = { altitude: 0, speed: 1, mach: 2, q: 3, trajectory: 4 };
     const exportSet = await buildEngineeringChartImages(samples, motorBurnTimeS, analysis);
@@ -324,7 +316,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
         <article className="flight-metric-card">
           <span className="flight-symbol">REC</span>
           <strong className="status-value">{analysis.deployment_time_s != null ? txt('OK', 'OK') : txt('—', '—')}</strong>
-          <small>{txt('PARACAÍDAS','PARACHUTE')}</small>
+          <small>{txt('RECUPERACIÓN · PARACAÍDAS','RECOVERY · PARACHUTE')}</small>
           
         </article>
         <article className="flight-metric-card">
@@ -414,10 +406,9 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
           responsive: true,
           displaylogo: false,
           displayModeBar: false,
-          scrollZoom: !isMobile,
+          scrollZoom: false,
+          staticPlot: false,
         }}
-        onInitialized={(_, graphDiv) => { graphRef.current = graphDiv; }}
-        onUpdate={(_, graphDiv) => { graphRef.current = graphDiv; }}
         useResizeHandler
         style={{ width: '100%', height: '100%' }}
       />
@@ -448,12 +439,6 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
         {txt('TRAYECTORIA', 'TRAJECTORY')}
       </button>
       <div className="flight-chart-toolbar aero-toolbar" aria-label={txt('Herramientas del gráfico', 'Chart tools')}>
-        {!isMobile && <>
-          <button type="button" className={dragMode === 'zoom' ? 'active' : ''} onClick={() => setInteraction('zoom')} title={txt('Zoom por selección', 'Box zoom')} aria-label={txt('Zoom por selección', 'Box zoom')}><ZoomIn size={16}/></button>
-          <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Desplazar gráfico', 'Pan plot')} aria-label={txt('Desplazar gráfico', 'Pan plot')}><Move size={16}/></button>
-          <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente', 'Autoscale')} aria-label={txt('Ajustar automáticamente', 'Autoscale')}><ScanSearch size={16}/></button>
-          <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')} aria-label={txt('Restablecer vista', 'Reset view')}><RotateCcw size={16}/></button>
-        </>}
         <button type="button" className="chart-tool-preview" onClick={previewPng} title={txt('Vista previa PNG', 'Preview PNG')} aria-label={txt('Vista previa PNG', 'Preview PNG')}><Eye size={16}/></button>
         <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Descargar PNG', 'Download PNG')} aria-label={txt('Descargar PNG', 'Download PNG')}><Download size={16}/></button>
       </div>
