@@ -4,22 +4,22 @@
   "status": "cdr-cad-baseline-in-progress",
   "geometry": {
     "total_length_mm": {
-      "value": 820,
-      "status": "team-confirmed-working-assembly",
-      "note": "Longitud ensamblada de trabajo informada por Simón el 20/09/2026. Sustituir por el plano de ensamble definitivo cuando esté disponible."
+      "value": 825.05,
+      "status": "verified-assembly-drawing",
+      "note": "Longitud total acotada en plano de ensamble Hoja 2 del 21/09/2026."
     },
     "outer_diameter_mm": {
       "value": 63,
       "status": "verified-drawing"
     },
     "nose_length_mm": {
-      "value": 195,
-      "status": "team-confirmed-working-effective",
-      "note": "Longitud efectiva de trabajo informada por Simón; el plano individual previo indicaba 180 mm."
+      "value": 200.05,
+      "status": "derived-from-assembly-total-and-team-segments",
+      "note": "825.05 - 225 - 215 - 185 = 200.05 mm; reemplaza el 195 mm aproximado informado previamente."
     },
     "parts": {
       "nose": {
-        "length_mm": 195,
+        "length_mm": 200.05,
         "outer_diameter_mm": 63,
         "interface_diameter_mm": 55,
         "profile": "tangent_ogive",
@@ -27,7 +27,7 @@
           561.54,
           559.04
         ],
-        "status": "team-confirmed-working-effective"
+        "status": "derived-working-effective-length"
       },
       "c1_parachute_payload": {
         "raw_part_length_mm": 185,
@@ -69,7 +69,7 @@
         "status": "verified-drawing"
       }
     },
-    "assembly_note": "Baseline de prueba según Simón: 195 mm nariz + 185 mm C1 + 215 mm C2 + 225 mm cola = 820 mm ensamblados. Estas son dimensiones efectivas de trabajo; no reinterpretar los encastres del plano anterior.",
+    "assembly_note": "Geometría axial de trabajo: nariz 200.05 mm + C1 185 mm + C2 215 mm + cola 225 mm = 825.05 mm, consistente con el plano de ensamble.",
     "assembly": {
       "datum": "nose_tip_x0_positive_aft",
       "serial_airframe_sequence": [
@@ -139,9 +139,9 @@
       "note": "Not directly dimensioned on the Fusion drawing; derived from the 1:1 side-view geometry. Keep traceable as derived until Fusion parameter/export confirms it."
     },
     "leading_edge_x_mm": {
-      "value": 720,
+      "value": 725.05,
       "status": "derived-from-working-assembly",
-      "note": "Con cola iniciando en x=595 mm y borde de ataque de raíz a 125 mm del frente de cola: x_LE=720 mm."
+      "note": "La cola inicia en x=600.05 mm y el borde de ataque de raíz está a 125 mm del frente de cola."
     },
     "airfoil": {
       "type": "naca4",
@@ -171,28 +171,28 @@
         "name": "C1",
         "mass_g": 190,
         "status": "measured",
-        "x_cg_mm_from_nose": 287.5,
+        "x_cg_mm_from_nose": 292.55,
         "x_cg_status": "working-midpoint-effective-segment"
       },
       {
         "name": "C2",
         "mass_g": 146,
         "status": "measured",
-        "x_cg_mm_from_nose": 487.5,
+        "x_cg_mm_from_nose": 492.55,
         "x_cg_status": "working-midpoint-effective-segment"
       },
       {
         "name": "Cola + aletas",
         "mass_g": 260,
         "status": "measured",
-        "x_cg_mm_from_nose": 731.8,
+        "x_cg_mm_from_nose": 736.85,
         "x_cg_status": "working-shifted-station"
       },
       {
         "name": "Portamotor",
         "mass_g": 148,
         "status": "measured",
-        "x_cg_mm_from_nose": 725,
+        "x_cg_mm_from_nose": 730.05,
         "x_cg_status": "working-center-aft-installation"
       }
     ],
@@ -201,21 +201,21 @@
         "name": "Paracaidas",
         "mass_g": 50,
         "status": "team-estimate",
-        "x_cg_mm_from_nose": 287.5,
+        "x_cg_mm_from_nose": 292.55,
         "x_cg_status": "working-center-of-c1"
       },
       {
         "name": "Electronica",
         "mass_g": 80,
         "status": "project-confirmed",
-        "x_cg_mm_from_nose": 541.25,
+        "x_cg_mm_from_nose": 546.3,
         "x_cg_status": "working-lower-half-c2"
       },
       {
         "name": "Carga util",
         "mass_g": 100,
         "status": "project-confirmed",
-        "x_cg_mm_from_nose": 433.75,
+        "x_cg_mm_from_nose": 438.8,
         "x_cg_status": "working-upper-half-c2"
       }
     ],
@@ -231,7 +231,7 @@
     "propellant_mass_g": 140,
     "dry_mass_g": 350,
     "status": "tp-specified",
-    "x_cg_mm_from_nose": 725,
+    "x_cg_mm_from_nose": 730.05,
     "x_cg_status": "working-center-of-190mm-aft-installation"
   },
   "aerodynamics": {
@@ -260,9 +260,9 @@
       ],
       "source": "Niskanen/OpenRocket Technical Documentation: Eq. 3.78, 3.82, 3.85, 3.89, 3.91, 3.94, 3.97"
     },
-    "note": "Cd=0.345 se conserva sólo como valor provisional del caso anterior para permitir pruebas del gemelo. Debe recalcularse para la geometría ensamblada de 820 mm."
+    "note": "Cd=0.345 se conserva sólo como valor provisional del caso anterior para permitir pruebas del gemelo. Debe recalcularse para la geometría ensamblada de 825.05 mm."
   },
-  "revision": "2026-09-20-simon-820-working-assembly",
+  "revision": "2026-09-21-assembly-drawing-825.05",
   "datum": "nose_tip_x0_positive_aft",
   "sources": {
     "cad_and_drawings_date": "2026-09-19",
@@ -281,7 +281,7 @@
       "Modelado 2 de Portamotor.f3d"
     ],
     "mass_source": "team measured-mass note supplied 2026-09-20",
-    "assembly_source": "Simon team message 2026-09-20: 195 mm nose, 185 mm C1, 215 mm C2, 225 mm tail; total 820 mm working assembled length."
+    "assembly_source": "Plano de ensamble Hoja 2, 21/09/2026: longitud total acotada 825.05 mm. Tramos de trabajo: C1 185 mm, C2 215 mm, cola 225 mm; nariz efectiva deducida 200.05 mm."
   },
   "legacy_test_vehicle": {
     "status": "simulation-fixture-only-not-current-design",
