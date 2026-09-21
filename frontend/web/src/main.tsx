@@ -639,7 +639,7 @@ function App() {
   })();
 
   const triggerNavHaptic = () => {
-    if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(10);
+    if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
   };
   const handleNavPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     const button = event.currentTarget;
@@ -1826,16 +1826,20 @@ function App() {
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
-        <button type="button" className={missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onPointerDown={handleNavPointerDown} onClick={() => {
+        <button type="button" disabled={pendingMissionLaunch} className={pendingMissionLaunch ? 'flight-nav-button preparing active' : missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onPointerDown={handleNavPointerDown} onClick={() => {
+          if (pendingMissionLaunch) return;
+          setPendingMissionLaunch(true);
           if (analysisSummary?.mission_timeline?.length > 1) {
-            setMissionControlOpen(true);
+            window.setTimeout(() => {
+              setPendingMissionLaunch(false);
+              setMissionControlOpen(true);
+            }, 1150);
           } else {
-            setPendingMissionLaunch(true);
             setRunToken((value) => value + 1);
           }
         }}>
-          <span className="mobile-nav-icon"><Play size={20} strokeWidth={1.8} /></span>
-          <small>{txt('VUELO', 'FLIGHT')}</small>
+          <span className="mobile-nav-icon">{pendingMissionLaunch ? <i className="bottom-flight-spinner" aria-hidden="true" /> : <Play size={20} strokeWidth={1.8} />}</span>
+          <small>{pendingMissionLaunch ? txt('PREPARANDO VUELO', 'PREPARING FLIGHT') : txt('VUELO', 'FLIGHT')}</small>
         </button>
         <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onPointerDown={handleNavPointerDown} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
           <span className="mobile-nav-icon"><Download size={20} strokeWidth={1.8} /></span>
