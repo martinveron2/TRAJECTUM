@@ -672,7 +672,7 @@ function App() {
   const openExportSheet = () => {
     setShowExportMenu(true);
     setExportPreparing(true);
-    window.setTimeout(() => setExportPreparing(false), 1400);
+    window.setTimeout(() => setExportPreparing(false), 1000);
   };
 
   const runFromTop = () => {
@@ -1833,7 +1833,7 @@ function App() {
             window.setTimeout(() => {
               setPendingMissionLaunch(false);
               setMissionControlOpen(true);
-            }, 1150);
+            }, 1000);
           } else {
             setRunToken((value) => value + 1);
           }
