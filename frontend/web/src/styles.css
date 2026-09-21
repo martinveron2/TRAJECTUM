@@ -107,7 +107,7 @@ linear-gradient(90deg,rgba(34,59,92,.16) 1px,transparent 1px),
 .blocker-box{margin-top:12px;padding:12px;background:#161425;border:1px solid #3c2d50;border-radius:10px}
 .blocker-box>span{display:block;font-size:.62rem;letter-spacing:.12em;color:#aa8ccc;margin-bottom:8px}
 .blocker-box>div{display:flex;gap:7px;flex-wrap:wrap}
-.blocker-box code{font-family:"Space Mono";background:#221c33;color:#d2b7f3;border:1px solid #493862;padding:5px 7px;border-radius:7px;font-size:.68rem}
+.blocker-box code{font-family:"Space Grotesk";background:#221c33;color:#d2b7f3;border:1px solid #493862;padding:5px 7px;border-radius:7px;font-size:.68rem}
 .motor-panel{padding:18px 20px;display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:center}
 .motor-panel h2{font-size:1.2rem}.motor-panel>div>span{font-size:.75rem;color:#7690b4}
 .motor-panel dl{margin:0;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
@@ -4789,7 +4789,7 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
     line-height:1;
   }
   #engineering-analysis .analysis-cd-control>div span{
-    font-family:"Space Mono"!important;
+    font-family:"Space Grotesk"!important;
     font-size:.72rem!important;
     font-weight:700!important;
     color:#D9EEFF!important;
@@ -4828,7 +4828,7 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
   }
   #engineering-analysis .analysis-cd-control .numeric-wheel-trigger span{
     font-size:.82rem!important;
-    font-family:"Space Mono"!important;
+    font-family:"Space Grotesk"!important;
     font-weight:700!important;
   }
   #engineering-analysis .analysis-cd-control .numeric-wheel-trigger b{
@@ -5130,7 +5130,7 @@ button:not(:disabled):active{transform:translateY(0) scale(.985)}
   --hud-cyan-soft:#9EEBFF;
   --hud-white:#F5FBFF;
   --hud-metal:rgba(214,235,250,.88);
-  --hud-mono:"Space Mono";
+  --hud-mono:"Space Grotesk";
 }
 
 @media(max-width:820px){
@@ -5738,7 +5738,7 @@ input[type="number"],
 output,
 code,
 pre{
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-variant-numeric:tabular-nums;
 }
 
@@ -5810,7 +5810,7 @@ pre{
     text-transform:uppercase!important;
   }
   .numeric-wheel-list>button{
-    font-family:"Space Mono"!important;
+    font-family:"Space Grotesk"!important;
   }
 
   /* Canonical HUD glass surfaces across CDR + FLIGHT. */
@@ -5866,7 +5866,7 @@ pre{
   .flight-results-summary strong,
   .mission-instruments .instrument strong,
   .mission-clock strong{
-    font-family:"Space Mono"!important;
+    font-family:"Space Grotesk"!important;
   }
 }
 
@@ -5888,7 +5888,7 @@ pre{
     text-transform:uppercase!important;
   }
   .mission-rate button{
-    font-family:"Space Mono"!important;
+    font-family:"Space Grotesk"!important;
     font-weight:700!important;
     letter-spacing:.04em!important;
     text-transform:none!important;
@@ -6097,7 +6097,7 @@ input[type="number"],
 .pdr-mass-total strong,
 .cdr-analysis-primary,
 .mission-launch-cta .mission-launch-copy strong{
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:var(--type-input)!important;
   font-weight:700!important;
   font-variant-numeric:tabular-nums!important;
@@ -6119,7 +6119,7 @@ input[type="number"],
 .mission-instruments .instrument.primary strong,
 .metric-card strong,
 .cdr-result-widgets strong{
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:var(--type-display)!important;
   font-weight:700!important;
   line-height:1.05!important;
@@ -6127,7 +6127,7 @@ input[type="number"],
 }
 
 .mission-clock strong{
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:var(--type-display-hero)!important;
   font-weight:700!important;
   line-height:1!important;
@@ -6152,7 +6152,7 @@ input[type="number"],
 
 /* Flight rates are numerical controls, not text labels. */
 .mission-rate button{
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:var(--type-label)!important;
   font-weight:700!important;
   font-variant-numeric:tabular-nums!important;
@@ -6217,7 +6217,7 @@ input[type="number"],
     column-gap:10px!important;
   }
   .phase-grid-selector button b{
-    font-family:"Space Mono"!important;
+    font-family:"Space Grotesk"!important;
     font-size:11px!important;
     font-weight:700!important;
     letter-spacing:.04em!important;
@@ -6271,7 +6271,7 @@ input[type="number"],
     min-height:48px!important;
     padding:0 12px!important;
     border-radius:10px!important;
-    font-family:"Space Mono",monospace!important;
+    font-family:"Space Grotesk",monospace!important;
     font-size:18px!important;
     font-weight:700!important;
     line-height:1!important;
@@ -6286,7 +6286,7 @@ input[type="number"],
     min-height:48px!important;
   }
   .pdr-geometry-panel .pdr-input-grid .numeric-wheel-trigger span{
-    font-family:"Space Mono",monospace!important;
+    font-family:"Space Grotesk",monospace!important;
     font-size:19px!important;
     font-weight:700!important;
   }
@@ -6408,7 +6408,7 @@ input[type="number"],
 .flight-score-grid article>strong{
   display:block;
   margin-top:10px;
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:24px;
   line-height:1;
   font-variant-numeric:tabular-nums;
@@ -6457,7 +6457,7 @@ input[type="number"],
 .burnout-strip strong{
   display:block;
   margin-top:3px;
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:18px;
   color:#FFF5D6;
 }
@@ -6491,7 +6491,7 @@ input[type="number"],
   min-width:125px;
 }
 .performance-score strong{
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:46px;
   line-height:.95;
   color:#EFFFFF;
@@ -6499,7 +6499,7 @@ input[type="number"],
 }
 .performance-score span{
   margin-left:5px;
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:14px;
   color:#77A7C8;
 }
@@ -6638,7 +6638,7 @@ input[type="number"],
   align-items:baseline;
   gap:8px;
   margin-top:18px;
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:36px!important;
   font-weight:700!important;
   line-height:1!important;
@@ -6694,7 +6694,7 @@ input[type="number"],
 .flight-mission-banner strong{
   display:block;
   margin-top:4px;
-  font-family:"Space Mono"!important;
+  font-family:"Space Grotesk"!important;
   font-size:16px!important;
   font-weight:700!important;
   color:#EAF9FF!important;
