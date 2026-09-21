@@ -639,9 +639,10 @@ function App() {
   })();
 
   const triggerNavHaptic = () => {
-    if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(20);
+    if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(40);
   };
   const handleNavPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    triggerNavHaptic();
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -650,7 +651,6 @@ function App() {
     button.style.setProperty('--press-y', y + 'px');
     button.classList.remove('nav-releasing');
     button.classList.add('nav-pressing');
-    triggerNavHaptic();
 
     const ripple = document.createElement('span');
     ripple.className = 'nav-touch-ripple';
