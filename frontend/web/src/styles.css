@@ -8925,3 +8925,23 @@ output,
 .analysis-metrics strong{
   text-transform:none!important;
 }
+
+/* === HOME PHASE CARDS: acronyms lead, descriptions stay compact === */
+.mobile-phase-selector-card .phase-grid-selector button span{
+  font-size:1.02rem!important;
+  font-weight:900!important;
+  line-height:1!important;
+  letter-spacing:.045em!important;
+  color:#EAF5FF!important;
+}
+.mobile-phase-selector-card .phase-grid-selector button small{
+  font-size:.50rem!important;
+  line-height:1.2!important;
+  font-weight:600!important;
+  color:#7895B6!important;
+  text-transform:none!important;
+}
+.mobile-phase-selector-card .phase-grid-selector button.focused span{
+  font-size:1.08rem!important;
+  color:#FFFFFF!important;
+}
