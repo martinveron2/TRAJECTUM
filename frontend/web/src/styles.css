@@ -8177,3 +8177,43 @@ output,
 .flight-analysis-head p{
   color:#83B8E6!important;
 }
+
+
+/* Restore original stability-status visual language; selection is focus only.
+   State (low/stable/high) always comes from the computed static margin. */
+.stability-status.selectable{
+  width:100%!important;
+  cursor:pointer!important;
+  text-align:left!important;
+  font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif!important;
+  -webkit-tap-highlight-color:transparent!important;
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    background .18s ease!important;
+}
+.stability-status.selectable:hover{
+  transform:translateY(-1px)!important;
+}
+.stability-status.selectable:active{
+  transform:scale(.99)!important;
+}
+.stability-status.selectable.selected{
+  box-shadow:
+    0 0 0 1px rgba(0,240,255,.12),
+    0 0 18px rgba(0,240,255,.10),
+    inset 0 1px 0 rgba(255,255,255,.055)!important;
+}
+.stability-status.selectable.warning.selected{
+  box-shadow:
+    0 0 0 1px rgba(255,181,71,.12),
+    0 0 18px rgba(255,181,71,.10),
+    inset 0 1px 0 rgba(255,255,255,.055)!important;
+}
+.stability-status.selectable.review.selected{
+  box-shadow:
+    0 0 0 1px rgba(116,185,255,.12),
+    0 0 18px rgba(116,185,255,.10),
+    inset 0 1px 0 rgba(255,255,255,.055)!important;
+}
