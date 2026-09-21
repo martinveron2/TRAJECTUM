@@ -658,13 +658,15 @@ function App() {
     ripple.style.top = y + 'px';
     button.appendChild(ripple);
     requestAnimationFrame(() => ripple.classList.add('expand'));
+
+    // The pressure response is a short autonomous burst: it starts on touch
+    // and finishes even if the finger remains on the key.
+    window.setTimeout(() => {
+      button.classList.remove('nav-pressing');
+      button.classList.add('nav-releasing');
+    }, 150);
+    window.setTimeout(() => button.classList.remove('nav-releasing'), 350);
     window.setTimeout(() => ripple.remove(), 460);
-  };
-  const handleNavPointerRelease = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const button = event.currentTarget;
-    button.classList.remove('nav-pressing');
-    button.classList.add('nav-releasing');
-    window.setTimeout(() => button.classList.remove('nav-releasing'), 220);
   };
 
   const openExportSheet = () => {
@@ -1812,19 +1814,19 @@ function App() {
         style={{ '--nav-index': mobileNavIndex } as React.CSSProperties}
       >
         <i className="mobile-nav-slider" aria-hidden="true" />
-        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => navigateMobile('home')}>
+        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onPointerDown={handleNavPointerDown} onClick={() => navigateMobile('home')}>
           <span className="mobile-nav-icon"><Home size={20} strokeWidth={1.8} /></span>
           <small>{txt('INICIO', 'HOME')}</small>
         </button>
-        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => navigateMobile('pdr')}>
+        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onPointerDown={handleNavPointerDown} onClick={() => navigateMobile('pdr')}>
           <span className="mobile-nav-icon"><Rocket size={20} strokeWidth={1.8} /></span>
           <small>PDR</small>
         </button>
-        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => navigateMobile('analysis')}>
+        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onPointerDown={handleNavPointerDown} onClick={() => navigateMobile('analysis')}>
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
-        <button type="button" className={missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => {
+        <button type="button" className={missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onPointerDown={handleNavPointerDown} onClick={() => {
           if (analysisSummary?.mission_timeline?.length > 1) {
             setMissionControlOpen(true);
           } else {
@@ -1835,7 +1837,7 @@ function App() {
           <span className="mobile-nav-icon"><Play size={20} strokeWidth={1.8} /></span>
           <small>{txt('VUELO', 'FLIGHT')}</small>
         </button>
-        <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onPointerDown={handleNavPointerDown} onPointerUp={handleNavPointerRelease} onPointerCancel={handleNavPointerRelease} onPointerLeave={handleNavPointerRelease} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
+        <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onPointerDown={handleNavPointerDown} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
           <span className="mobile-nav-icon"><Download size={20} strokeWidth={1.8} /></span>
           <small>{txt('EXPORTAR', 'EXPORT')}</small>
         </button>
