@@ -8945,3 +8945,20 @@ output,
   font-size:1.08rem!important;
   color:#FFFFFF!important;
 }
+
+/* === TYPOGRAPHIC COLOR HARMONY: reuse CG/CP label tone across analysis headings === */
+.cdr-results-head>div span,
+.cdr-results-head>div strong,
+.cdr-metrics-section-head span,
+.cdr-metrics-section-head strong,
+.flight-analysis-head p,
+.flight-analysis-head h2,
+.flight-section-head>span,
+.flight-section-head>div strong,
+.flight-section-head>div small,
+.flight-metric-card>.flight-symbol,
+.flight-metric-card>small,
+.flight-plot-hero-head span,
+.flight-chart-picker-head span{
+  color:rgba(214,235,250,.88)!important;
+}
