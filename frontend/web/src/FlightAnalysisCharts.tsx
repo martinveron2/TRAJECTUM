@@ -109,8 +109,8 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
   const eventShapes = useMemo(() => {
     const events = [
       { x: motorBurnTimeS, label: txt('FIN DE COMBUSTIÓN · Burnout', 'BURNOUT') },
-      { x: samples[maxQIndex]?.t_s, label: 'qmax' },
-      { x: analysis.time_to_apogee_s, label: 'hmax' },
+      { x: samples[maxQIndex]?.t_s, label: 'Qmáx' },
+      { x: analysis.time_to_apogee_s, label: 'Hmáx' },
       { x: analysis.deployment_time_s ?? undefined, label: txt('DESPLIEGUE', 'DEPLOY') },
     ].filter((event): event is { x: number; label: string } => Number.isFinite(event.x));
 
@@ -186,7 +186,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
     ['altitude', txt('ALTITUD', 'ALTITUDE')],
     ['speed', txt('VELOCIDAD', 'SPEED')],
     ['mach', 'MACH'],
-    ['q', txt('PRESIÓN DINÁMICA · qmax', 'DYNAMIC PRESSURE · qmax')],
+    ['q', txt('PRESIÓN DINÁMICA · Qmáx', 'DYNAMIC PRESSURE · Qmax')],
     ['trajectory', txt('TRAYECTORIA', 'TRAJECTORY')],
   ];
 
@@ -232,46 +232,59 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
   if (!samples.length) return null;
 
   return <section className="panel flight-analysis-panel">
-    <div className="panel-title compact">
+    <div className="panel-title compact flight-analysis-head">
       <div>
         <p>{txt('ANÁLISIS DE VUELO', 'FLIGHT ANALYSIS')}</p>
-        <h2>{txt('Gráficos de ingeniería', 'Engineering plots')}</h2>
+        <h2>{txt('Simulación de misión', 'Mission simulation')}</h2>
       </div>
-      <span className="plotly-badge">PLOTLY · INTERACTIVE</span>
+      <span className="rk4-global-badge">{txt('RUNGE–KUTTA 4º ORDEN · 500 Hz', '4TH-ORDER RUNGE–KUTTA · 500 Hz')}</span>
     </div>
 
-    <div className="flight-results-summary">
-      <article><span>{txt('ALTURA MÁXIMA · hmax', 'MAX ALTITUDE · hmax')}</span><strong>{analysis.apogee_m != null ? analysis.apogee_m.toFixed(1) + ' m' : Math.max(...altitude).toFixed(1) + ' m'}</strong></article>
-      <article><span>{txt('VELOCIDAD MÁXIMA · Vmax', 'MAX SPEED · Vmax')}</span><strong>{analysis.max_speed_m_s != null ? analysis.max_speed_m_s.toFixed(1) + ' m/s' : Math.max(...speed).toFixed(1) + ' m/s'}</strong></article>
-      <article><span>{txt('PRESIÓN DINÁMICA MÁXIMA · qmax', 'MAX DYNAMIC PRESSURE · qmax')}</span><strong>{analysis.max_q_pa != null ? analysis.max_q_pa.toFixed(0) + ' Pa' : (Math.max(...qKpa) * 1000).toFixed(0) + ' Pa'}</strong></article>
-      <article><span>{txt('VELOCIDAD DE IMPACTO · Vf', 'IMPACT SPEED · Vf')}</span><strong>{analysis.impact_speed_m_s != null ? analysis.impact_speed_m_s.toFixed(2) + ' m/s' : samples[samples.length - 1].speed_m_s.toFixed(2) + ' m/s'}</strong></article>
+    <section className="flight-primary-grid">
+      <article className="flight-primary-card">
+        <span className="flight-symbol">H<sub>{txt('máx','max')}</sub></span>
+        <strong>{(analysis.apogee_m ?? Math.max(...altitude)).toFixed(1)}<em>m</em></strong>
+        <small>{hReqM != null ? ((analysis.apogee_m ?? Math.max(...altitude)) >= hReqM ? txt('Límite cumplido', 'Requirement met') : txt('Por debajo del requisito', 'Below requirement')) + ' ≥ ' + hReqM.toFixed(0) + ' m' : txt('Altura máxima alcanzada', 'Maximum altitude reached')}</small>
+      </article>
+      <article className="flight-primary-card">
+        <span className="flight-symbol">Q<sub>{txt('máx','max')}</sub></span>
+        <strong>{((analysis.max_q_pa ?? Math.max(...samples.map((sample) => sample.q_pa))) / 1000).toFixed(2)}<em>kPa</em></strong>
+        <small>{txt('Carga aerodinámica máxima', 'Maximum aerodynamic load')}</small>
+      </article>
+      <article className="flight-primary-card">
+        <span className="flight-symbol">V<sub>{txt('máx','max')}</sub></span>
+        <strong>{(analysis.max_speed_m_s ?? Math.max(...speed)).toFixed(1)}<em>m/s</em></strong>
+        <small>{txt('Máximo de la trayectoria integrada', 'Integrated trajectory maximum')}</small>
+      </article>
+      <article className="flight-primary-card">
+        <span className="flight-symbol">V<sub>{txt('impacto','impact')}</sub></span>
+        <strong>{(analysis.impact_speed_m_s ?? samples[samples.length - 1].speed_m_s).toFixed(2)}<em>m/s</em></strong>
+        <small>{txt('Velocidad al contacto con el suelo', 'Ground-contact speed')}</small>
+      </article>
+    </section>
+
+    <div className="flight-mission-banner">
+      <div><span>M<sub>0</sub></span><strong>{initialMassKg != null ? initialMassKg.toFixed(3) + ' kg' : '—'}</strong></div>
+      <i/>
+      <div><span>{txt('TIEMPO TOTAL DE VUELO', 'TOTAL FLIGHT TIME')}</span><strong>{analysis.landing_time_s != null ? analysis.landing_time_s.toFixed(2) + ' s' : samples[samples.length - 1].t_s.toFixed(2) + ' s'}</strong></div>
+      <i/>
+      <div><span>{txt('PARACAÍDAS', 'PARACHUTE')}</span><strong>{analysis.deployment_time_s != null ? txt('DESPLEGADO', 'DEPLOYED') : txt('SIN DESPLIEGUE', 'NOT DEPLOYED')}</strong><small>{analysis.deployment_time_s != null ? 't = ' + analysis.deployment_time_s.toFixed(2) + ' s' : ''}</small></div>
     </div>
 
-    <div className="telemetry-source-toggle" aria-label={txt('Fuente de datos', 'Data source')}>
-      <button type="button" className="active">{txt('NUMÉRICO · RK4', 'NUMERICAL · RK4')}</button>
-      <button type="button" disabled title={txt('Se habilita al importar telemetría medida.', 'Enabled when measured telemetry is imported.')}>{txt('MEDIDO', 'MEASURED')} · {txt('SIN DATOS', 'NO DATA')}</button>
-    </div>
-
-    <section className="flight-scoreboard">
+    <section className="flight-scoreboard compact-metrics">
       <div className="flight-scoreboard-head">
-        <div><span>{txt('MÉTRICAS DE PUNTAJE', 'SCORING METRICS')}</span><strong>{txt('Performance de misión', 'Mission performance')}</strong></div>
-        <b>{txt('NUMÉRICO · RK4', 'NUMERICAL · RK4')}</b>
+        <div><span>{txt('MÉTRICAS COMPLEMENTARIAS', 'SUPPLEMENTARY METRICS')}</span><strong>{txt('Carga, régimen y permanencia', 'Load, regime and dwell')}</strong></div>
       </div>
-      <div className="flight-score-grid">
-        <article><span>{txt('ALTURA MÁXIMA', 'MAX ALTITUDE')} · hmax</span><strong>{(analysis.apogee_m ?? Math.max(...altitude)).toFixed(1)}<em> m</em></strong></article>
-        <article><span>{txt('VELOCIDAD DE IMPACTO', 'IMPACT SPEED')} · Vimpacto</span><strong>{(analysis.impact_speed_m_s ?? samples[samples.length - 1].speed_m_s).toFixed(2)}<em> m/s</em></strong></article>
-        <article><span>{txt('VELOCIDAD MÁXIMA', 'MAX SPEED')} · Vmax</span><strong>{(analysis.max_speed_m_s ?? Math.max(...speed)).toFixed(1)}<em> m/s</em></strong></article>
-        <article><span>{txt('MASA INICIAL', 'INITIAL MASS')} · m0</span><strong>{initialMassKg != null ? initialMassKg.toFixed(3) : '—'}<em>{initialMassKg != null ? ' kg' : ''}</em></strong></article>
-        <article><span>{txt('PRESIÓN DINÁMICA MÁXIMA', 'MAX DYNAMIC PRESSURE')} · qmax</span><strong>{((analysis.max_q_pa ?? Math.max(...samples.map((sample) => sample.q_pa))) / 1000).toFixed(2)}<em> kPa</em></strong></article>
-        <article><span>{txt('ACELERACIÓN MÁXIMA', 'MAX ACCELERATION')} · Gmax</span><strong>{gMax.toFixed(2)}<em> g</em></strong></article>
-        <article><span>{txt('MACH MÁXIMO', 'MAX MACH')} · Mmax</span><strong>{machMax.toFixed(3)}</strong></article>
-        <article className={timeAboveHReq == null ? 'pending' : ''}><span>{txt('TIEMPO SOBRE ALTURA REQUERIDA', 'TIME ABOVE REQUIRED ALTITUDE')} · t(h&gt;hreq)</span><strong>{timeAboveHReq == null ? '—' : timeAboveHReq.toFixed(2)}<em>{timeAboveHReq == null ? '' : ' s'}</em></strong><small>{hReqM == null ? txt('hreq pendiente de definir', 'hreq not defined yet') : 'hreq = ' + hReqM.toFixed(1) + ' m'}</small></article>
+      <div className="flight-score-grid compact">
+        <article><span>G<sub>{txt('máx','max')}</sub></span><strong>{gMax.toFixed(2)}<em> g</em></strong><small>{txt('Aceleración máxima', 'Maximum acceleration')}</small></article>
+        <article><span>M<sub>{txt('máx','max')}</sub></span><strong>{machMax.toFixed(3)}</strong><small>{txt('Mach máximo', 'Maximum Mach')}</small></article>
+        <article className={timeAboveHReq == null ? 'pending' : ''}><span>t<sub>h&gt;hreq</sub></span><strong>{timeAboveHReq == null ? '—' : timeAboveHReq.toFixed(2)}<em>{timeAboveHReq == null ? '' : ' s'}</em></strong><small>{hReqM == null ? txt('hreq pendiente', 'hreq pending') : 'hreq = ' + hReqM.toFixed(1) + ' m'}</small></article>
       </div>
 
       <div className="burnout-strip">
         <div><span>{txt('FIN DE COMBUSTIÓN', 'BURNOUT')} · Burnout</span><strong>{motorBurnTimeS.toFixed(2)} s</strong></div>
         <i/>
-        <div><span>h</span><strong>{burnoutSample ? burnoutSample.altitude_m.toFixed(1) + ' m' : '—'}</strong></div>
+        <div><span>H</span><strong>{burnoutSample ? burnoutSample.altitude_m.toFixed(1) + ' m' : '—'}</strong></div>
         <div><span>V</span><strong>{burnoutSample ? burnoutSample.speed_m_s.toFixed(1) + ' m/s' : '—'}</strong></div>
       </div>
     </section>
@@ -358,7 +371,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
 
     <div className="flight-chart-footer">
       <span>{isMobile ? txt('MODO MÓVIL: GRÁFICO BLOQUEADO PARA EVITAR DESPLAZAMIENTOS', 'MOBILE MODE: PLOT LOCKED TO PREVENT ACCIDENTAL MOVEMENT') : txt('RUEDA: ZOOM · ARRASTRAR: PAN · HOVER: LECTURA EXACTA', 'WHEEL: ZOOM · DRAG: PAN · HOVER: EXACT READOUT')}</span>
-      <strong>{txt('EVENTOS: FIN DE COMBUSTIÓN · Burnout · qmax · hmax · DESPLIEGUE', 'EVENTS: BURNOUT · qmax · hmax · DEPLOY')}</strong>
+      <strong>{txt('EVENTOS: FIN DE COMBUSTIÓN · Burnout · Qmáx · Hmáx · DESPLIEGUE', 'EVENTS: BURNOUT · Qmax · Hmax · DEPLOY')}</strong>
     </div>
 
     {previewUrl && <div className="chart-preview-backdrop" role="dialog" aria-modal="true" aria-label={txt('Vista previa del gráfico', 'Chart preview')}>
