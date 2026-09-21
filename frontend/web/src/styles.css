@@ -9682,3 +9682,50 @@ output,
       inset 0 2px 8px rgba(0,0,0,.10)!important;
   }
 }
+
+/* === FLIGHT FINAL POLISH: restore rocket mark + sticky live trajectory === */
+@media(max-width:820px){
+  .mission-brand{
+    justify-self:stretch!important;
+    justify-content:flex-start!important;
+    text-align:left!important;
+    gap:7px!important;
+  }
+  .mission-brand>svg{
+    display:block!important;
+    flex:0 0 auto!important;
+    width:21px!important;
+    height:21px!important;
+    color:#74B6FF!important;
+    filter:drop-shadow(0 0 7px rgba(116,182,255,.24))!important;
+  }
+  .mission-brand>div{
+    min-width:0!important;
+  }
+  .mission-brand span,
+  .mission-brand strong{
+    text-align:left!important;
+  }
+
+  .mission-flight-stage{
+    position:sticky!important;
+    top:0!important;
+    z-index:12!important;
+    flex:0 0 34dvh!important;
+    background:linear-gradient(160deg,#0A1725,#06101A)!important;
+    box-shadow:
+      0 10px 24px rgba(0,0,0,.32),
+      0 0 0 1px rgba(31,58,87,.88),
+      inset 0 1px 0 rgba(255,255,255,.025)!important;
+  }
+  .mission-flight-stage::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:-8px;
+    height:8px;
+    background:linear-gradient(180deg,rgba(4,9,16,.55),transparent);
+    pointer-events:none;
+  }
+}
