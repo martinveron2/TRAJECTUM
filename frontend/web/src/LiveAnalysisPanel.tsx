@@ -363,8 +363,10 @@ export function LiveAnalysisPanel({
   const cgCpSeparation = totalCgCatedra !== undefined && cpCatedra !== undefined ? Math.abs(totalCgCatedra - cpCatedra) : undefined;
   const displayCg = datumMode === 'support' ? totalCgCatedra : totalCgFromNose;
   const displayCp = datumMode === 'support' ? cpCatedra : analysis?.cp_x_mm_from_nose;
-  const cgPct = displayCg !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (displayCg / totalLengthMm) * 100)) : 50;
-  const cpPct = displayCp !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (displayCp / totalLengthMm) * 100)) : 50;
+  // Physical marker positions must stay fixed when the datum display changes.
+  // The rail is drawn nose -> support, so marker percentages always use nose-based coordinates.
+  const cgPct = totalCgFromNose !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (totalCgFromNose / totalLengthMm) * 100)) : 50;
+  const cpPct = analysis?.cp_x_mm_from_nose !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (analysis.cp_x_mm_from_nose / totalLengthMm) * 100)) : 50;
 
   return <div className={running ? 'panel mass-panel analysis-running' : 'panel mass-panel'} id="engineering-analysis" aria-busy={running}>
     <div className="panel-title compact"><div><p>{txt('PROPIEDADES DE MASA DERIVADAS DE LA GEOMETRÍA', 'GEOMETRY-DERIVED MASS PROPERTIES')}</p><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
