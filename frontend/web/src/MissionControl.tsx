@@ -127,6 +127,11 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
 
       <main className="mission-main">
         <section className="mission-flight-stage">
+          <div className="mission-stage-time-hud" aria-label={txt('Tiempo de vuelo', 'Flight time')}>
+            <span>{txt('TIEMPO', 'TIME')}</span>
+            <strong>T+{timeS.toFixed(1)}</strong>
+            <em>s</em>
+          </div>
           <div className="mission-grid" />
           <svg viewBox="0 0 360 470" aria-label={txt('Vuelo simulado', 'Simulated flight')}>
             <defs>

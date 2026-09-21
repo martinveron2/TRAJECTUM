@@ -9757,3 +9757,70 @@ output,
     font-family:"Space Grotesk"!important;
   }
 }
+
+/* === FLIGHT TIME HUD INSIDE ROCKET PANEL === */
+.mission-flight-stage{position:relative}
+.mission-stage-time-hud{
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:8;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  min-width:108px;
+  padding:8px 10px 7px;
+  border-radius:12px;
+  border:1px solid rgba(0,240,255,.26);
+  background:linear-gradient(160deg,rgba(8,18,30,.82),rgba(7,19,31,.94));
+  box-shadow:0 8px 20px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter:blur(10px) saturate(140%);
+  -webkit-backdrop-filter:blur(10px) saturate(140%);
+  pointer-events:none;
+}
+.mission-stage-time-hud span{
+  font-family:"Space Grotesk"!important;
+  font-size:.43rem;
+  font-weight:700;
+  letter-spacing:.10em;
+  color:#84B9E7;
+  text-transform:uppercase;
+  line-height:1;
+}
+.mission-stage-time-hud strong{
+  margin-top:4px;
+  font-family:"Space Grotesk"!important;
+  font-size:1.10rem;
+  font-weight:800;
+  line-height:.95;
+  color:#EAF8FF;
+}
+.mission-stage-time-hud em{
+  margin-top:2px;
+  font-family:"Space Grotesk"!important;
+  font-style:normal;
+  font-size:.52rem;
+  font-weight:700;
+  color:#00F0FF;
+  line-height:1;
+}
+@media(max-width:820px){
+  .mission-clock{display:none!important}
+  .mission-header{
+    grid-template-columns:42px minmax(0,1fr)!important;
+  }
+  .mission-brand{
+    grid-column:2!important;
+    justify-self:start!important;
+  }
+  .mission-stage-time-hud{
+    top:8px;
+    right:8px;
+    min-width:98px;
+    padding:7px 9px 6px;
+    border-radius:11px;
+  }
+  .mission-stage-time-hud span{font-size:.40rem}
+  .mission-stage-time-hud strong{font-size:1.02rem}
+  .mission-stage-time-hud em{font-size:.48rem}
+}
