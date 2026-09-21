@@ -6810,3 +6810,65 @@ input[type="number"],
     grid-column:1 / -1;
   }
 }
+
+
+/* Flight metric typography / contrast correction */
+.flight-symbol{
+  color:#00F0FF!important;
+  font-size:14px!important;
+  font-weight:700!important;
+  letter-spacing:1.2px!important;
+}
+.flight-symbol sub,
+.flight-mission-banner sub,
+.flight-score-grid sub{
+  font-size:11px!important;
+  font-weight:700!important;
+  color:inherit!important;
+  letter-spacing:0!important;
+}
+.flight-primary-card>strong{
+  font-size:32px!important;
+  font-weight:700!important;
+  color:#FFFFFF!important;
+  text-shadow:0 0 10px rgba(0,240,255,.30)!important;
+}
+.flight-primary-card>strong em{
+  font-size:18px!important;
+  font-weight:400!important;
+  color:#00F0FF!important;
+}
+.flight-primary-card>small{
+  font-size:11px!important;
+  font-weight:600!important;
+  letter-spacing:.8px!important;
+  text-transform:uppercase!important;
+  color:#B0BEC5!important;
+}
+.flight-score-grid.compact article>span{
+  color:#00F0FF!important;
+  font-size:14px!important;
+  font-weight:700!important;
+  letter-spacing:1.2px!important;
+}
+.flight-score-grid.compact article>span sub{
+  font-size:11px!important;
+}
+.flight-score-grid.compact article>small{
+  color:#B0BEC5!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  letter-spacing:.8px!important;
+  text-transform:uppercase!important;
+}
+.flight-score-grid.compact article>strong{
+  color:#FFFFFF!important;
+  font-size:32px!important;
+  font-weight:700!important;
+  text-shadow:0 0 10px rgba(0,240,255,.22)!important;
+}
+.flight-score-grid.compact article>strong em{
+  color:#00F0FF!important;
+  font-size:18px!important;
+  font-weight:400!important;
+}
