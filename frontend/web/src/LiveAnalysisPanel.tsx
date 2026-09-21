@@ -513,7 +513,7 @@ export function LiveAnalysisPanel({
       })}</div>
     </div>}
     {!planformReady && <div className="analysis-note">{txt('El xCG de las aletas y el CP permanecen bloqueados hasta definir cuerda de punta, desplazamiento del borde de ataque y posición axial de la aleta.', 'Fin xCG and CP remain blocked until tip chord, sweep and fin X are defined.')}</div>}
-    {massStationsReady && planformReady && vehicle.cd === '' && <div className="analysis-note">{txt('CG + CP disponibles. Ingresá Cd para habilitar trayectoria, apogeo, Q máx y Mach.', 'CG + CP available. Enter Cd to unlock trajectory, apogee, MaxQ and Mach.')}</div>}
+    {massStationsReady && planformReady && vehicle.cd === '' && <div className="analysis-note">{txt('CG + CP disponibles. Ingresá Cd para habilitar trayectoria, apogeo, qₘₐₓ y Mach.', 'CG + CP available. Enter Cd to unlock trajectory, apogee, qmax and Mach.')}</div>}
     {error && <div className="analysis-error">{txt('Error de API', 'API error')}: {error}</div>}
     <EngineeringEquations lang={lang} />
   </div>;
