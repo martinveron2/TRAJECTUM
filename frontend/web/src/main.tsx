@@ -434,6 +434,7 @@ function App() {
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
   const [pdrZoom, setPdrZoom] = useState(1);
   const [pdrSchematicFocused, setPdrSchematicFocused] = useState(false);
+  const [pdrViewIndex, setPdrViewIndex] = useState(0);
   const [phaseFocusIndex, setPhaseFocusIndex] = useState(2);
   const [phaseStoryDragX, setPhaseStoryDragX] = useState(0);
   const [phaseStoryDragging, setPhaseStoryDragging] = useState(false);
@@ -1174,7 +1175,10 @@ function App() {
           onPointerUp={() => setPdrTilt({ x: 0, y: 0 })}
         >
           <div className="mobile-pdr-vehicle-head">
-            <div><span>{txt('ESQUEMA 2D ÚNICO', 'SINGLE 2D SCHEMATIC')}</span><strong>{txt('Geometría sincronizada en tiempo real', 'Real-time synchronized geometry')}</strong></div>
+            <div>
+              <span>{pdrViewIndex === 0 ? txt('VISTA PRINCIPAL', 'PRIMARY VIEW') : pdrViewIndex === 1 ? txt('VISTA 2D', '2D VIEW') : txt('PERSPECTIVA 3D', '3D PERSPECTIVE')}</span>
+              <strong>{pdrViewIndex === 0 ? txt('CG · CP · estaciones sincronizadas', 'CG · CP · synchronized stations') : pdrViewIndex === 1 ? txt('Geometría técnica lateral', 'Technical side geometry') : txt('Lectura volumétrica del gemelo', 'Volumetric twin view')}</strong>
+            </div>
             <div className="pdr-schematic-tools" onPointerDown={(event) => event.stopPropagation()}>
               <button type="button" onClick={() => setPdrZoom((value) => Math.max(.82, +(value - .1).toFixed(2)))} aria-label={txt('Alejar esquema', 'Zoom out')}><ZoomOut size={16}/></button>
               <button type="button" className="zoom-readout" onClick={() => setPdrZoom(1)} aria-label={txt('Restablecer zoom', 'Reset zoom')}>{Math.round(pdrZoom * 100)}%</button>
@@ -1182,9 +1186,41 @@ function App() {
               <button type="button" onClick={() => { setPdrZoom(1); setPdrTilt({ x: 0, y: 0 }); }} aria-label={txt('Centrar esquema', 'Center schematic')}><Maximize2 size={16}/></button>
             </div>
           </div>
-          <div className="mobile-pdr-model">
-            <RocketRealistic vehicle={vehicle} cgMm={liveCgFromNose} cpMm={liveCpFromNose} componentCgs={componentSummary?.components ?? []} assemblyStations={twinAssembly?.stations ?? []} showComponentCgs={false} lang={lang}/>
+
+          <div className="pdr-view-selector" role="tablist" aria-label={txt('Vistas del esquema', 'Schematic views')}>
+            {[
+              { label: txt('COMPLETO', 'FULL'), sub: 'CG + CP' },
+              { label: '2D', sub: txt('LATERAL', 'SIDE') },
+              { label: '3D', sub: txt('PERSPECTIVA', 'PERSPECTIVE') },
+            ].map((view, index) => <button key={view.label} type="button" className={pdrViewIndex === index ? 'active' : ''} onClick={() => setPdrViewIndex(index)}><span>{view.label}</span><small>{view.sub}</small></button>)}
           </div>
+
+          <div
+            className={`mobile-pdr-model pdr-view-${pdrViewIndex}`}
+            onTouchStart={(event) => { event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0); }}
+            onTouchEnd={(event) => {
+              const start = Number(event.currentTarget.dataset.touchX ?? 0);
+              const end = event.changedTouches[0]?.clientX ?? start;
+              const delta = end - start;
+              if (Math.abs(delta) > 42) {
+                setPdrViewIndex((current) => delta < 0 ? Math.min(2, current + 1) : Math.max(0, current - 1));
+                setPdrZoom(1);
+              }
+            }}
+          >
+            <div className="pdr-flip-stage" key={pdrViewIndex}>
+              <RocketRealistic
+                vehicle={vehicle}
+                cgMm={liveCgFromNose}
+                cpMm={liveCpFromNose}
+                componentCgs={componentSummary?.components ?? []}
+                assemblyStations={twinAssembly?.stations ?? []}
+                showComponentCgs={pdrViewIndex === 0}
+                lang={lang}
+              />
+            </div>
+          </div>
+          <div className="pdr-view-dots" aria-hidden="true"><i className={pdrViewIndex === 0 ? 'active' : ''}/><i className={pdrViewIndex === 1 ? 'active' : ''}/><i className={pdrViewIndex === 2 ? 'active' : ''}/></div>
           <div className="schematic-live-stats">
             <span><b>{vehicle.totalLength}</b> mm {txt('LARGO', 'LENGTH')}</span>
             <span><b>Ø{vehicle.diameter}</b> mm</span>
