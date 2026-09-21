@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import createPlotlyComponent from 'react-plotly.js/factory';
 import Plotly from 'plotly.js-basic-dist-min';
 import type { MissionSample } from './missionTypes';
@@ -31,7 +31,16 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
   const [dragMode, setDragMode] = useState<'zoom' | 'pan'>('zoom');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const graphRef = useRef<any>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 820px), (pointer: coarse)');
+    const sync = () => setIsMobile(media.matches);
+    sync();
+    media.addEventListener?.('change', sync);
+    return () => media.removeEventListener?.('change', sync);
+  }, []);
   const isEs = lang === 'es';
   const txt = (es: string, en: string) => isEs ? es : en;
 
@@ -51,7 +60,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
 
   const eventShapes = useMemo(() => {
     const events = [
-      { x: motorBurnTimeS, label: txt('FIN COMB.', 'BURNOUT') },
+      { x: motorBurnTimeS, label: txt('FIN DE COMBUSTIÓN · Burnout', 'BURNOUT') },
       { x: samples[maxQIndex]?.t_s, label: 'qmax' },
       { x: analysis.time_to_apogee_s, label: 'hmax' },
       { x: analysis.deployment_time_s ?? undefined, label: txt('DESPLIEGUE', 'DEPLOY') },
@@ -187,7 +196,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
       <article><span>{txt('ALTURA MÁXIMA · hmax', 'MAX ALTITUDE · hmax')}</span><strong>{analysis.apogee_m != null ? analysis.apogee_m.toFixed(1) + ' m' : Math.max(...altitude).toFixed(1) + ' m'}</strong></article>
       <article><span>{txt('VELOCIDAD MÁXIMA · Vmax', 'MAX SPEED · Vmax')}</span><strong>{analysis.max_speed_m_s != null ? analysis.max_speed_m_s.toFixed(1) + ' m/s' : Math.max(...speed).toFixed(1) + ' m/s'}</strong></article>
       <article><span>{txt('PRESIÓN DINÁMICA MÁXIMA · qmax', 'MAX DYNAMIC PRESSURE · qmax')}</span><strong>{analysis.max_q_pa != null ? analysis.max_q_pa.toFixed(0) + ' Pa' : (Math.max(...qKpa) * 1000).toFixed(0) + ' Pa'}</strong></article>
-      <article><span>{txt('VELOCIDAD FINAL · Vf', 'FINAL SPEED · Vf')}</span><strong>{analysis.impact_speed_m_s != null ? analysis.impact_speed_m_s.toFixed(2) + ' m/s' : samples[samples.length - 1].speed_m_s.toFixed(2) + ' m/s'}</strong></article>
+      <article><span>{txt('VELOCIDAD DE IMPACTO · Vf', 'IMPACT SPEED · Vf')}</span><strong>{analysis.impact_speed_m_s != null ? analysis.impact_speed_m_s.toFixed(2) + ' m/s' : samples[samples.length - 1].speed_m_s.toFixed(2) + ' m/s'}</strong></article>
     </div>
 
     <div className="telemetry-source-toggle" aria-label={txt('Fuente de datos', 'Data source')}>
@@ -211,10 +220,12 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
     </div>
 
     <div className="flight-chart-toolbar aero-toolbar" aria-label={txt('Herramientas del gráfico', 'Chart tools')}>
-      <button type="button" className={dragMode === 'zoom' ? 'active' : ''} onClick={() => setInteraction('zoom')} title={txt('Zoom por selección', 'Box zoom')} aria-label={txt('Zoom por selección', 'Box zoom')}><ZoomIn size={16}/></button>
-      <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Desplazar gráfico', 'Pan plot')} aria-label={txt('Desplazar gráfico', 'Pan plot')}><Move size={16}/></button>
-      <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente', 'Autoscale')} aria-label={txt('Ajustar automáticamente', 'Autoscale')}><ScanSearch size={16}/></button>
-      <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')} aria-label={txt('Restablecer vista', 'Reset view')}><RotateCcw size={16}/></button>
+      {!isMobile && <>
+        <button type="button" className={dragMode === 'zoom' ? 'active' : ''} onClick={() => setInteraction('zoom')} title={txt('Zoom por selección', 'Box zoom')} aria-label={txt('Zoom por selección', 'Box zoom')}><ZoomIn size={16}/></button>
+        <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Desplazar gráfico', 'Pan plot')} aria-label={txt('Desplazar gráfico', 'Pan plot')}><Move size={16}/></button>
+        <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente', 'Autoscale')} aria-label={txt('Ajustar automáticamente', 'Autoscale')}><ScanSearch size={16}/></button>
+        <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')} aria-label={txt('Restablecer vista', 'Reset view')}><RotateCcw size={16}/></button>
+      </>}
       <button type="button" className="chart-tool-preview" onClick={previewPng} title={txt('Vista previa PNG', 'Preview PNG')} aria-label={txt('Vista previa PNG', 'Preview PNG')}><Eye size={16}/></button>
       <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Descargar PNG', 'Download PNG')} aria-label={txt('Descargar PNG', 'Download PNG')}><Download size={16}/></button>
     </div>
@@ -235,6 +246,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
             zerolinecolor: 'rgba(79,107,149,.28)',
             linecolor: '#29415f',
             tickfont: { color: '#7f96b8' },
+            fixedrange: isMobile,
           },
           yaxis: {
             title: { text: chart.yTitle, font: { size: 10, color: '#819cc4' } },
@@ -242,6 +254,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
             zerolinecolor: 'rgba(79,107,149,.28)',
             linecolor: '#29415f',
             tickfont: { color: '#7f96b8' },
+            fixedrange: isMobile,
           },
           shapes: chart.shapes as any,
           annotations: chart.annotations as any,
@@ -252,7 +265,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
           responsive: true,
           displaylogo: false,
           displayModeBar: false,
-          scrollZoom: true,
+          scrollZoom: !isMobile,
         }}
         onInitialized={(_, graphDiv) => { graphRef.current = graphDiv; }}
         onUpdate={(_, graphDiv) => { graphRef.current = graphDiv; }}
@@ -262,8 +275,8 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
     </div>
 
     <div className="flight-chart-footer">
-      <span>{txt('RUEDA: ZOOM · ARRASTRAR: PAN · HOVER: LECTURA EXACTA', 'WHEEL: ZOOM · DRAG: PAN · HOVER: EXACT READOUT')}</span>
-      <strong>{txt('EVENTOS: FIN COMB. · qmax · hmax · DESPLIEGUE', 'EVENTS: BURNOUT · qmax · hmax · DEPLOY')}</strong>
+      <span>{isMobile ? txt('MODO MÓVIL: GRÁFICO BLOQUEADO PARA EVITAR DESPLAZAMIENTOS', 'MOBILE MODE: PLOT LOCKED TO PREVENT ACCIDENTAL MOVEMENT') : txt('RUEDA: ZOOM · ARRASTRAR: PAN · HOVER: LECTURA EXACTA', 'WHEEL: ZOOM · DRAG: PAN · HOVER: EXACT READOUT')}</span>
+      <strong>{txt('EVENTOS: FIN DE COMBUSTIÓN · Burnout · qmax · hmax · DESPLIEGUE', 'EVENTS: BURNOUT · qmax · hmax · DEPLOY')}</strong>
     </div>
 
     {previewUrl && <div className="chart-preview-backdrop" role="dialog" aria-modal="true" aria-label={txt('Vista previa del gráfico', 'Chart preview')}>
