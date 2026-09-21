@@ -357,7 +357,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
 
     <div className="flight-plot-hero-head">
       <div>
-        <span>{txt('ANÁLISIS DE TRAYECTORIA', 'TRAJECTORY ANALYSIS')}</span>
+        <span>{txt('GRÁFICOS DE VUELO', 'FLIGHT CHARTS')}</span>
         <strong>{chart.title}</strong>
       </div>
       <b>{tabs.find(([key]) => key === active)?.[1]}</b>
@@ -407,7 +407,22 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
       />
     </div>
 
-    <div className="flight-chart-action-row">
+    <div className="flight-chart-picker-head">
+      <span>{txt('SELECCIONÁ VARIABLE', 'SELECT VARIABLE')}</span>
+      <strong>{tabs.find(([key]) => key === active)?.[1]}</strong>
+    </div>
+    <div className="flight-chart-tabs" role="tablist" aria-label={txt('Variables de vuelo', 'Flight variables')}>
+      {tabs.filter(([key]) => key !== 'trajectory').map(([key, label]) => <button
+        key={key}
+        type="button"
+        role="tab"
+        aria-selected={active === key}
+        className={active === key ? 'flight-chart-tab active' : 'flight-chart-tab'}
+        onClick={() => setActive(key)}
+      >{label}</button>)}
+    </div>
+
+        <div className="flight-chart-action-row">
       <button
         type="button"
         className={active === 'trajectory' ? 'trajectory-chip active' : 'trajectory-chip'}
@@ -428,22 +443,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
       </div>
     </div>
 
-    <div className="flight-chart-picker-head">
-      <span>{txt('SELECCIONÁ VARIABLE', 'SELECT VARIABLE')}</span>
-      <strong>{tabs.find(([key]) => key === active)?.[1]}</strong>
-    </div>
-    <div className="flight-chart-tabs" role="tablist" aria-label={txt('Variables de vuelo', 'Flight variables')}>
-      {tabs.filter(([key]) => key !== 'trajectory').map(([key, label]) => <button
-        key={key}
-        type="button"
-        role="tab"
-        aria-selected={active === key}
-        className={active === key ? 'flight-chart-tab active' : 'flight-chart-tab'}
-        onClick={() => setActive(key)}
-      >{label}</button>)}
-    </div>
-
-    {previewUrl && <div className="chart-preview-backdrop" role="dialog" aria-modal="true" aria-label={txt('Vista previa del gráfico', 'Chart preview')}>
+{previewUrl && <div className="chart-preview-backdrop" role="dialog" aria-modal="true" aria-label={txt('Vista previa del gráfico', 'Chart preview')}>
       <div className="chart-preview-modal">
         <div className="chart-preview-head">
           <div><span>{txt('VISTA PREVIA PARA IMPRESIÓN', 'PRINT PREVIEW')}</span><strong>{previewName}</strong></div>
