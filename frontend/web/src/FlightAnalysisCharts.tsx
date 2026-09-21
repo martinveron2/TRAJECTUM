@@ -52,8 +52,8 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
   const eventShapes = useMemo(() => {
     const events = [
       { x: motorBurnTimeS, label: txt('FIN COMB.', 'BURNOUT') },
-      { x: samples[maxQIndex]?.t_s, label: 'MAX Q' },
-      { x: analysis.time_to_apogee_s, label: txt('APOGEO', 'APOGEE') },
+      { x: samples[maxQIndex]?.t_s, label: 'qmax' },
+      { x: analysis.time_to_apogee_s, label: 'hmax' },
       { x: analysis.deployment_time_s ?? undefined, label: txt('DESPLIEGUE', 'DEPLOY') },
     ].filter((event): event is { x: number; label: string } => Number.isFinite(event.x));
 
@@ -129,7 +129,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
     ['altitude', txt('ALTITUD', 'ALTITUDE')],
     ['speed', txt('VELOCIDAD', 'SPEED')],
     ['mach', 'MACH'],
-    ['q', 'MAX Q'],
+    ['q', txt('PRESIÓN DINÁMICA · qmax', 'DYNAMIC PRESSURE · qmax')],
     ['trajectory', txt('TRAYECTORIA', 'TRAJECTORY')],
   ];
 
@@ -184,10 +184,10 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
     </div>
 
     <div className="flight-results-summary">
-      <article><span>{txt('ALTURA MÁXIMA', 'MAX ALTITUDE')}</span><strong>{analysis.apogee_m != null ? analysis.apogee_m.toFixed(1) + ' m' : Math.max(...altitude).toFixed(1) + ' m'}</strong></article>
-      <article><span>{txt('VELOCIDAD MÁXIMA', 'MAX SPEED')}</span><strong>{analysis.max_speed_m_s != null ? analysis.max_speed_m_s.toFixed(1) + ' m/s' : Math.max(...speed).toFixed(1) + ' m/s'}</strong></article>
-      <article><span>MAX Q</span><strong>{analysis.max_q_pa != null ? analysis.max_q_pa.toFixed(0) + ' Pa' : (Math.max(...qKpa) * 1000).toFixed(0) + ' Pa'}</strong></article>
-      <article><span>{txt('VELOCIDAD FINAL', 'FINAL SPEED')}</span><strong>{analysis.impact_speed_m_s != null ? analysis.impact_speed_m_s.toFixed(2) + ' m/s' : samples[samples.length - 1].speed_m_s.toFixed(2) + ' m/s'}</strong></article>
+      <article><span>{txt('ALTURA MÁXIMA · hmax', 'MAX ALTITUDE · hmax')}</span><strong>{analysis.apogee_m != null ? analysis.apogee_m.toFixed(1) + ' m' : Math.max(...altitude).toFixed(1) + ' m'}</strong></article>
+      <article><span>{txt('VELOCIDAD MÁXIMA · Vmax', 'MAX SPEED · Vmax')}</span><strong>{analysis.max_speed_m_s != null ? analysis.max_speed_m_s.toFixed(1) + ' m/s' : Math.max(...speed).toFixed(1) + ' m/s'}</strong></article>
+      <article><span>{txt('PRESIÓN DINÁMICA MÁXIMA · qmax', 'MAX DYNAMIC PRESSURE · qmax')}</span><strong>{analysis.max_q_pa != null ? analysis.max_q_pa.toFixed(0) + ' Pa' : (Math.max(...qKpa) * 1000).toFixed(0) + ' Pa'}</strong></article>
+      <article><span>{txt('VELOCIDAD FINAL · Vf', 'FINAL SPEED · Vf')}</span><strong>{analysis.impact_speed_m_s != null ? analysis.impact_speed_m_s.toFixed(2) + ' m/s' : samples[samples.length - 1].speed_m_s.toFixed(2) + ' m/s'}</strong></article>
     </div>
 
     <div className="telemetry-source-toggle" aria-label={txt('Fuente de datos', 'Data source')}>
@@ -263,7 +263,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, lang =
 
     <div className="flight-chart-footer">
       <span>{txt('RUEDA: ZOOM · ARRASTRAR: PAN · HOVER: LECTURA EXACTA', 'WHEEL: ZOOM · DRAG: PAN · HOVER: EXACT READOUT')}</span>
-      <strong>{txt('EVENTOS: FIN COMB. · MAX Q · APOGEO · DESPLIEGUE', 'EVENTS: BURNOUT · MAX Q · APOGEE · DEPLOY')}</strong>
+      <strong>{txt('EVENTOS: FIN COMB. · qmax · hmax · DESPLIEGUE', 'EVENTS: BURNOUT · qmax · hmax · DEPLOY')}</strong>
     </div>
 
     {previewUrl && <div className="chart-preview-backdrop" role="dialog" aria-modal="true" aria-label={txt('Vista previa del gráfico', 'Chart preview')}>
