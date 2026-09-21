@@ -168,6 +168,11 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
           <div className="instrument alertable"><span>{txt('ACELERACIÓN', 'ACCELERATION')}</span><strong>{current.acceleration_g.toFixed(2)}</strong><em>G</em></div>
           <div className="instrument"><span>q<sub>max</sub></span><strong>{(current.q_pa/1000).toFixed(2)}</strong><em>kPa</em></div>
           <div className="instrument"><span>{txt('DISTANCIA', 'RANGE')}</span><strong>{current.x_m.toFixed(1)}</strong><em>m</em></div>
+          <button type="button" className={missionCompleted ? 'mission-results-inline mission-complete' : 'mission-results-inline'} onClick={onViewResults}>
+            <Gauge size={17}/>
+            <span>{txt('RESULTADOS', 'RESULTS')}</span>
+            <strong>{txt('VER COMPLETOS', 'VIEW FULL')}</strong>
+          </button>
         </section>
 
         <section className="mission-events">
