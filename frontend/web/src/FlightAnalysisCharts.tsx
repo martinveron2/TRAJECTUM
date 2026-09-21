@@ -355,36 +355,23 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
       <div className="performance-meter" aria-label={txt('Performance global', 'Global performance')}><i style={{ width: performance + '%' }}/></div>
     </section>
 
-    <div className="flight-chart-action-row">
-      <button
-        type="button"
-        className={active === 'trajectory' ? 'trajectory-chip active' : 'trajectory-chip'}
-        onClick={() => setActive('trajectory')}
-        aria-pressed={active === 'trajectory'}
-      >
-        {txt('TRAYECTORIA', 'TRAJECTORY')}
-      </button>
-      <div className="flight-chart-toolbar aero-toolbar" aria-label={txt('Herramientas del gráfico', 'Chart tools')}>
-        {!isMobile && <>
-          <button type="button" className={dragMode === 'zoom' ? 'active' : ''} onClick={() => setInteraction('zoom')} title={txt('Zoom por selección', 'Box zoom')} aria-label={txt('Zoom por selección', 'Box zoom')}><ZoomIn size={16}/></button>
-          <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Desplazar gráfico', 'Pan plot')} aria-label={txt('Desplazar gráfico', 'Pan plot')}><Move size={16}/></button>
-          <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente', 'Autoscale')} aria-label={txt('Ajustar automáticamente', 'Autoscale')}><ScanSearch size={16}/></button>
-          <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')} aria-label={txt('Restablecer vista', 'Reset view')}><RotateCcw size={16}/></button>
-        </>}
-        <button type="button" className="chart-tool-preview" onClick={previewPng} title={txt('Vista previa PNG', 'Preview PNG')} aria-label={txt('Vista previa PNG', 'Preview PNG')}><Eye size={16}/></button>
-        <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Descargar PNG', 'Download PNG')} aria-label={txt('Descargar PNG', 'Download PNG')}><Download size={16}/></button>
+    <div className="flight-plot-hero-head">
+      <div>
+        <span>{txt('ANÁLISIS DE TRAYECTORIA', 'TRAJECTORY ANALYSIS')}</span>
+        <strong>{chart.title}</strong>
       </div>
+      <b>{tabs.find(([key]) => key === active)?.[1]}</b>
     </div>
 
     <div className="flight-chart-frame">
       <Plot
         data={[chart.trace as any]}
         layout={{
-          title: { text: chart.title, font: { family: 'Space Grotesk, sans-serif', size: 18, color: '#83B8E6' }, x: .02, xanchor: 'left' },
+          title: undefined,
           paper_bgcolor: 'rgba(0,0,0,0)',
           plot_bgcolor: '#081321',
           font: { family: 'Space Grotesk, sans-serif', color: '#9ab0d2', size: 11 },
-          margin: { l: 66, r: 22, t: 56, b: 58 },
+          margin: { l: 62, r: 20, t: 24, b: 56 },
           hovermode: active === 'trajectory' ? 'closest' : 'x unified',
           xaxis: {
             title: { text: chart.xTitle, font: { size: 10, color: '#819cc4' } },
@@ -420,9 +407,25 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
       />
     </div>
 
-    <div className="flight-chart-footer">
-      <span>{isMobile ? txt('MODO MÓVIL: GRÁFICO BLOQUEADO PARA EVITAR DESPLAZAMIENTOS', 'MOBILE MODE: PLOT LOCKED TO PREVENT ACCIDENTAL MOVEMENT') : txt('RUEDA: ZOOM · ARRASTRAR: PAN · HOVER: LECTURA EXACTA', 'WHEEL: ZOOM · DRAG: PAN · HOVER: EXACT READOUT')}</span>
-      <strong>{txt('EVENTOS: FIN DE COMBUSTIÓN · Burnout · Qmáx · Hmáx · DESPLIEGUE', 'EVENTS: BURNOUT · Qmax · Hmax · DEPLOY')}</strong>
+    <div className="flight-chart-action-row">
+      <button
+        type="button"
+        className={active === 'trajectory' ? 'trajectory-chip active' : 'trajectory-chip'}
+        onClick={() => setActive('trajectory')}
+        aria-pressed={active === 'trajectory'}
+      >
+        {txt('TRAYECTORIA', 'TRAJECTORY')}
+      </button>
+      <div className="flight-chart-toolbar aero-toolbar" aria-label={txt('Herramientas del gráfico', 'Chart tools')}>
+        {!isMobile && <>
+          <button type="button" className={dragMode === 'zoom' ? 'active' : ''} onClick={() => setInteraction('zoom')} title={txt('Zoom por selección', 'Box zoom')} aria-label={txt('Zoom por selección', 'Box zoom')}><ZoomIn size={16}/></button>
+          <button type="button" className={dragMode === 'pan' ? 'active' : ''} onClick={() => setInteraction('pan')} title={txt('Desplazar gráfico', 'Pan plot')} aria-label={txt('Desplazar gráfico', 'Pan plot')}><Move size={16}/></button>
+          <button type="button" onClick={autoScale} title={txt('Ajustar automáticamente', 'Autoscale')} aria-label={txt('Ajustar automáticamente', 'Autoscale')}><ScanSearch size={16}/></button>
+          <button type="button" onClick={resetView} title={txt('Restablecer vista', 'Reset view')} aria-label={txt('Restablecer vista', 'Reset view')}><RotateCcw size={16}/></button>
+        </>}
+        <button type="button" className="chart-tool-preview" onClick={previewPng} title={txt('Vista previa PNG', 'Preview PNG')} aria-label={txt('Vista previa PNG', 'Preview PNG')}><Eye size={16}/></button>
+        <button type="button" className="chart-tool-export" onClick={savePng} title={txt('Descargar PNG', 'Download PNG')} aria-label={txt('Descargar PNG', 'Download PNG')}><Download size={16}/></button>
+      </div>
     </div>
 
     <div className="flight-chart-picker-head">
