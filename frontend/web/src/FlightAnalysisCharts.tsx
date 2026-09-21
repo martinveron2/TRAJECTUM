@@ -363,7 +363,7 @@ export function FlightAnalysisCharts({ samples, motorBurnTimeS, analysis, hReqM 
       <b>{tabs.find(([key]) => key === active)?.[1]}</b>
     </div>
 
-    <div className="flight-chart-frame">
+    <div className="flight-chart-frame" tabIndex={0} aria-label={txt('Gráfico de vuelo interactivo', 'Interactive flight chart')} onPointerDown={(event) => event.currentTarget.focus({ preventScroll: true })}>
       <Plot
         data={[chart.trace as any]}
         layout={{
