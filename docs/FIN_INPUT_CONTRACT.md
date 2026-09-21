@@ -43,4 +43,4 @@ Custom coordinates are normalized as `x/c, y/c`, so the same section can be scal
 
 The current Barrowman CP implementation uses fin **planform geometry**. The airfoil cross-section is retained for CAD, manufacturing, drag refinement and later higher-fidelity aerodynamics; TRAJECTUM does not pretend that changing NACA section changes the current first-order Barrowman CP model.
 
-For the canonical UTN-FRH-G07 CDR case, the professor-specified NACA designation remains `TBD` until the exact designation is confirmed. It should then be entered directly in the case file rather than hard-coded in the solver.
+For the canonical UTN-FRH-G07 CDR reference case, the current verified section is **NACA 0012**. The designation is stored in the case data rather than hard-coded in the solver, so other vehicles can use independent airfoil definitions.
