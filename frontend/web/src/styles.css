@@ -8169,3 +8169,11 @@ output,
 .cdr-metrics-section-head strong{
   color:#83B8E6!important;
 }
+
+
+/* Flight section headings use the same soft-blue accent as the upper CDR section. */
+.flight-section-head>div strong,
+.flight-section-head>div small,
+.flight-analysis-head p{
+  color:#83B8E6!important;
+}
