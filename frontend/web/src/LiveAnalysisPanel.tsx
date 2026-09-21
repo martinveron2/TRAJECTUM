@@ -148,15 +148,15 @@ function AnimatedValue({ value, decimals = 1, suffix = '' }: { value?: number; d
 }
 
 export const initialComponentRows: ComponentRow[] = [
-  { id: 1, name: 'Cofia', massG: 126, lengthMm: 180, diameterMm: 63, kind: 'nose', note: 'masa medida · xCG de envolvente de ojiva tangente' },
-  { id: 2, name: 'C1', massG: 190, lengthMm: 215, diameterMm: 63, xCgMm: 272.5, kind: 'point_mass', note: 'masa medida · xCG provisional por centro de pieza ensamblada' },
-  { id: 3, name: 'C2', massG: 146, lengthMm: 215, diameterMm: 63, xCgMm: 472.5, kind: 'point_mass', note: 'masa medida · xCG provisional por centro de pieza ensamblada' },
-  { id: 4, name: 'Cola + aletas', massG: 260, lengthMm: 225, diameterMm: 63, xCgMm: 700.8, kind: 'point_mass', note: 'masa medida · xCG geométrico estimado con densidad de impresión uniforme' },
-  { id: 5, name: 'Portamotor', massG: 148, lengthMm: 190, diameterMm: 54, xCgMm: 694, kind: 'point_mass', note: 'masa medida · xCG provisional en el centro del portamotor' },
-  { id: 6, name: 'Paracaídas', massG: 30, lengthMm: 70, diameterMm: 52, xCgMm: 215, kind: 'point_mass', note: 'primero bajo la cofia · centro de cavidad delantera de 70 mm' },
-  { id: 7, name: 'Carga útil', massG: 100, lengthMm: 50, diameterMm: 52, xCgMm: 285, kind: 'point_mass', note: 'primera mitad de la cavidad trasera de C1' },
-  { id: 8, name: 'Electrónica', massG: 80, lengthMm: 50, diameterMm: 52, xCgMm: 335, kind: 'point_mass', note: 'al fondo de la cavidad trasera de C1' },
-  { id: 9, name: 'Motor', massG: 490, lengthMm: 190, diameterMm: 50, kind: 'motor', note: 'xCG en el centro axial del motor' },
+  { id: 1, name: 'Cofia', massG: 126, lengthMm: 195, diameterMm: 63, kind: 'nose', note: 'masa medida · longitud efectiva ensamblada de trabajo según Simón' },
+  { id: 2, name: 'C1', massG: 190, lengthMm: 185, diameterMm: 63, xCgMm: 287.5, kind: 'point_mass', note: 'masa medida · estación provisional en el centro del tramo efectivo C1' },
+  { id: 3, name: 'C2', massG: 146, lengthMm: 215, diameterMm: 63, xCgMm: 487.5, kind: 'point_mass', note: 'masa medida · estación provisional en el centro del tramo efectivo C2' },
+  { id: 4, name: 'Cola + aletas', massG: 260, lengthMm: 225, diameterMm: 63, xCgMm: 731.8, kind: 'point_mass', note: 'masa medida · estación provisional trasladada con el nuevo inicio de cola' },
+  { id: 5, name: 'Portamotor', massG: 148, lengthMm: 190, diameterMm: 54, xCgMm: 725, kind: 'point_mass', note: 'masa medida · centro axial provisional del portamotor instalado hacia la base' },
+  { id: 6, name: 'Paracaídas', massG: 50, lengthMm: 185, diameterMm: 52, xCgMm: 287.5, kind: 'point_mass', note: 'estimación 50 g · ubicado en C1 inmediatamente debajo de la cofia' },
+  { id: 7, name: 'Carga útil', massG: 100, lengthMm: 107.5, diameterMm: 52, xCgMm: 433.75, kind: 'point_mass', note: '100 g · ubicación provisional en la mitad superior de C2' },
+  { id: 8, name: 'Electrónica', massG: 80, lengthMm: 107.5, diameterMm: 52, xCgMm: 541.25, kind: 'point_mass', note: '80 g · ubicación provisional debajo de la carga útil, en la mitad inferior de C2' },
+  { id: 9, name: 'Motor', massG: 490, lengthMm: 190, diameterMm: 28, kind: 'motor', note: 'A-100 RN húmedo · xCG provisional en el centro axial del motor' },
 ];
 
 export function LiveAnalysisPanel({
