@@ -195,8 +195,11 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
       </div>
 
       <footer className="mission-controls">
-        <button type="button" onClick={() => setPlaying((value) => !value)}>{playing ? <Pause size={18}/> : <Play size={18}/>}<span>{playing ? txt('PAUSAR', 'PAUSE') : txt('CONTINUAR', 'RESUME')}</span></button>
-        <button type="button" onClick={() => { setTimeS(0); setPlaying(false); lastRealRef.current = null; }}><RotateCcw size={18}/><span>{txt('REINICIAR', 'RESTART')}</span></button>
+        <button type="button" className="mission-start" onClick={() => setPlaying((value) => !value)}>
+          {playing ? <Pause size={19}/> : <Play size={19}/>}
+          <span>{playing ? txt('PAUSA', 'PAUSE') : timeS <= 0.05 ? txt('IGNICIÓN', 'IGNITION') : txt('REANUDAR', 'RESUME')}</span>
+        </button>
+        <button type="button" className="mission-reset-icon" onClick={() => { setTimeS(0); setPlaying(false); lastRealRef.current = null; }} aria-label={txt('Reiniciar simulación', 'Restart simulation')} title={txt('Reiniciar simulación', 'Restart simulation')}><RotateCcw size={20}/></button>
         <div className="mission-rate">
           {[1,2,5].map((value) => <button type="button" key={value} className={rate === value ? 'active' : ''} onClick={() => setRate(value)}>{value}×</button>)}
         </div>

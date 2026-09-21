@@ -9598,3 +9598,87 @@ output,
     grid-template-columns:72px 72px 1fr!important;
   }
 }
+
+/* === FLIGHT CONTROL EMPHASIS: ignition, icon reset, larger rates, strong results CTA === */
+@media(max-width:820px){
+  .mission-controls{
+    grid-template-columns:minmax(92px,1.15fr) 46px minmax(144px,1.7fr)!important;
+    gap:6px!important;
+  }
+  .mission-start{
+    min-height:42px!important;
+    border:1px solid rgba(255,106,70,.72)!important;
+    background:
+      radial-gradient(circle at 28% 15%,rgba(255,255,255,.12),transparent 28%),
+      linear-gradient(135deg,#FF5A00,#C9380A)!important;
+    color:#FFF8F3!important;
+    box-shadow:0 0 16px rgba(255,90,0,.24),0 7px 18px rgba(201,56,10,.20),inset 0 1px 0 rgba(255,255,255,.18)!important;
+  }
+  .mission-start span{
+    font-size:.53rem!important;
+    font-weight:900!important;
+    letter-spacing:.065em!important;
+    color:#FFF8F3!important;
+  }
+  .mission-start svg{
+    color:#FFF8F3!important;
+    stroke-width:2.2!important;
+  }
+
+  .mission-reset-icon{
+    width:46px!important;
+    min-width:46px!important;
+    min-height:42px!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:10px!important;
+  }
+  .mission-reset-icon span{display:none!important}
+  .mission-reset-icon svg{
+    width:20px!important;
+    height:20px!important;
+  }
+
+  .mission-rate{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:4px!important;
+  }
+  .mission-rate button{
+    min-height:42px!important;
+    padding:0 8px!important;
+    font-size:.68rem!important;
+    font-weight:900!important;
+    letter-spacing:.02em!important;
+  }
+
+  .mission-results-inline{
+    border:0!important;
+    background:linear-gradient(135deg,#00F0FF 0%,#0055FF 100%)!important;
+    color:#07111D!important;
+    box-shadow:
+      0 0 20px rgba(0,240,255,.42),
+      0 9px 22px rgba(0,85,255,.28),
+      inset 0 1px 0 rgba(255,255,255,.28)!important;
+  }
+  .mission-results-inline svg{
+    color:#07111D!important;
+    stroke-width:2.2!important;
+  }
+  .mission-results-inline span{
+    color:#083257!important;
+    font-weight:800!important;
+  }
+  .mission-results-inline strong{
+    color:#07111D!important;
+    font-size:.66rem!important;
+    font-weight:900!important;
+  }
+  .mission-results-inline:active{
+    filter:brightness(1.06)!important;
+    box-shadow:
+      0 0 26px rgba(0,240,255,.58),
+      0 7px 18px rgba(0,85,255,.34),
+      inset 0 2px 8px rgba(0,0,0,.10)!important;
+  }
+}
