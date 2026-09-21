@@ -9201,3 +9201,91 @@ output,
   .pdr-view-0 .pdr-flip-stage .component-cg-label,
   .pdr-view-0 .pdr-flip-stage .component-cg-projection{display:block!important}
 }
+
+/* === PDR CAD IMAGES: compact controls + cropped vertical views === */
+.pdr-schematic-panel{
+  background:
+    radial-gradient(circle at 50% 12%,rgba(32,91,138,.16),transparent 34%),
+    linear-gradient(180deg,#0D2033 0%,#091826 34%,#06111D 100%)!important;
+}
+.pdr-schematic-panel .mobile-pdr-vehicle-head{
+  align-items:flex-start!important;
+  padding:0 0 4px!important;
+}
+.pdr-schematic-tools{
+  display:grid!important;
+  grid-template-columns:repeat(2,28px)!important;
+  grid-template-rows:repeat(2,28px)!important;
+  gap:4px!important;
+  margin-top:0!important;
+}
+.pdr-schematic-tools button,
+.pdr-schematic-tools .zoom-readout{
+  width:28px!important;
+  height:28px!important;
+  min-width:28px!important;
+  min-height:28px!important;
+  border-radius:7px!important;
+}
+.pdr-schematic-tools .zoom-readout{
+  font-size:8px!important;
+}
+.pdr-view-selector{
+  margin:4px 0 4px!important;
+  gap:5px!important;
+}
+.pdr-view-selector button{
+  min-height:38px!important;
+  padding:5px 4px!important;
+}
+.pdr-schematic-panel .mobile-pdr-model{
+  min-height:250px!important;
+  height:250px!important;
+  padding:2px!important;
+}
+.pdr-cad-image-frame{
+  width:100%!important;
+  height:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,#F8FAFC,#EEF3F8)!important;
+  box-shadow:inset 0 0 0 1px rgba(44,72,98,.12)!important;
+}
+.pdr-cad-image-frame img{
+  display:block!important;
+  width:auto!important;
+  height:94%!important;
+  max-width:92%!important;
+  max-height:94%!important;
+  object-fit:contain!important;
+  user-select:none!important;
+  pointer-events:none!important;
+  transform:scale(var(--pdr-zoom,1))!important;
+  transform-origin:center center!important;
+  transition:transform .18s cubic-bezier(.2,.8,.2,1)!important;
+}
+.pdr-view-2 .pdr-cad-image-frame{
+  background:linear-gradient(180deg,#FBFCFD,#EAF0F6)!important;
+}
+.pdr-view-2 .pdr-cad-image-frame img{
+  filter:drop-shadow(10px 10px 12px rgba(24,42,62,.16))!important;
+}
+.pdr-view-dots{
+  margin:1px 0!important;
+}
+.schematic-live-stats{
+  margin-top:4px!important;
+}
+@media(max-width:820px){
+  .pdr-schematic-panel{
+    min-height:0!important;
+    padding:8px!important;
+  }
+  .pdr-schematic-panel .mobile-pdr-model{
+    min-height:238px!important;
+    height:238px!important;
+  }
+}

@@ -10,6 +10,8 @@ import { buildEngineeringChartImages } from './engineeringChartExport';
 import { MissionControl } from './MissionControl';
 import { RequirementsMatrix, deriveRequirementStatus, type RequirementStatus, type RequirementStatusOverrides } from './RequirementsMatrix';
 import { PROJECT_REQUIREMENTS } from './projectRequirements';
+import pdrCad2d from './assets/pdr-cad-2d.webp';
+import pdrCad3d from './assets/pdr-cad-3d.webp';
 
 const FlightAnalysisCharts = React.lazy(() => import('./FlightAnalysisCharts').then((module) => ({ default: module.FlightAnalysisCharts })));
 import {
@@ -1209,15 +1211,21 @@ function App() {
             }}
           >
             <div className="pdr-flip-stage" key={pdrViewIndex}>
-              <RocketRealistic
+              {pdrViewIndex === 0 ? <RocketRealistic
                 vehicle={vehicle}
                 cgMm={liveCgFromNose}
                 cpMm={liveCpFromNose}
                 componentCgs={componentSummary?.components ?? []}
                 assemblyStations={twinAssembly?.stations ?? []}
-                showComponentCgs={pdrViewIndex === 0}
+                showComponentCgs
                 lang={lang}
-              />
+              /> : <div className="pdr-cad-image-frame">
+                <img
+                  src={pdrViewIndex === 1 ? pdrCad2d : pdrCad3d}
+                  alt={pdrViewIndex === 1 ? txt('Vista 2D CAD del cohete', '2D CAD rocket view') : txt('Vista CAD de ensamblaje del cohete', 'CAD rocket assembly view')}
+                  draggable={false}
+                />
+              </div>}
             </div>
           </div>
           <div className="pdr-view-dots" aria-hidden="true"><i className={pdrViewIndex === 0 ? 'active' : ''}/><i className={pdrViewIndex === 1 ? 'active' : ''}/><i className={pdrViewIndex === 2 ? 'active' : ''}/></div>
