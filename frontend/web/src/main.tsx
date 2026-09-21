@@ -842,14 +842,14 @@ function App() {
         <div className="brand-stack">
           <div className="brand-lockup" aria-label="TRAJECTUM">
             <svg className="brand-trajectory" viewBox="0 0 340 78" aria-hidden="true">
-              <path className="brand-orbit-glow" d="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
-              <path className="brand-orbit-line" d="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
-              <circle className="brand-endpoint" cx="330" cy="11" r="3.4" />
+              <path className="brand-orbit-glow" d="M 2 58 Q 72 4 138 27 Q 180 43 220 18" />
+              <path className="brand-orbit-line" d="M 2 58 Q 72 4 138 27 Q 180 43 220 18" />
+              <circle className="brand-endpoint" cx="220" cy="18" r="3.4" />
               <circle className="brand-comet" r="4.2">
-                <animateMotion dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
+                <animateMotion dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 138 27 Q 180 43 220 18" />
               </circle>
               <circle className="brand-comet brand-comet-tail" r="2.4">
-                <animateMotion begin="-0.16s" dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
+                <animateMotion begin="-0.16s" dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 138 27 Q 180 43 220 18" />
               </circle>
             </svg>
             <div className="brand-wordmark">
