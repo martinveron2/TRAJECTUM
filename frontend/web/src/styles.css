@@ -8984,3 +8984,15 @@ output,
 .cdr-hero-values article.cp strong{
   color:#B9DFFF!important;
 }
+
+/* === FINAL VALUE COLOR OVERRIDE: all flight-analysis numbers use CP ice-blue === */
+.flight-analysis-panel .flight-metric-card>strong,
+.flight-analysis-panel .flight-metric-card>strong.status-value,
+.flight-analysis-panel .performance-score>b,
+.flight-analysis-panel .performance-score>span,
+.flight-analysis-panel .flight-metric-card>strong em,
+.flight-analysis-panel .flight-metric-card>strong *{
+  color:#B9DFFF!important;
+  -webkit-text-fill-color:#B9DFFF!important;
+  text-shadow:0 0 14px rgba(116,185,255,.20)!important;
+}
