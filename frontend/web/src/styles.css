@@ -9327,3 +9327,15 @@ output,
     overscroll-behavior:auto!important;
   }
 }
+
+/* === PDR MOBILE: allow native browser/page pinch-zoom from the schematic area === */
+@media(max-width:820px){
+  .pdr-schematic-panel,
+  .pdr-schematic-panel .mobile-pdr-model,
+  .pdr-schematic-panel .pdr-flip-stage,
+  .pdr-schematic-panel .schematic.realistic,
+  .pdr-schematic-panel .pdr-cad-image-frame,
+  .pdr-schematic-panel .pdr-cad-image-frame img{
+    touch-action:pan-y pinch-zoom!important;
+  }
+}
