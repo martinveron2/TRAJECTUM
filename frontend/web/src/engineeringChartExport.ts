@@ -73,8 +73,8 @@ export async function buildEngineeringChartImages(
   const maxQIndex = samples.reduce((best, sample, index) => sample.q_pa > samples[best].q_pa ? index : best, 0);
   const eventSpecs = [
     { x: motorBurnTimeS, label: 'FIN COMB.' },
-    { x: samples[maxQIndex]?.t_s, label: 'MAX Q' },
-    { x: analysis.time_to_apogee_s, label: 'APOGEO' },
+    { x: samples[maxQIndex]?.t_s, label: 'qmax' },
+    { x: analysis.time_to_apogee_s, label: 'hmax' },
     { x: analysis.deployment_time_s ?? undefined, label: 'DESPLIEGUE' },
   ].filter((event): event is { x: number; label: string } => Number.isFinite(event.x));
 
@@ -130,7 +130,7 @@ export async function buildEngineeringChartImages(
       description: 'Gráfico técnico exportado por TRAJECTUM: ' + item.title,
     });
 
-    const filenames = ['altitud-tiempo', 'velocidad-tiempo', 'mach-tiempo', 'max-q-tiempo', 'trayectoria-x-z'];
+    const filenames = ['altitud-tiempo', 'velocidad-tiempo', 'mach-tiempo', 'qmax-tiempo', 'trayectoria-x-z'];
     return {
       summary: [toImage(rendered[0], 2, 4), toImage(rendered[4], 26, 4)],
       trajectory: rendered.map((item, index) => toImage(item, 2 + index * 25, 11)),

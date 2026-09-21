@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Pause, Play, RotateCcw, X, Gauge, Rocket, Activity } from 'lucide-react';
+import { Pause, Play, RotateCcw, ArrowLeft, Gauge, Rocket, Activity } from 'lucide-react';
 import type { MissionSample } from './missionTypes';
 
 type AnalysisLike = {
@@ -117,7 +117,7 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
           <div><span>TRAJECTUM · {txt('MODO MISIÓN', 'MISSION MODE')}</span><strong>{txt('CENTRO DE CONTROL DE VUELO', 'FLIGHT CONTROL CENTER')}</strong></div>
         </div>
         <div className="mission-clock"><small>{txt('TIEMPO DE VUELO', 'FLIGHT TIME')}</small><strong>{clock}</strong></div>
-        <button type="button" className="mission-close" onClick={onClose} aria-label={txt('Cerrar', 'Close')}><X size={22} /></button>
+        <button type="button" className="mission-close" onClick={onClose} aria-label={txt('Volver', 'Back')}><ArrowLeft size={21} strokeWidth={1.9} /></button>
       </header>
 
       <div className="mission-statusline">
@@ -127,6 +127,10 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
 
       <main className="mission-main">
         <section className="mission-flight-stage">
+          <div className="mission-stage-time-hud" aria-label={txt('Tiempo de vuelo', 'Flight time')}>
+            <span>{txt('TIEMPO', 'TIME')}</span>
+            <strong>T {timeS.toFixed(1)}<em>s</em></strong>
+          </div>
           <div className="mission-grid" />
           <svg viewBox="0 0 360 470" aria-label={txt('Vuelo simulado', 'Simulated flight')}>
             <defs>
@@ -166,8 +170,13 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
           <div className="instrument"><span>{txt('VELOCIDAD', 'SPEED')}</span><strong>{current.speed_m_s.toFixed(1)}</strong><em>m/s</em></div>
           <div className="instrument"><span>MACH</span><strong>{current.mach.toFixed(3)}</strong><em>M</em></div>
           <div className="instrument alertable"><span>{txt('ACELERACIÓN', 'ACCELERATION')}</span><strong>{current.acceleration_g.toFixed(2)}</strong><em>G</em></div>
-          <div className="instrument"><span>MAX Q</span><strong>{(current.q_pa/1000).toFixed(2)}</strong><em>kPa</em></div>
+          <div className="instrument"><span>q<sub>max</sub></span><strong>{(current.q_pa/1000).toFixed(2)}</strong><em>kPa</em></div>
           <div className="instrument"><span>{txt('DISTANCIA', 'RANGE')}</span><strong>{current.x_m.toFixed(1)}</strong><em>m</em></div>
+          <button type="button" className={missionCompleted ? 'mission-results-inline mission-complete' : 'mission-results-inline'} onClick={onViewResults}>
+            <Gauge size={17}/>
+            <span>{txt('RESULTADOS', 'RESULTS')}</span>
+            <strong>{txt('VER RESULTADOS COMPLETOS', 'VIEW FULL RESULTS')}</strong>
+          </button>
         </section>
 
         <section className="mission-events">
@@ -190,8 +199,11 @@ export function MissionControl({ samples, motorBurnTimeS, analysis, launchAngleD
       </div>
 
       <footer className="mission-controls">
-        <button type="button" onClick={() => setPlaying((value) => !value)}>{playing ? <Pause size={18}/> : <Play size={18}/>}<span>{playing ? txt('PAUSAR', 'PAUSE') : txt('CONTINUAR', 'RESUME')}</span></button>
-        <button type="button" onClick={() => { setTimeS(0); setPlaying(false); lastRealRef.current = null; }}><RotateCcw size={18}/><span>{txt('REINICIAR', 'RESTART')}</span></button>
+        <button type="button" className="mission-start" onClick={() => setPlaying((value) => !value)}>
+          {playing ? <Pause size={19}/> : <Play size={19}/>}
+          <span>{playing ? txt('PAUSA', 'PAUSE') : timeS <= 0.05 ? txt('IGNICIÓN', 'IGNITION') : txt('REANUDAR', 'RESUME')}</span>
+        </button>
+        <button type="button" className="mission-reset-icon" onClick={() => { setTimeS(0); setPlaying(false); lastRealRef.current = null; }} aria-label={txt('Reiniciar simulación', 'Restart simulation')} title={txt('Reiniciar simulación', 'Restart simulation')}><RotateCcw size={20}/></button>
         <div className="mission-rate">
           {[1,2,5].map((value) => <button type="button" key={value} className={rate === value ? 'active' : ''} onClick={() => setRate(value)}>{value}×</button>)}
         </div>

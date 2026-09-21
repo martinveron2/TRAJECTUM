@@ -10,11 +10,13 @@ import { buildEngineeringChartImages } from './engineeringChartExport';
 import { MissionControl } from './MissionControl';
 import { RequirementsMatrix, deriveRequirementStatus, type RequirementStatus, type RequirementStatusOverrides } from './RequirementsMatrix';
 import { PROJECT_REQUIREMENTS } from './projectRequirements';
+import pdrCad2d from './assets/pdr-cad-2d.webp';
+import pdrCad3d from './assets/pdr-cad-3d.webp';
 
 const FlightAnalysisCharts = React.lazy(() => import('./FlightAnalysisCharts').then((module) => ({ default: module.FlightAnalysisCharts })));
 import {
   Home, Rocket, Gauge, ChartNoAxesCombined, Download, Box, SlidersHorizontal,
-  Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff, FileUp,
+  Flame, Sigma, ClipboardCheck, ArrowLeft, Play, Globe2, ShieldCheck, RadioTower, FileChartColumn, Orbit, Eye, EyeOff, FileUp, ZoomIn, ZoomOut, Maximize2,
 } from 'lucide-react';
 
 type NumericField = number | '';
@@ -45,23 +47,90 @@ type Vehicle = {
   nozzleExitDiameter: NumericField;
 };
 
+type TwinStation = {
+  key: string;
+  name: string;
+  x_start_mm: number | null;
+  x_end_mm: number | null;
+  raw_length_mm: number;
+};
+
+type TwinAssembly = {
+  datum: string;
+  resolved: boolean;
+  total_length_mm: number | null;
+  blockers: string[];
+  stations: TwinStation[];
+};
+
+type TwinValue = {
+  value?: number | null;
+  status?: string;
+  note?: string;
+};
+
+type CurrentCp = {
+  resolved: boolean;
+  status?: string;
+  method?: string;
+  cp_x_mm_from_nose?: number | null;
+  cp_x_mm_from_support?: number | null;
+  cn_alpha_total?: number | null;
+  blockers?: string[];
+};
+
+type CurrentTwin = {
+  geometry?: {
+    outer_diameter_mm?: TwinValue;
+    nose_length_mm?: TwinValue;
+    parts?: {
+      c1_parachute_payload?: { raw_part_length_mm?: number };
+      c2?: { raw_part_length_mm?: number };
+      tail_fin_can?: {
+        raw_part_length_mm?: number;
+        root_le_from_tail_front_mm?: number;
+      };
+      motor_mount?: {
+        raw_part_length_mm?: number;
+        outer_diameter_mm?: number;
+        inner_diameter_mm?: number;
+      };
+    };
+  };
+  fins?: {
+    count?: TwinValue;
+    root_chord_mm?: TwinValue;
+    tip_chord_mm?: TwinValue;
+    span_mm?: TwinValue;
+    sweep_length_mm?: TwinValue;
+    leading_edge_x_mm?: TwinValue;
+  };
+  aerodynamics?: { cd?: TwinValue };
+  masses?: {
+    status?: string;
+    measured_structure_total_g?: number;
+    measured_items?: Array<{ name: string; mass_g: number; status: string; x_cg_mm_from_nose?: number; x_cg_status?: string }>;
+    known_internal_items?: Array<{ name: string; mass_g: number; status: string; x_cg_mm_from_nose?: number; x_cg_status?: string }>;
+  };
+};
+
 const initialVehicle: Vehicle = {
-  totalLength: 860,
+  totalLength: 825.05,
   diameter: 63,
-  noseLength: 180,
-  bayLength: 180,
-  bodyLength: 500,
-  wall: 2,
+  noseLength: 200.05,
+  bayLength: 185,
+  bodyLength: 440,
+  wall: '',
   finCount: 4,
-  rootChord: 80,
-  tipChord: 40,
-  span: 50,
-  sweep: 40,
-  finX: 780,
+  rootChord: 97.67,
+  tipChord: 39.96,
+  span: 52.5,
+  sweep: 42,
+  finX: 725.05,
   airfoil: 'NACA 0012',
   noseProfile: 'tangent_ogive',
   launchAngle: 85,
-  cd: 0.55,
+  cd: 0.345,
   parachuteCd: 1.5,
   parachuteArea: 0.20,
   deployAltitude: '',
@@ -132,14 +201,16 @@ function Field({
   status,
   step = 1,
   min = 0,
+  readOnly = false,
 }: {
   label: string;
   value: NumericField;
   unit?: string;
-  onChange: (value: NumericField) => void;
+  onChange?: (value: NumericField) => void;
   status?: string;
   step?: number;
   min?: number;
+  readOnly?: boolean;
 }) {
   const fieldState = value === '' ? 'field-empty' : Number.isFinite(Number(value)) && Number(value) >= 0 ? 'field-valid' : 'field-warning';
   return (
@@ -148,7 +219,17 @@ function Field({
         {label}
         {status && <small>{status}</small>}
       </span>
-      <NumericStepper value={value} onChange={onChange} unit={unit} step={step} min={min}/>
+      {readOnly ? (
+        <div className="numeric-wheel-control">
+          <div className="numeric-wheel-trigger" aria-readonly="true">
+            <span>{value === '' ? '—' : Number(value).toFixed(String(step).includes('.') ? String(step).split('.')[1].length : 0)}</span>
+            {unit && <em>{unit}</em>}
+            <b>CAD</b>
+          </div>
+        </div>
+      ) : (
+        <NumericStepper value={value} onChange={onChange!} unit={unit} step={step} min={min}/>
+      )}
     </div>
   );
 }
@@ -344,12 +425,18 @@ function App() {
   const [analysisSummary, setAnalysisSummary] = useState<any>(null);
   const [componentSummary, setComponentSummary] = useState<any>(null);
   const [componentRows, setComponentRows] = useState<ComponentRow[]>(initialComponentRows);
+  const [currentTwin, setCurrentTwin] = useState<CurrentTwin | null>(null);
+  const [twinAssembly, setTwinAssembly] = useState<TwinAssembly | null>(null);
+  const [currentCp, setCurrentCp] = useState<CurrentCp | null>(null);
   const [motorConfigs, setMotorConfigs] = useState<MotorConfig[]>(initialMotorConfigs);
   const [activeMotorId, setActiveMotorId] = useState('motor-1');
   const [showMotorEditor, setShowMotorEditor] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [mobileSection, setMobileSection] = useState<'home' | 'mdr' | 'pdr' | 'cdr' | 'frr' | 'lrr' | 'pfr' | 'vehicle' | 'geometry' | 'motor' | 'analysis' | 'plots' | 'model' | 'status' | 'cad'>('home');
   const [pdrTilt, setPdrTilt] = useState({ x: 0, y: 0 });
+  const [pdrZoom, setPdrZoom] = useState(1);
+  const [pdrSchematicFocused, setPdrSchematicFocused] = useState(false);
+  const [pdrViewIndex, setPdrViewIndex] = useState(0);
   const [phaseFocusIndex, setPhaseFocusIndex] = useState(2);
   const [phaseStoryDragX, setPhaseStoryDragX] = useState(0);
   const [phaseStoryDragging, setPhaseStoryDragging] = useState(false);
@@ -373,6 +460,44 @@ function App() {
   const [pendingMissionLaunch, setPendingMissionLaunch] = useState(false);
   const motor = motorConfigs.find((item) => item.id === activeMotorId) ?? motorConfigs[0];
   const averageThrust = motorAverageThrust(motor);
+  const estimatedCd = Number(currentTwin?.aerodynamics?.cd?.value ?? 0.345);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    Promise.all([
+      fetch('/api/v1/digital-twin/current', { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
+      fetch('/api/v1/digital-twin/assembly', { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
+      fetch('/api/v1/digital-twin/cp', { signal: controller.signal }).then((response) => response.ok ? response.json() : null),
+    ]).then(([design, assembly, cp]) => {
+      if (design) setCurrentTwin(design as CurrentTwin);
+      if (cp) setCurrentCp(cp as CurrentCp);
+      if (assembly) {
+        const twin = assembly as TwinAssembly;
+        setTwinAssembly(twin);
+        if (twin.resolved && twin.total_length_mm != null) {
+          const source = design as CurrentTwin | null;
+          setVehicle((current) => ({
+            ...current,
+            totalLength: Number(twin.total_length_mm!.toFixed(2)),
+            diameter: Number(source?.geometry?.outer_diameter_mm?.value ?? current.diameter),
+            noseLength: Number(source?.geometry?.nose_length_mm?.value ?? 180),
+            wall: '',
+            finCount: Number(source?.fins?.count?.value ?? 4),
+            rootChord: Number(source?.fins?.root_chord_mm?.value ?? current.rootChord),
+            tipChord: Number(source?.fins?.tip_chord_mm?.value ?? current.tipChord),
+            span: Number(source?.fins?.span_mm?.value ?? current.span),
+            sweep: Number(source?.fins?.sweep_length_mm?.value ?? current.sweep),
+            finX: Number(source?.fins?.leading_edge_x_mm?.value ?? current.finX),
+            airfoil: 'NACA 0012',
+            cd: source?.aerodynamics?.cd?.value == null ? '' : Number(source.aerodynamics.cd.value),
+          }));
+        }
+      }
+    }).catch((error) => {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+    });
+    return () => controller.abort();
+  }, []);
 
   const updateRequirementStatus = (id: string, status: RequirementStatus) => {
     setRequirementStatusOverrides((current) => {
@@ -458,6 +583,8 @@ function App() {
     });
   };
 
+  const realMassStationsReady = currentTwin?.masses?.status != null && !currentTwin.masses.status.includes('cg-stations-pending');
+
   const blockers = useMemo(() => {
     const result: string[] = [];
     if (vehicle.tipChord === '') result.push(txt('Cuerda de punta', 'Fin tip chord'));
@@ -469,15 +596,22 @@ function App() {
     if (motor.impulse === '' || Number(motor.impulse) <= 0) result.push(txt('Impulso total del motor', 'Motor total impulse'));
     if (motor.propellantMass === '' || Number(motor.propellantMass) < 0) result.push(txt('Masa de propelente', 'Propellant mass'));
     if (motor.dryMass === '' || Number(motor.dryMass) <= 0) result.push(txt('Masa seca del motor', 'Motor dry mass'));
+    if (currentTwin?.masses?.status?.includes('cg-stations-pending')) result.push(txt('Estaciones xCG de componentes reales', 'Real component xCG stations'));
     return result;
-  }, [vehicle, lang, motor]);
+  }, [vehicle, lang, motor, currentTwin]);
 
   const axialSum =
     (Number(vehicle.noseLength) || 0) +
     (Number(vehicle.bayLength) || 0) +
     (Number(vehicle.bodyLength) || 0);
-  const geometryConsistent = vehicle.totalLength !== '' && axialSum === Number(vehicle.totalLength);
+  const geometryConsistent = twinAssembly?.resolved === true || (vehicle.totalLength !== '' && axialSum === Number(vehicle.totalLength));
   const ready = blockers.length === 0;
+  const twinStationLabel = (key: string) => ({
+    nose: txt('Cofia', 'Nose'),
+    c1_parachute_payload: 'C1',
+    c2: 'C2',
+    tail_fin_can: txt('Cola + aletas', 'Tail + fins'),
+  } as Record<string, string>)[key] ?? key;
   const mobileGuideStep = !geometryConsistent ? 'vehicle' : !activeMotorReady ? 'motor' : !analysisSummary ? 'analysis' : 'results';
   const mobileGuideCompleted = analysisSummary ? 4 : activeMotorReady && geometryConsistent ? 3 : geometryConsistent ? 2 : 1;
 
@@ -504,10 +638,41 @@ function App() {
     }).join(' ');
   })();
 
+  const triggerNavHaptic = () => {
+    if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(100);
+  };
+  const handleNavPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    triggerNavHaptic();
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    button.style.setProperty('--press-x', x + 'px');
+    button.style.setProperty('--press-y', y + 'px');
+    button.classList.remove('nav-releasing');
+    button.classList.add('nav-pressing');
+
+    const ripple = document.createElement('span');
+    ripple.className = 'nav-touch-ripple';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    button.appendChild(ripple);
+    requestAnimationFrame(() => ripple.classList.add('expand'));
+
+    // The pressure response is a short autonomous burst: it starts on touch
+    // and finishes even if the finger remains on the key.
+    window.setTimeout(() => {
+      button.classList.remove('nav-pressing');
+      button.classList.add('nav-releasing');
+    }, 150);
+    window.setTimeout(() => button.classList.remove('nav-releasing'), 350);
+    window.setTimeout(() => ripple.remove(), 460);
+  };
+
   const openExportSheet = () => {
     setShowExportMenu(true);
     setExportPreparing(true);
-    window.setTimeout(() => setExportPreparing(false), 650);
+    window.setTimeout(() => setExportPreparing(false), 1000);
   };
 
   const runFromTop = () => {
@@ -540,7 +705,11 @@ function App() {
   };
 
   const reset = () => {
-    setVehicle(initialVehicle);
+    setVehicle({
+      ...initialVehicle,
+      totalLength: twinAssembly?.total_length_mm != null ? Math.round(twinAssembly.total_length_mm) : initialVehicle.totalLength,
+      diameter: Number(currentTwin?.geometry?.outer_diameter_mm?.value ?? initialVehicle.diameter),
+    });
     setMotorConfigs(initialMotorConfigs);
     setActiveMotorId('motor-1');
     setAnalysisSummary(null);
@@ -555,12 +724,16 @@ function App() {
     setAnalysisSummary(analysis);
     setComponentSummary(components);
     if (pendingMissionLaunch && analysis?.mission_timeline?.length > 1) {
-      setPendingMissionLaunch(false);
-      setMissionControlOpen(true);
+      window.setTimeout(() => {
+        setPendingMissionLaunch(false);
+        setMissionControlOpen(true);
+      }, 1200);
     }
   }, [pendingMissionLaunch]);
 
   const liveCgFromNose = componentSummary?.total_cg_mm ?? analysisSummary?.cg_x_mm_from_nose ?? null;
+  const liveCpFromNose = analysisSummary?.cp_x_mm_from_nose ?? currentCp?.cp_x_mm_from_nose ?? null;
+  const liveCpFromSupport = analysisSummary?.cp_x_mm_from_support ?? currentCp?.cp_x_mm_from_support ?? null;
 
   const downloadBlob = (contents: BlobPart, type: string, filename: string) => {
     const blob = new Blob([contents], { type });
@@ -572,19 +745,30 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
+  const formatReportNumber = (value: unknown, decimals = 1) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number.toFixed(decimals) : '—';
+  };
+  const roundReportNumber = (value: unknown, decimals = 1) => {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return '';
+    const factor = 10 ** decimals;
+    return Math.round(number * factor) / factor;
+  };
+
   const exportReportPdf = async () => {
     const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.text('TRAJECTUM · UTN-FRH-G07', 16, 18);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.text('Reporte técnico de misión / Cátedra', 16, 25);
     const lines = [
-      ['Masa total', (analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g ?? '—') + ' g'],
-      ['CG desde apoyo', (analysisSummary?.cg_x_mm_from_support ?? (componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : '—')) + ' mm'],
-      ['CP desde apoyo', (analysisSummary?.cp_x_mm_from_support ?? '—') + ' mm'],
-      ['Margen estático', (analysisSummary?.static_margin_calibers ?? '—') + ' calibres'],
-      ['Apogeo', (analysisSummary?.apogee_m ?? '—') + ' m'],
-      ['Max Q', (analysisSummary?.max_q_pa ?? '—') + ' Pa'],
-      ['Ángulo de lanzamiento', vehicle.launchAngle + '°'],
+      ['Masa total', formatReportNumber(analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g, 1) + ' g'],
+      ['CG desde apoyo', formatReportNumber(analysisSummary?.cg_x_mm_from_support ?? (componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : null), 1) + ' mm'],
+      ['CP desde apoyo', formatReportNumber(analysisSummary?.cp_x_mm_from_support, 1) + ' mm'],
+      ['Margen estático', formatReportNumber(analysisSummary?.static_margin_calibers, 2) + ' calibres'],
+      ['Apogeo', formatReportNumber(analysisSummary?.apogee_m, 1) + ' m'],
+      ['Max Q', formatReportNumber(analysisSummary?.max_q_pa, 1) + ' Pa'],
+      ['Ángulo de lanzamiento', formatReportNumber(vehicle.launchAngle, 1) + '°'],
       ['Motor', motor.designation || '—'],
     ];
     let y = 38;
@@ -660,12 +844,12 @@ function App() {
     const summary = [
       [header('TRAJECTUM — ENGINEERING EXPORT'), header('VALOR')],
       pair('Proyecto', 'UTN-FRH-G07 / CDR'), pair('Versión', 'v0.1.0-CDR'), pair('Exportado', new Date().toLocaleString()), pair('Motor activo', motor.designation || motor.label),
-      pair('Masa total [g]', analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g ?? ''),
-      pair('CG desde apoyo [mm]', componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : analysisSummary?.cg_x_mm_from_support ?? ''),
-      pair('CP desde apoyo [mm]', analysisSummary?.cp_x_mm_from_support ?? ''), pair('Margen estático [calibres]', analysisSummary?.static_margin_calibers ?? ''),
-      pair('Apogeo [m]', analysisSummary?.apogee_m ?? ''), pair('Velocidad máxima [m/s]', analysisSummary?.max_speed_m_s ?? ''), pair('Mach máximo', analysisSummary?.max_mach ?? ''),
-      pair('Q máxima [Pa]', analysisSummary?.max_q_pa ?? ''), pair('Tiempo al apogeo [s]', analysisSummary?.time_to_apogee_s ?? ''), pair('Tiempo de aterrizaje [s]', analysisSummary?.landing_time_s ?? ''),
-      pair('Velocidad de impacto [m/s]', analysisSummary?.impact_speed_m_s ?? ''),
+      pair('Masa total [g]', roundReportNumber(analysisSummary?.total_mass_g ?? componentSummary?.total_mass_g, 1)),
+      pair('CG desde apoyo [mm]', roundReportNumber(componentSummary?.total_cg_mm != null ? Number(vehicle.totalLength) - componentSummary.total_cg_mm : analysisSummary?.cg_x_mm_from_support, 1)),
+      pair('CP desde apoyo [mm]', roundReportNumber(analysisSummary?.cp_x_mm_from_support, 1)), pair('Margen estático [calibres]', roundReportNumber(analysisSummary?.static_margin_calibers, 2)),
+      pair('Apogeo [m]', roundReportNumber(analysisSummary?.apogee_m, 1)), pair('Velocidad máxima [m/s]', roundReportNumber(analysisSummary?.max_speed_m_s, 1)), pair('Mach máximo', roundReportNumber(analysisSummary?.max_mach, 2)),
+      pair('Q máxima [Pa]', roundReportNumber(analysisSummary?.max_q_pa, 1)), pair('Tiempo al apogeo [s]', roundReportNumber(analysisSummary?.time_to_apogee_s, 2)), pair('Tiempo de aterrizaje [s]', roundReportNumber(analysisSummary?.landing_time_s, 2)),
+      pair('Velocidad de impacto [m/s]', roundReportNumber(analysisSummary?.impact_speed_m_s, 2)),
     ];
     const geometry = [
       [header('PARÁMETRO'), header('VALOR'), header('UNIDAD')],
@@ -676,11 +860,11 @@ function App() {
       [cell('Desplazamiento borde de ataque Xf'), cell(vehicle.sweep), cell('mm')], [cell('Posición axial aleta'), cell(vehicle.finX), cell('mm')], [cell('Ángulo lanzamiento'), cell(vehicle.launchAngle), cell('deg')], [cell('Cd vehículo'), cell(vehicle.cd), cell('')],
     ];
     const comp = analysisSummary?.components ?? componentSummary?.components ?? [];
-    const masses = [[header('COMPONENTE'), header('MASA [g]'), header('xCG DESDE NARIZ [mm]'), header('xCG DESDE APOYO [mm]'), header('FUENTE')], ...comp.map((item: any) => [cell(item.name), cell(item.mass_g), cell(item.x_cg_mm_from_nose ?? item.x_cg_mm), cell(item.x_cg_mm_from_support ?? (item.x_cg_mm != null ? Number(vehicle.totalLength) - item.x_cg_mm : '')), cell(item.source)])];
-    const cp = [[header('PARÁMETRO CP'), header('VALOR'), header('UNIDAD')], [cell('Método'), cell('Barrowman / perfil axisimétrico'), cell('')], [cell('CP total desde nariz'), cell(analysisSummary?.cp_x_mm_from_nose), cell('mm')], [cell('CP total desde apoyo'), cell(analysisSummary?.cp_x_mm_from_support), cell('mm')], [cell('CP cofia desde nariz'), cell(analysisSummary?.nose_cp_x_mm_from_nose), cell('mm')], [cell('CP cofia desde apoyo'), cell(analysisSummary?.nose_cp_x_mm_from_support), cell('mm')], [cell('CP aletas desde nariz'), cell(analysisSummary?.fins_cp_x_mm_from_nose), cell('mm')], [cell('CP aletas desde apoyo'), cell(analysisSummary?.fins_cp_x_mm_from_support), cell('mm')], [cell('Margen estático'), cell(analysisSummary?.static_margin_calibers), cell('calibres')]];
+    const masses = [[header('COMPONENTE'), header('MASA [g]'), header('xCG DESDE NARIZ [mm]'), header('xCG DESDE APOYO [mm]'), header('FUENTE')], ...comp.map((item: any) => [cell(item.name), cell(roundReportNumber(item.mass_g, 1)), cell(roundReportNumber(item.x_cg_mm_from_nose ?? item.x_cg_mm, 1)), cell(roundReportNumber(item.x_cg_mm_from_support ?? (item.x_cg_mm != null ? Number(vehicle.totalLength) - item.x_cg_mm : null), 1)), cell(item.source)])];
+    const cp = [[header('PARÁMETRO CP'), header('VALOR'), header('UNIDAD')], [cell('Método'), cell('Barrowman / perfil axisimétrico'), cell('')], [cell('CP total desde nariz'), cell(roundReportNumber(analysisSummary?.cp_x_mm_from_nose, 1)), cell('mm')], [cell('CP total desde apoyo'), cell(roundReportNumber(analysisSummary?.cp_x_mm_from_support, 1)), cell('mm')], [cell('CP cofia desde nariz'), cell(roundReportNumber(analysisSummary?.nose_cp_x_mm_from_nose, 1)), cell('mm')], [cell('CP cofia desde apoyo'), cell(roundReportNumber(analysisSummary?.nose_cp_x_mm_from_support, 1)), cell('mm')], [cell('CP aletas desde nariz'), cell(roundReportNumber(analysisSummary?.fins_cp_x_mm_from_nose, 1)), cell('mm')], [cell('CP aletas desde apoyo'), cell(roundReportNumber(analysisSummary?.fins_cp_x_mm_from_support, 1)), cell('mm')], [cell('Margen estático'), cell(roundReportNumber(analysisSummary?.static_margin_calibers, 2)), cell('calibres')]];
     const trajectory = [[header('t [s]'),header('FASE'),header('x [m]'),header('ALTITUD [m]'),header('VELOCIDAD [m/s]'),header('V VERTICAL [m/s]'),header('MACH'),header('Q [Pa]'),header('ACELERACIÓN [g]'),header('PARACAÍDAS')], ...(analysisSummary?.mission_timeline ?? []).map((sample: any) => [cell(sample.t_s),cell(sample.phase),cell(sample.x_m),cell(sample.altitude_m),cell(sample.speed_m_s),cell(sample.vertical_speed_m_s),cell(sample.mach),cell(sample.q_pa),cell(sample.acceleration_g),cell(sample.parachute_deployed ? 'SI' : 'NO')])];
     const motorSheet = [[header('CONFIGURACIÓN'),header('DESIGNACIÓN'),header('PROPELENTE'),header('COMBUSTIÓN [s]'),header('IMPULSO [N·s]'),header('EMPUJE MEDIO DERIVADO [N]'),header('EMPUJE MÁX [N]'),header('PROPELENTE [g]'),header('SECA [g]'),header('ACTIVA')], ...motorConfigs.map((item) => [cell(item.label),cell(item.designation),cell(item.propellant),cell(item.burn),cell(item.impulse),cell(motorAverageThrust(item)),cell(item.maxThrust),cell(item.propellantMass),cell(item.dryMass),cell(item.id === activeMotorId ? 'SI' : 'NO')])];
-    const recovery = [[header('PARÁMETRO'),header('VALOR'),header('UNIDAD')],[cell('Cd paracaídas'),cell(vehicle.parachuteCd),cell('')],[cell('Área paracaídas'),cell(vehicle.parachuteArea),cell('m²')],[cell('Altitud despliegue configurada'),cell(vehicle.deployAltitude),cell('m')],[cell('Retardo despliegue'),cell(vehicle.deployDelay),cell('s')],[cell('Altitud despliegue simulada'),cell(analysisSummary?.deployment_altitude_m),cell('m')],[cell('Tiempo despliegue'),cell(analysisSummary?.deployment_time_s),cell('s')],[cell('Tiempo aterrizaje'),cell(analysisSummary?.landing_time_s),cell('s')],[cell('Velocidad impacto'),cell(analysisSummary?.impact_speed_m_s),cell('m/s')]];
+    const recovery = [[header('PARÁMETRO'),header('VALOR'),header('UNIDAD')],[cell('Cd paracaídas'),cell(roundReportNumber(vehicle.parachuteCd,2)),cell('')],[cell('Área paracaídas'),cell(roundReportNumber(vehicle.parachuteArea,2)),cell('m²')],[cell('Altitud despliegue configurada'),cell(roundReportNumber(vehicle.deployAltitude,1)),cell('m')],[cell('Retardo despliegue'),cell(roundReportNumber(vehicle.deployDelay,2)),cell('s')],[cell('Altitud despliegue simulada'),cell(roundReportNumber(analysisSummary?.deployment_altitude_m,1)),cell('m')],[cell('Tiempo despliegue'),cell(roundReportNumber(analysisSummary?.deployment_time_s,2)),cell('s')],[cell('Tiempo aterrizaje'),cell(roundReportNumber(analysisSummary?.landing_time_s,2)),cell('s')],[cell('Velocidad impacto'),cell(roundReportNumber(analysisSummary?.impact_speed_m_s,2)),cell('m/s')]];
     const model = [[header('MÓDULO'),header('MÉTODO / MODELO')],[cell('CG'),cell('Sumatoria de momentos de masa')],[cell('CP'),cell('Barrowman + perfil axisimétrico de cofia')],[cell('Trayectoria'),cell('Masa puntual 2D')],[cell('Integración'),cell('Runge–Kutta de cuarto orden (RK4)')],[cell('Resistencia'),cell('D = 1/2 ρ V² Cd A')],[cell('Atmósfera'),cell('ISA')],[cell('Recuperación'),cell('Modelo de descenso con paracaídas')]];
     const requirementsSheet = [
       [header('ID'),header('REQUERIMIENTO'),header('OBJETIVO'),header('MÉTODO'),header('ESTADO')],
@@ -707,21 +891,21 @@ function App() {
         <div className="brand-stack">
           <div className="brand-lockup" aria-label="TRAJECTUM">
             <svg className="brand-trajectory" viewBox="0 0 340 78" aria-hidden="true">
-              <path className="brand-orbit-glow" d="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
-              <path className="brand-orbit-line" d="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
-              <circle className="brand-endpoint" cx="330" cy="11" r="3.4" />
+              <path className="brand-orbit-glow" d="M 2 58 Q 72 4 138 27 Q 180 43 220 18" />
+              <path className="brand-orbit-line" d="M 2 58 Q 72 4 138 27 Q 180 43 220 18" />
+              <circle className="brand-endpoint" cx="220" cy="18" r="3.4" />
               <circle className="brand-comet" r="4.2">
-                <animateMotion dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
+                <animateMotion dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 138 27 Q 180 43 220 18" />
               </circle>
               <circle className="brand-comet brand-comet-tail" r="2.4">
-                <animateMotion begin="-0.16s" dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 158 29 Q 236 52 330 11" />
+                <animateMotion begin="-0.16s" dur="3.2s" repeatCount="indefinite" path="M 2 58 Q 72 4 138 27 Q 180 43 220 18" />
               </circle>
             </svg>
             <div className="brand-wordmark">
               <span className="brand-name">TRAJECTUM</span>
               <span className="brand-subline">{txt('INGENIERÍA · SIMULACIÓN · ANÁLISIS', 'ENGINEERING · SIMULATION · ANALYSIS')}</span>
             </div>
-            <span className="brand-version">V0.1.0-CDR</span>
+            <span className="brand-version">{twinAssembly?.resolved ? 'DEV · TWIN ' + Math.round(twinAssembly.total_length_mm ?? 0) + ' mm' : 'V0.1.0-CDR'}</span>
             <div className="mobile-header-tools">
               <button
                 type="button"
@@ -766,12 +950,38 @@ function App() {
         </div>
       </header>
 
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          padding: '8px 12px',
+          background: '#0b1f3a',
+          borderTop: '1px solid #28558c',
+          borderBottom: '1px solid #28558c',
+          color: '#e8f2ff',
+          fontSize: '12px',
+          fontWeight: 800,
+          letterSpacing: '.06em',
+          textAlign: 'center',
+          flexWrap: 'wrap',
+        }}
+        className="dev-twin-status"
+        aria-label="TRAJECTUM development twin status"
+      >
+        <span>DEV · GEMELO ACTUAL</span>
+        <strong>{twinAssembly?.total_length_mm != null ? Math.round(twinAssembly.total_length_mm) + ' mm' : 'CARGANDO…'}</strong>
+        <span>Ø{currentTwin?.geometry?.outer_diameter_mm?.value ?? '—'} mm</span>
+        <span>{currentTwin?.masses?.measured_structure_total_g ?? '—'} g estructura</span>
+      </div>
+
       <nav className="status-strip" aria-label={txt('Navegación rápida del proyecto', 'Project quick navigation')}>
         <button className="status-item" type="button" onClick={() => document.getElementById('vehicle-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
           <span>{txt('PROYECTO', 'PROJECT')}</span><strong>UTN-FRH-G07 / CDR</strong><i>↘</i>
         </button>
         <button className="status-item" type="button" onClick={() => document.getElementById('geometry-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-          <span>{txt('GEOMETRÍA', 'GEOMETRY')}</span><strong className={geometryConsistent ? 'ok' : 'bad'}>{geometryConsistent ? txt('CONSISTENTE', 'CONSISTENT') : txt('REVISAR LONGITUDES', 'CHECK LENGTHS')}</strong><i>↘</i>
+          <span>{txt('GEOMETRÍA', 'GEOMETRY')}</span><strong className={twinAssembly?.resolved ? 'ok' : geometryConsistent ? 'ok' : 'bad'}>{twinAssembly?.resolved ? 'GEMELO ' + Math.round(twinAssembly.total_length_mm ?? 0) + ' mm' : geometryConsistent ? txt('CONSISTENTE', 'CONSISTENT') : txt('REVISAR LONGITUDES', 'CHECK LENGTHS')}</strong><i>↘</i>
         </button>
         <button className="status-item" type="button" onClick={() => document.getElementById('fins-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
           <span>{txt('PERFIL', 'AIRFOIL')}</span><strong>{vehicle.airfoil}</strong><i>↘</i>
@@ -889,9 +1099,9 @@ function App() {
             <button type="button" onClick={() => navigateMobile('mdr')}>{txt('VER MDR', 'VIEW MDR')} →</button>
           </div>
           <div className="mobile-home-metrics design-metrics">
-            <article><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><strong>{vehicle.totalLength} mm</strong><small>R5 ≥ 800 mm</small></article>
-            <article><span>{txt('DIÁMETRO', 'DIAMETER')}</span><strong>Ø{vehicle.diameter} mm</strong><small>{txt('envolvente de diseño', 'design envelope')}</small></article>
-            <article><span>{txt('MASA DE DISEÑO', 'DESIGN MASS')}</span><strong>{componentRows.reduce((sum,row)=>sum+(Number(row.massG)||0),0).toFixed(0)} g</strong><small>{txt('editable en PDR', 'editable in PDR')}</small></article>
+            <article><span>{txt('LARGO TOTAL · GEMELO', 'TOTAL LENGTH · TWIN')}</span><strong>{twinAssembly?.total_length_mm != null ? Math.round(twinAssembly.total_length_mm) : vehicle.totalLength} mm</strong><small>{txt('ensamblaje CAD actual', 'current CAD assembly')}</small></article>
+            <article><span>{txt('DIÁMETRO', 'DIAMETER')}</span><strong>Ø{currentTwin?.geometry?.outer_diameter_mm?.value ?? vehicle.diameter} mm</strong><small>{txt('envolvente CAD', 'CAD envelope')}</small></article>
+            <article><span>{txt('MASA ESTRUCTURAL MEDIDA', 'MEASURED STRUCTURAL MASS')}</span><strong>{currentTwin?.masses?.measured_structure_total_g ?? componentRows.reduce((sum,row)=>sum+(Number(row.massG)||0),0).toFixed(0)} g</strong><small>{txt('piezas impresas medidas', 'measured printed parts')}</small></article>
             <article><span>{txt('REQUERIMIENTOS', 'REQUIREMENTS')}</span><strong>{requirementVerified}/11</strong><small>{requirementProgress} {txt('en proceso', 'in progress')}</small></article>
           </div>
           <button type="button" className="mobile-home-telemetry-link design-link" onClick={() => navigateMobile('pdr')}>
@@ -943,17 +1153,45 @@ function App() {
         </div>
 
         {pdrTab === 'geometry' && <section className="phase-process-panel pdr-geometry-panel">
-          <div className="phase-panel-head"><div><span>{txt('GEOMETRÍA Y PARÁMETROS', 'GEOMETRY & PARAMETERS')}</span></div><b className={geometryConsistent ? 'ok' : 'warn'}>{geometryConsistent ? '✓' : '!'}</b></div>
+          <div className="phase-panel-head"><div><span>{txt('GEOMETRÍA Y PARÁMETROS', 'GEOMETRY & PARAMETERS')}</span></div><b className={twinAssembly?.resolved ? 'ok' : 'warn'}>{twinAssembly?.resolved ? '✓' : '!'}</b></div>
+
+          {twinAssembly && <div className="pdr-mass-editor" aria-label={txt('Gemelo digital actual', 'Current digital twin')}>
+            {twinAssembly.stations.map((station) => <article key={station.key} className="pdr-component-card">
+              <div className="pdr-component-head">
+                <strong>{twinStationLabel(station.key)}</strong>
+                <span>{station.x_start_mm != null && station.x_end_mm != null ? 'x ' + station.x_start_mm.toFixed(0) + '–' + station.x_end_mm.toFixed(0) + ' mm' : 'x —'}</span>
+              </div>
+              <div className="pdr-component-fields">
+                <label><span>{txt('LARGO PIEZA', 'PART LENGTH')}</span><output>{station.raw_length_mm.toFixed(0)} mm</output></label>
+                <label><span>{txt('INICIO', 'START')}</span><output>{station.x_start_mm?.toFixed(0) ?? '—'} mm</output></label>
+                <label><span>{txt('FIN', 'END')}</span><output>{station.x_end_mm?.toFixed(0) ?? '—'} mm</output></label>
+              </div>
+            </article>)}
+          </div>}
+
+          {twinAssembly && <div className="pdr-mass-total">
+            <span>{txt('GEMELO CAD ACTUAL', 'CURRENT CAD TWIN')}</span>
+            <strong>{twinAssembly.total_length_mm?.toFixed(0) ?? '—'} mm · Ø{currentTwin?.geometry?.outer_diameter_mm?.value ?? '—'} mm</strong>
+            <small>{txt('Ensamblaje derivado de planos · masa estructural medida ', 'Drawing-derived assembly · measured structural mass ')}{currentTwin?.masses?.measured_structure_total_g ?? '—'} g</small>
+          </div>}
+
+          {currentCp?.resolved && <div className="pdr-mass-total">
+            <span>{txt('CP · BARROWMAN', 'CP · BARROWMAN')}</span>
+            <strong>{currentCp.cp_x_mm_from_nose?.toFixed(1)} mm {txt('desde nariz', 'from nose')} · {currentCp.cp_x_mm_from_support?.toFixed(1)} mm {txt('desde apoyo', 'from support')}</strong>
+            <small>{txt('Derivado de la geometría Fusion actual · CG todavía pendiente', 'Derived from current Fusion geometry · CG still pending')}</small>
+          </div>}
+
           <div className="pdr-input-grid">
-            <label><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><NumericStepper value={vehicle.totalLength} onChange={(value) => update('totalLength', value)} unit="mm" step={5}/></label>
-            <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><NumericStepper value={vehicle.diameter} onChange={(value) => update('diameter', value)} unit="mm" step={1}/></label>
-            <label><span>{txt('COFIA', 'NOSE')}</span><select value={vehicle.noseProfile} onChange={(e) => update('noseProfile', e.target.value)}><option value="tangent_ogive">{txt('OJIVA TANGENTE', 'TANGENT OGIVE')}</option><option value="cone">{txt('CÓNICA', 'CONICAL')}</option><option value="power_series">{txt('SERIE POTENCIA', 'POWER SERIES')}</option></select></label>
-            <label><span>{txt('PERFIL DE ALETA', 'FIN AIRFOIL')}</span><select value={vehicle.airfoil} onChange={(e) => update('airfoil', e.target.value)}><option>NACA 0012</option><option>NACA 0009</option><option>NACA 0015</option><option>NACA 2412</option></select></label>
-            <label><span>{txt('ALETAS', 'FINS')}</span><NumericStepper value={vehicle.finCount} onChange={(value) => update('finCount', value)} unit="u" step={1} min={1}/></label>
-            <label><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><NumericStepper value={vehicle.rootChord} onChange={(value) => update('rootChord', value)} unit="mm" step={1}/></label>
-            <label><span>{txt('CUERDA PUNTA', 'TIP CHORD')}</span><NumericStepper value={vehicle.tipChord} onChange={(value) => update('tipChord', value)} unit="mm" step={1}/></label>
-            <label><span>{txt('ENVERGADURA', 'SPAN')}</span><NumericStepper value={vehicle.span} onChange={(value) => update('span', value)} unit="mm" step={1}/></label>
-            <label><span>{txt('FLECHA', 'SWEEP')}</span><NumericStepper value={vehicle.sweep} onChange={(value) => update('sweep', value)} unit="mm" step={1}/></label>
+            <label className="pdr-cad-locked"><span>{txt('LARGO TOTAL', 'TOTAL LENGTH')}</span><output>{vehicle.totalLength} mm <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('DIÁMETRO', 'DIAMETER')}</span><output>Ø{vehicle.diameter} mm <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('COFIA', 'NOSE')}</span><output>{txt('OJIVA TANGENTE', 'TANGENT OGIVE')} <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('PERFIL DE ALETA', 'FIN AIRFOIL')}</span><output>{vehicle.airfoil} <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('ALETAS', 'FINS')}</span><output>{vehicle.finCount} <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('CUERDA RAÍZ', 'ROOT CHORD')}</span><output>{Number(vehicle.rootChord).toFixed(2)} mm <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('CUERDA PUNTA', 'TIP CHORD')}</span><output>{Number(vehicle.tipChord).toFixed(2)} mm <b>CAD</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('ENVERGADURA RADIAL', 'RADIAL SPAN')}</span><output>{Number(vehicle.span).toFixed(1)} mm <b>{txt('DERIVADO', 'DERIVED')}</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('DESPLAZAMIENTO DE PUNTA', 'TIP OFFSET')}</span><output>≈{Number(vehicle.sweep).toFixed(0)} mm <b>{txt('DERIVADO', 'DERIVED')}</b></output></label>
+            <label className="pdr-cad-locked"><span>{txt('INICIO ALETA DESDE NARIZ', 'FIN START FROM NOSE')}</span><output>{Number(vehicle.finX).toFixed(0)} mm <b>{txt('DERIVADO', 'DERIVED')}</b></output></label>
             <label><span>{txt('TOBERA · LARGO', 'NOZZLE · LENGTH')}</span><NumericStepper value={vehicle.nozzleLength} onChange={(value) => update('nozzleLength', value)} unit="mm" step={1}/></label>
             <label><span>{txt('TOBERA · Ø CUELLO', 'NOZZLE · NECK Ø')}</span><NumericStepper value={vehicle.nozzleNeckDiameter} onChange={(value) => update('nozzleNeckDiameter', value)} unit="mm" step={1}/></label>
             <label><span>{txt('TOBERA · Ø SALIDA', 'NOZZLE · EXIT Ø')}</span><NumericStepper value={vehicle.nozzleExitDiameter} onChange={(value) => update('nozzleExitDiameter', value)} unit="mm" step={1}/></label>
@@ -966,8 +1204,12 @@ function App() {
         </section>}
 
         {pdrTab === 'schematic' && <section
-          className="phase-process-panel mobile-pdr-vehicle pdr-schematic-panel"
-          style={{ '--tilt-x': pdrTilt.x + 'deg', '--tilt-y': pdrTilt.y + 'deg' } as React.CSSProperties}
+          className={`phase-process-panel mobile-pdr-vehicle pdr-schematic-panel${pdrSchematicFocused ? ' focused' : ''}`}
+          style={{ '--tilt-x': pdrTilt.x + 'deg', '--tilt-y': pdrTilt.y + 'deg', '--pdr-zoom': pdrZoom } as React.CSSProperties}
+          onPointerDown={(event) => {
+            setPdrSchematicFocused(true);
+            event.currentTarget.focus?.({ preventScroll: true });
+          }}
           onPointerMove={(event) => {
             if (event.pointerType !== 'touch' && event.buttons === 0) return;
             const rect = event.currentTarget.getBoundingClientRect();
@@ -978,10 +1220,77 @@ function App() {
           onPointerLeave={() => setPdrTilt({ x: 0, y: 0 })}
           onPointerUp={() => setPdrTilt({ x: 0, y: 0 })}
         >
-          <div className="mobile-pdr-vehicle-head"><div><span>{txt('ESQUEMA 2D ÚNICO', 'SINGLE 2D SCHEMATIC')}</span><strong>{txt('Geometría sincronizada en tiempo real', 'Real-time synchronized geometry')}</strong></div><Orbit size={19}/></div>
-          <div className="mobile-pdr-model">
-            <RocketRealistic vehicle={vehicle} cgMm={liveCgFromNose} cpMm={analysisSummary?.cp_x_mm_from_nose ?? null} componentCgs={componentSummary?.components ?? []} showComponentCgs={false} lang={lang}/>
+          <div className="mobile-pdr-vehicle-head">
+            <div>
+              <span>{pdrViewIndex === 0 ? txt('VISTA PRINCIPAL', 'PRIMARY VIEW') : pdrViewIndex === 1 ? txt('VISTA 3D', '3D VIEW') : txt('COMPONENTES', 'COMPONENTS')}</span>
+              <strong>{pdrViewIndex === 0 ? txt('CG · CP · estaciones sincronizadas', 'CG · CP · synchronized stations') : pdrViewIndex === 1 ? txt('Vista CAD del ensamblaje', 'CAD assembly view') : txt('Despiece y referencias del conjunto', 'Assembly components and references')}</strong>
+            </div>
+            <div className="pdr-schematic-tools" onPointerDown={(event) => event.stopPropagation()}>
+              <button type="button" onClick={() => setPdrZoom((value) => Math.max(.82, +(value - .1).toFixed(2)))} aria-label={txt('Alejar esquema', 'Zoom out')}><ZoomOut size={16}/></button>
+              <button type="button" className="zoom-readout" onClick={() => setPdrZoom(1)} aria-label={txt('Restablecer zoom', 'Reset zoom')}>{Math.round(pdrZoom * 100)}%</button>
+              <button type="button" onClick={() => setPdrZoom((value) => Math.min(1.35, +(value + .1).toFixed(2)))} aria-label={txt('Acercar esquema', 'Zoom in')}><ZoomIn size={16}/></button>
+              <button type="button" onClick={() => { setPdrZoom(1); setPdrTilt({ x: 0, y: 0 }); }} aria-label={txt('Centrar esquema', 'Center schematic')}><Maximize2 size={16}/></button>
+            </div>
           </div>
+
+          <div className="pdr-view-selector" role="tablist" aria-label={txt('Vistas del esquema', 'Schematic views')}>
+            {[
+              { label: txt('COMPLETO', 'FULL'), sub: 'CG + CP' },
+              { label: '3D', sub: txt('ENSAMBLE', 'ASSEMBLY') },
+              { label: txt('COMPONENTES', 'COMPONENTS'), sub: txt('DESPIECE', 'PARTS') },
+            ].map((view, index) => <button key={view.label} type="button" className={pdrViewIndex === index ? 'active' : ''} onClick={() => { setPdrViewIndex(index); setPdrZoom(1); }}><span>{view.label}</span><small>{view.sub}</small></button>)}
+          </div>
+
+          <div
+            className={`mobile-pdr-model pdr-view-${pdrViewIndex}`}
+            onTouchStart={(event) => {
+              if (event.touches.length > 1) {
+                event.currentTarget.dataset.multiTouch = '1';
+                event.currentTarget.dataset.touchX = '';
+                return;
+              }
+              event.currentTarget.dataset.multiTouch = '';
+              event.currentTarget.dataset.touchX = String(event.touches[0]?.clientX ?? 0);
+            }}
+            onTouchMove={(event) => {
+              if (event.touches.length > 1) {
+                event.currentTarget.dataset.multiTouch = '1';
+                event.currentTarget.dataset.touchX = '';
+              }
+            }}
+            onTouchEnd={(event) => {
+              if (event.currentTarget.dataset.multiTouch === '1') {
+                if (event.touches.length === 0) event.currentTarget.dataset.multiTouch = '';
+                return;
+              }
+              const start = Number(event.currentTarget.dataset.touchX ?? 0);
+              const end = event.changedTouches[0]?.clientX ?? start;
+              const delta = end - start;
+              if (start && Math.abs(delta) > 42) {
+                setPdrViewIndex((current) => delta < 0 ? Math.min(2, current + 1) : Math.max(0, current - 1));
+                setPdrZoom(1);
+              }
+            }}
+          >
+            <div className="pdr-flip-stage" key={pdrViewIndex}>
+              {pdrViewIndex === 0 ? <RocketRealistic
+                vehicle={vehicle}
+                cgMm={liveCgFromNose}
+                cpMm={liveCpFromNose}
+                componentCgs={componentSummary?.components ?? []}
+                assemblyStations={twinAssembly?.stations ?? []}
+                showComponentCgs
+                lang={lang}
+              /> : <div className="pdr-cad-image-frame">
+                <img
+                  src={pdrViewIndex === 1 ? pdrCad2d : pdrCad3d}
+                  alt={pdrViewIndex === 1 ? txt('Vista 3D CAD del cohete', '3D CAD rocket view') : txt('Vista de componentes del conjunto', 'Assembly components view')}
+                  draggable={false}
+                />
+              </div>}
+            </div>
+          </div>
+          <div className="pdr-view-dots" aria-hidden="true"><i className={pdrViewIndex === 0 ? 'active' : ''}/><i className={pdrViewIndex === 1 ? 'active' : ''}/><i className={pdrViewIndex === 2 ? 'active' : ''}/></div>
           <div className="schematic-live-stats">
             <span><b>{vehicle.totalLength}</b> mm {txt('LARGO', 'LENGTH')}</span>
             <span><b>Ø{vehicle.diameter}</b> mm</span>
@@ -990,18 +1299,30 @@ function App() {
         </section>}
 
         {pdrTab === 'mass' && <section className="phase-process-panel pdr-mass-panel">
-          <div className="phase-panel-head"><div><span>{txt('MATERIALES Y MASA', 'MATERIALS & MASS')}</span><strong>{txt('Distribución preliminar del vehículo', 'Preliminary vehicle distribution')}</strong></div><b>{componentSummary?.total_mass_g ? Math.round(componentSummary.total_mass_g) + 'g' : '—'}</b></div>
+          <div className="phase-panel-head"><div><span>{txt('MASAS REALES', 'REAL MASSES')}</span><strong>{txt('Estructura pesada · xCG provisional desde planos', 'Measured structure · provisional xCG from drawings')}</strong></div><b>{currentTwin?.masses?.measured_structure_total_g != null ? Math.round(currentTwin.masses.measured_structure_total_g) + 'g' : '—'}</b></div>
           <div className="pdr-mass-editor">
-            {componentRows.map((row) => <article key={row.id} className="pdr-component-card">
-              <div className="pdr-component-head"><strong>{row.name}</strong><span>{componentSummary?.components?.find((item: any) => item.name === row.name)?.x_cg_mm != null ? 'xCG ' + componentSummary.components.find((item: any) => item.name === row.name).x_cg_mm.toFixed(0) + ' mm' : 'xCG —'}</span></div>
+            {(currentTwin?.masses?.measured_items ?? []).map((item) => <article key={item.name} className="pdr-component-card">
+              <div className="pdr-component-head"><strong>{item.name}</strong><span>{item.x_cg_mm_from_nose != null ? `xCG ≈ ${item.x_cg_mm_from_nose.toFixed(1)} mm` : 'xCG —'}</span></div>
               <div className="pdr-component-fields">
-                <label><span>{txt('MASA', 'MASS')}</span><NumericStepper value={row.massG} onChange={(value) => updateComponentDesign(row.id,'massG',value)} unit="g" step={5}/></label>
-                <label><span>{txt('LARGO', 'LENGTH')}</span><NumericStepper value={row.lengthMm} onChange={(value) => updateComponentDesign(row.id,'lengthMm',value)} unit="mm" step={5}/></label>
-                <label><span>{txt('DIÁMETRO', 'DIAMETER')}</span><NumericStepper value={row.diameterMm} onChange={(value) => updateComponentDesign(row.id,'diameterMm',value)} unit="mm" step={1}/></label>
+                <label><span>{txt('MASA MEDIDA', 'MEASURED MASS')}</span><output>{item.mass_g.toFixed(0)} g</output></label>
+                <label><span>{txt('FUENTE', 'SOURCE')}</span><output>{txt('BALANZA', 'SCALE')}</output></label>
+                <label><span>xCG</span><output>{item.x_cg_mm_from_nose != null ? `≈ ${item.x_cg_mm_from_nose.toFixed(1)} mm` : txt('PENDIENTE', 'PENDING')}</output></label>
+              </div>
+            </article>)}
+            {(currentTwin?.masses?.known_internal_items ?? []).map((item) => <article key={item.name} className="pdr-component-card">
+              <div className="pdr-component-head"><strong>{item.name}</strong><span>{txt('INTERNO', 'INTERNAL')} · {item.x_cg_mm_from_nose != null ? `xCG ≈ ${item.x_cg_mm_from_nose.toFixed(1)} mm` : 'xCG —'}</span></div>
+              <div className="pdr-component-fields">
+                <label><span>{txt('MASA', 'MASS')}</span><output>{item.mass_g.toFixed(0)} g</output></label>
+                <label><span>{txt('ESTADO', 'STATUS')}</span><output>{txt('CONFIRMADA', 'CONFIRMED')}</output></label>
+                <label><span>xCG</span><output>{item.x_cg_mm_from_nose != null ? `≈ ${item.x_cg_mm_from_nose.toFixed(1)} mm` : txt('PENDIENTE', 'PENDING')}</output></label>
               </div>
             </article>)}
           </div>
-          <div className="pdr-mass-total"><span>{txt('MASA DE DISEÑO', 'DESIGN MASS')}</span><strong>{componentRows.reduce((sum,row)=>sum+(Number(row.massG)||0),0).toFixed(0)} g</strong><small>{txt('CDR la toma automáticamente', 'CDR consumes it automatically')}</small></div>
+          <div className="pdr-mass-total">
+            <span>{txt('ESTRUCTURA MEDIDA', 'MEASURED STRUCTURE')}</span>
+            <strong>{currentTwin?.masses?.measured_structure_total_g ?? '—'} g</strong>
+            <small>{txt('xCG provisional estimado desde planos; reemplazar por propiedades de masa CAD o medición de balance antes de congelar el CDR.', 'Provisional xCG estimated from drawings; replace with CAD mass properties or balance measurement before freezing the CDR.')}</small>
+          </div>
         </section>}
 
         <button type="button" className="cdr-analysis-primary pdr-analysis-launch" disabled={!ready} onClick={() => {
@@ -1055,7 +1376,7 @@ function App() {
             </button>
             <button type="button" className={cdrPositionFocus === 'cp' ? 'active cp-widget' : 'cp-widget'} onClick={() => setCdrPositionFocus('cp')}>
               <span>CP</span>
-              <strong>{analysisSummary?.cp_x_mm_from_nose != null ? (Number(vehicle.totalLength) - analysisSummary.cp_x_mm_from_nose).toFixed(1) + ' mm' : '—'}</strong>
+              <strong>{liveCpFromSupport != null ? liveCpFromSupport.toFixed(1) + ' mm' : '—'}</strong>
               <small>{txt('Barrowman · tocar para ubicar', 'Barrowman · tap to locate')}</small>
             </button>
             <button type="button" className={cdrPositionFocus === 'margin' ? 'active margin-widget' : 'margin-widget'} onClick={() => setCdrPositionFocus('margin')}>
@@ -1067,7 +1388,7 @@ function App() {
           <div className={'stability-axis focus-' + cdrPositionFocus} aria-label={txt('Posición relativa de CG y CP', 'Relative CG and CP position')}>
             <div className="stability-axis-line"/>
             {liveCgFromNose != null && <i className="cg-marker" style={{ left: Math.max(4, Math.min(96, liveCgFromNose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CG</b></i>}
-            {analysisSummary?.cp_x_mm_from_nose != null && <i className="cp-marker" style={{ left: Math.max(4, Math.min(96, analysisSummary.cp_x_mm_from_nose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CP</b></i>}
+            {liveCpFromNose != null && <i className="cp-marker" style={{ left: Math.max(4, Math.min(96, liveCpFromNose / Number(vehicle.totalLength) * 100)) + '%' }}><b>CP</b></i>}
             <span>0</span><em>{vehicle.totalLength} mm</em>
           </div>
           <div className="cdr-position-detail">
@@ -1091,7 +1412,7 @@ function App() {
           </div>
           <div className="propulsion-metrics">
             <div><span>{txt('APOGEO', 'APOGEE')}</span><strong>{analysisSummary?.apogee_m != null ? analysisSummary.apogee_m.toFixed(1) + ' m' : '—'}</strong></div>
-            <div><span>MAX Q</span><strong>{analysisSummary?.max_q_pa != null ? analysisSummary.max_q_pa.toFixed(0) + ' Pa' : '—'}</strong></div>
+            <div><span>q<sub>max</sub></span><strong>{analysisSummary?.max_q_pa != null ? analysisSummary.max_q_pa.toFixed(0) + ' Pa' : '—'}</strong></div>
             <div><span>{txt('V MÁX', 'MAX V')}</span><strong>{analysisSummary?.max_speed_m_s != null ? analysisSummary.max_speed_m_s.toFixed(1) + ' m/s' : '—'}</strong></div>
           </div>
           <button type="button" className="phase-secondary-link" onClick={() => { if (!analysisSummary && ready) setRunToken((value)=>value+1); else navigateMobile('plots'); }}><Play size={17}/><span>{analysisSummary ? txt('IR AL SIMULADOR DE VUELO', 'OPEN FLIGHT SIMULATOR') : txt('EJECUTAR CÁLCULO CDR', 'RUN CDR CALCULATION')}</span><b>→</b></button>
@@ -1154,18 +1475,21 @@ function App() {
           className={pendingMissionLaunch ? 'mission-launch-cta preparing' : 'mission-launch-cta lrr-primary'}
           disabled={!ready || pendingMissionLaunch}
           onClick={() => {
+            setPendingMissionLaunch(true);
             if (analysisSummary?.mission_timeline?.length > 1) {
-              setMissionControlOpen(true);
+              window.setTimeout(() => {
+                setPendingMissionLaunch(false);
+                setMissionControlOpen(true);
+              }, 1450);
               return;
             }
-            setPendingMissionLaunch(true);
             setRunToken((value) => value + 1);
           }}
         >
           <span className="mission-launch-icon"><Rocket size={24} strokeWidth={1.8} /></span>
           <span className="mission-launch-copy">
             <small>{txt('MODO MISIÓN', 'MISSION MODE')}</small>
-            <strong>{pendingMissionLaunch ? txt('PREPARANDO SIMULACIÓN…', 'PREPARING SIMULATION…') : txt('DESPEGAR / INICIAR SIMULACIÓN', 'LAUNCH / START SIMULATION')}</strong>
+            <strong>{pendingMissionLaunch ? txt('INICIANDO VUELO…', 'INITIALIZING FLIGHT…') : txt('DESPEGAR / INICIAR SIMULACIÓN', 'LAUNCH / START SIMULATION')}</strong>
           </span>
           {pendingMissionLaunch ? <i className="mission-launch-spinner" /> : <b>→</b>}
         </button>
@@ -1235,12 +1559,18 @@ function App() {
             <span className="info-badge">{txt('misma L · mismo Ø', 'same L · same Ø')}</span>
           </div>
           <div className="field-grid">
-            <Field label={txt('Longitud total', 'Total length')} value={vehicle.totalLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('totalLength', v)} />
-            <Field label={txt('Diámetro exterior', 'Outer diameter')} value={vehicle.diameter} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('diameter', v)} />
-            <Field label={txt('Longitud de cofia', 'Nose length')} value={vehicle.noseLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('noseLength', v)} />
-            <Field label={txt('Compartimiento modular', 'Modular bay')} value={vehicle.bayLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('bayLength', v)} />
-            <Field label={txt('Cuerpo inferior', 'Lower body')} value={vehicle.bodyLength} unit="mm" status={txt('fijado', 'frozen')} onChange={(v) => update('bodyLength', v)} />
-            <Field label={txt('Espesor de pared', 'Wall thickness')} value={vehicle.wall} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('wall', v)} />
+            <Field label={txt('Longitud total ensamblada', 'Assembled total length')} value={vehicle.totalLength} unit="mm" status={txt('CAD · con solapes', 'CAD · with overlaps')} readOnly step={1} />
+            <Field label={txt('Diámetro exterior', 'Outer diameter')} value={vehicle.diameter} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={1} />
+            <Field label={txt('Longitud de cofia', 'Nose length')} value={vehicle.noseLength} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={1} />
+            <Field label="C1 · porta paracaídas / carga útil" value={currentTwin?.geometry?.parts?.c1_parachute_payload?.raw_part_length_mm ?? 215} unit="mm" status={txt('largo de pieza', 'part length')} readOnly step={1} />
+            <Field label="C2" value={currentTwin?.geometry?.parts?.c2?.raw_part_length_mm ?? 215} unit="mm" status={txt('largo de pieza', 'part length')} readOnly step={1} />
+            <Field label={txt('Cola + alojamiento de aletas', 'Tail + fin can')} value={currentTwin?.geometry?.parts?.tail_fin_can?.raw_part_length_mm ?? 225} unit="mm" status={txt('largo de pieza', 'part length')} readOnly step={1} />
+            <Field label={txt('Solape cofia → C1', 'Nose → C1 overlap')} value={15} unit="mm" status={txt('derivado del plano', 'drawing-derived')} readOnly step={1} />
+            <Field label={txt('Solape C1 → C2', 'C1 → C2 overlap')} value={15} unit="mm" status={txt('derivado del plano', 'drawing-derived')} readOnly step={1} />
+            <Field label={txt('Solape C2 → cola', 'C2 → tail overlap')} value={16} unit="mm" status={txt('derivado del plano', 'drawing-derived')} readOnly step={1} />
+            <Field label={txt('Portamotor · largo', 'Motor mount · length')} value={currentTwin?.geometry?.parts?.motor_mount?.raw_part_length_mm ?? 190} unit="mm" status={txt('interno · plano Fusion', 'internal · Fusion drawing')} readOnly step={1} />
+            <Field label={txt('Portamotor · Ø exterior', 'Motor mount · outer Ø')} value={currentTwin?.geometry?.parts?.motor_mount?.outer_diameter_mm ?? 54} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={1} />
+            <Field label={txt('Portamotor · Ø interior', 'Motor mount · inner Ø')} value={currentTwin?.geometry?.parts?.motor_mount?.inner_diameter_mm ?? 33} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={1} />
           </div>
 
           <div className="section-heading">
@@ -1250,7 +1580,7 @@ function App() {
           <div className="airfoil-row">
             <label>
               <span>{txt('Perfil de sección transversal', 'Cross-section profile')}</span>
-              <select value={vehicle.airfoil} onChange={(e) => update('airfoil', e.target.value)}>
+              <select value={vehicle.airfoil} onChange={(e) => update('airfoil', e.target.value)} disabled>
                 <option>NACA 0012</option>
                 <option>NACA 0009</option>
                 <option>NACA 0015</option>
@@ -1261,12 +1591,12 @@ function App() {
             <span className="info-badge">{txt('Corrección profesor / PDR', 'Professor / PDR correction')}</span>
           </div>
           <div className="field-grid">
-            <Field label={txt('Cantidad de aletas', 'Fin count')} value={vehicle.finCount} status={txt('fijado', 'frozen')} onChange={(v) => update('finCount', v)} />
-            <Field label={txt('Cuerda de raíz (cr)', 'Root chord (cr)')} value={vehicle.rootChord} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('rootChord', v)} />
-            <Field label={txt('Cuerda de punta (ct)', 'Tip chord (ct)')} value={vehicle.tipChord} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('tipChord', v)} />
-            <Field label={txt('Semienvergadura de la aleta (s)', 'Fin semispan (s)')} value={vehicle.span} unit="mm" status={txt('provisional', 'provisional')} onChange={(v) => update('span', v)} />
-            <Field label={txt('Desplazamiento del borde de ataque (Xf)', 'Leading-edge offset (Xf)')} value={vehicle.sweep} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('sweep', v)} />
-            <Field label={txt('Posición del borde de ataque de la raíz desde la nariz', 'Root leading-edge position from nose')} value={vehicle.finX} unit="mm" status={txt('referencia', 'reference')} onChange={(v) => update('finX', v)} />
+            <Field label={txt('Cantidad de aletas', 'Fin count')} value={vehicle.finCount} status={txt('Fusion', 'Fusion')} readOnly step={1} />
+            <Field label={txt('Cuerda de raíz (cr)', 'Root chord (cr)')} value={vehicle.rootChord} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={0.01} />
+            <Field label={txt('Cuerda de punta (ct)', 'Tip chord (ct)')} value={vehicle.tipChord} unit="mm" status={txt('plano Fusion', 'Fusion drawing')} readOnly step={0.01} />
+            <Field label={txt('Semienvergadura radial (s)', 'Radial semispan (s)')} value={vehicle.span} unit="mm" status={txt('(168−63)/2', '(168−63)/2')} readOnly step={0.1} />
+            <Field label={txt('Desplazamiento del borde de ataque (Xf)', 'Leading-edge offset (Xf)')} value={vehicle.sweep} unit="mm" status={txt('derivado vista 1:1', 'derived from 1:1 view')} readOnly step={0.1} />
+            <Field label={txt('Borde de ataque raíz desde la nariz', 'Root leading edge from nose')} value={vehicle.finX} unit="mm" status={txt('564 + 125', '564 + 125')} readOnly step={1} />
           </div>
 
           <div className="section-heading">
@@ -1285,7 +1615,7 @@ function App() {
           {showAdvanced && (
             <div className="field-grid advanced">
               <Field label={txt('Ángulo de lanzamiento', 'Launch angle')} value={vehicle.launchAngle} unit="deg" status="TP" onChange={(v) => update('launchAngle', v)} />
-              <Field label={txt('Coeficiente de resistencia aerodinámica (Cd)', 'Drag coefficient (Cd)')} value={vehicle.cd} status={txt('referencia', 'reference')} onChange={(v) => update('cd', v)} />
+              <Field label={txt('Coeficiente de resistencia aerodinámica (Cd)', 'Drag coefficient (Cd)')} value={vehicle.cd} status={txt('estimado · Niskanen/OpenRocket', 'estimated · Niskanen/OpenRocket')} onChange={(v) => update('cd', v)} />
               <Field label={txt('Coeficiente de resistencia del paracaídas (Cd)', 'Parachute drag coefficient (Cd)')} value={vehicle.parachuteCd} status={txt('recuperación', 'recovery')} onChange={(v) => update('parachuteCd', v)} />
               <Field label={txt('Área del paracaídas', 'Parachute area')} value={vehicle.parachuteArea} unit="m²" status={txt('recuperación', 'recovery')} onChange={(v) => update('parachuteArea', v)} />
               <Field label={txt('Altitud de despliegue', 'Deploy altitude')} value={vehicle.deployAltitude} unit="m" status={txt('vacío = apogeo', 'blank = apogee')} onChange={(v) => update('deployAltitude', v)} />
@@ -1318,8 +1648,9 @@ function App() {
             <RocketRealistic
               vehicle={vehicle}
               cgMm={liveCgFromNose}
-              cpMm={analysisSummary?.cp_x_mm_from_nose ?? null}
+              cpMm={liveCpFromNose}
               componentCgs={componentSummary?.components ?? []}
+              assemblyStations={twinAssembly?.stations ?? []}
               showComponentCgs={showComponentCgs}
               lang={lang}
             />
@@ -1339,7 +1670,7 @@ function App() {
             </article>
             <article className="metric-card">
               <span>CP</span>
-              <strong>{analysisSummary?.cp_x_mm_from_support !== undefined ? `${analysisSummary.cp_x_mm_from_support.toFixed(1)} mm` : analysisSummary?.cp_x_mm_from_nose !== undefined ? `${(Number(vehicle.totalLength) - analysisSummary.cp_x_mm_from_nose).toFixed(1)} mm` : '—'}</strong>
+              <strong>{liveCpFromSupport != null ? `${liveCpFromSupport.toFixed(1)} mm` : '—'}</strong>
               <small>{txt('desde apoyo · Barrowman/perfil', 'from support · Barrowman/profile')}</small>
             </article>
             <article className="metric-card">
@@ -1348,7 +1679,7 @@ function App() {
               <small>{txt('resultado de trayectoria', 'trajectory result')}</small>
             </article>
             <article className="metric-card">
-              <span>{txt('Q MÁX', 'MAX Q')}</span>
+              <span>q<sub>max</sub></span>
               <strong>{analysisSummary?.max_q_pa !== undefined ? `${analysisSummary.max_q_pa.toFixed(0)} Pa` : '—'}</strong>
               <small>{txt('resultado de trayectoria', 'trajectory result')}</small>
             </article>
@@ -1363,6 +1694,13 @@ function App() {
             motor={motor}
             rows={componentRows}
             onRowsChange={setComponentRows}
+            massStationsReady={realMassStationsReady}
+            assemblyStations={twinAssembly?.stations ?? []}
+            estimatedCd={estimatedCd}
+            onCdChange={(value) => {
+              update('cd', value);
+              setAnalysisSummary(null);
+            }}
             onOpenFlight={() => {
               if (analysisSummary?.mission_timeline?.length > 1) setMissionControlOpen(true);
               else {
@@ -1391,10 +1729,10 @@ function App() {
               <strong className="score">{5 - Math.min(blockers.length, 5)}/5</strong>
             </div>
             <div className="readiness-grid">
-              <div className="ready-row complete"><b>01</b><span>{txt('Geometría principal', 'Principal geometry')}</span><em>860 / 180 / 180 / 500 / Ø63</em></div>
+              <div className="ready-row complete"><b>01</b><span>{txt('Geometría principal', 'Principal geometry')}</span><em>{vehicle.totalLength} / 180 / C1 215 / C2 215 / COLA 225 / Ø{vehicle.diameter}</em></div>
               <div className="ready-row complete"><b>02</b><span>{txt('Perfil de aleta', 'Fin profile')}</span><em>{vehicle.airfoil}</em></div>
               <div className={`ready-row ${vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? 'complete' : ''}`}><b>03</b><span>{txt('Planta de aleta', 'Fin planform')}</span><em>{vehicle.tipChord !== '' && vehicle.sweep !== '' && vehicle.finX !== '' ? txt('LISTA', 'READY') : txt('POR DEFINIR', 'TBD')}</em></div>
-              <div className="ready-row complete"><b>04</b><span>{txt('Tabla de masas', 'Mass table')}</span><em>{txt('PRECARGADA · EDITABLE', 'PRELOADED · EDITABLE')}</em></div>
+              <div className={`ready-row ${realMassStationsReady ? 'complete' : ''}`}><b>04</b><span>{txt('Masas / xCG', 'Masses / xCG')}</span><em>{realMassStationsReady ? txt('LISTO', 'READY') : txt('870 g MEDIDOS · xCG PENDIENTE', '870 g MEASURED · xCG PENDING')}</em></div>
               <div className={`ready-row ${vehicle.cd !== '' ? 'complete' : ''}`}><b>05</b><span>{txt('Modelo de resistencia', 'Drag model')}</span><em>{vehicle.cd === '' ? txt('POR DEFINIR', 'TBD') : `Cd ${vehicle.cd}`}</em></div>
             </div>
             <div className="blocker-box">
@@ -1476,32 +1814,36 @@ function App() {
         style={{ '--nav-index': mobileNavIndex } as React.CSSProperties}
       >
         <i className="mobile-nav-slider" aria-hidden="true" />
-        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onClick={() => navigateMobile('home')}>
+        <button type="button" className={mobileSection === 'home' ? 'active' : ''} onPointerDown={handleNavPointerDown} onClick={() => navigateMobile('home')}>
           <span className="mobile-nav-icon"><Home size={20} strokeWidth={1.8} /></span>
           <small>{txt('INICIO', 'HOME')}</small>
         </button>
-        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onClick={() => navigateMobile('pdr')}>
+        <button type="button" className={['pdr','vehicle','geometry','motor'].includes(mobileSection) ? 'active' : ''} onPointerDown={handleNavPointerDown} onClick={() => navigateMobile('pdr')}>
           <span className="mobile-nav-icon"><Rocket size={20} strokeWidth={1.8} /></span>
           <small>PDR</small>
         </button>
-        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onClick={() => navigateMobile('analysis')}>
+        <button type="button" className={['cdr','analysis','model','status'].includes(mobileSection) ? 'mobile-primary active' : 'mobile-primary'} onPointerDown={handleNavPointerDown} onClick={() => navigateMobile('analysis')}>
           <span className="mobile-nav-icon primary"><Gauge size={26} strokeWidth={1.8} /></span>
           <small>CDR</small>
         </button>
-        <button type="button" className={missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onClick={() => {
+        <button type="button" disabled={pendingMissionLaunch} className={pendingMissionLaunch ? 'flight-nav-button preparing active' : missionControlOpen ? 'flight-nav-button active' : 'flight-nav-button'} onPointerDown={handleNavPointerDown} onClick={() => {
+          if (pendingMissionLaunch) return;
+          setPendingMissionLaunch(true);
           if (analysisSummary?.mission_timeline?.length > 1) {
-            setMissionControlOpen(true);
+            window.setTimeout(() => {
+              setPendingMissionLaunch(false);
+              setMissionControlOpen(true);
+            }, 1000);
           } else {
-            setPendingMissionLaunch(true);
             setRunToken((value) => value + 1);
           }
         }}>
-          <span className="mobile-nav-icon"><Play size={20} strokeWidth={1.8} /></span>
-          <small>{txt('VUELO', 'FLIGHT')}</small>
+          <span className="mobile-nav-icon">{pendingMissionLaunch ? <i className="bottom-flight-spinner" aria-hidden="true" /> : <Play size={20} strokeWidth={1.8} />}</span>
+          <small>{pendingMissionLaunch ? txt('PREPARANDO', 'PREPARING') : txt('VUELO', 'FLIGHT')}</small>
         </button>
-        <button type="button" className={showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
-          <span className="mobile-nav-icon"><Download size={20} strokeWidth={1.8} /></span>
-          <small>{txt('EXPORTAR', 'EXPORT')}</small>
+        <button type="button" className={exportPreparing ? 'active export-nav-button preparing' : showExportMenu ? 'active export-nav-button' : 'export-nav-button'} onPointerDown={handleNavPointerDown} onClick={() => showExportMenu ? setShowExportMenu(false) : openExportSheet()}>
+          <span className="mobile-nav-icon">{exportPreparing ? <i className="bottom-flight-spinner" aria-hidden="true" /> : <Download size={20} strokeWidth={1.8} />}</span>
+          <small>{exportPreparing ? txt('PREPARANDO', 'PREPARING') : txt('EXPORTAR', 'EXPORT')}</small>
         </button>
       </nav>
 

@@ -1,14 +1,21 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+from typing import Any
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from trajectum_cad import CAD_FORMATS, nose_profile
 from trajectum_physics import (
+    AxialInterface,
+    AxialPart,
     ComponentMassProperty,
     MassPoint,
     Motor,
     analyze_vehicle,
+    assemble_axially,
     axial_uniform_cg,
     axisymmetric_nose_cp_from_profile,
     axisymmetric_shell_cg_from_profile,
@@ -16,6 +23,7 @@ from trajectum_physics import (
     combine_component_mass_properties,
     combine_cp,
     static_margin,
+    tangent_ogive_cp,
     trapezoidal_fin_planform_cg_x,
     trapezoidal_fin_set_cp,
 )
@@ -60,6 +68,7 @@ class ComponentGeometryIn(BaseModel):
     mass_g: float = Field(gt=0)
     x_start_mm: float | None = None
     x_end_mm: float | None = None
+    x_cg_mm: float | None = None
     length_mm: float | None = None
     base_radius_mm: float | None = None
     leading_edge_x_mm: float | None = None
@@ -235,6 +244,133 @@ def health() -> HealthResponse:
     return HealthResponse(status="ok", service="trajectum-api", version="0.2.0-dev0")
 
 
+CURRENT_DESIGN_PATH = Path(__file__).resolve().parents[4] / "data" / "reference-cases" / "utn-frh-g07" / "vehicle.cdr.json"
+CURRENT_DESIGN_REVISION = "2026-09-20-fusion-geometry-cg-estimated"
+
+
+def _load_current_design() -> dict[str, Any]:
+    return json.loads(CURRENT_DESIGN_PATH.read_text(encoding="utf-8"))
+
+
+@app.get("/v1/digital-twin/current")
+def current_digital_twin() -> dict[str, Any]:
+    """Return the current-design engineering baseline with verification/TBD markers intact."""
+    payload = _load_current_design()
+    payload["api_baseline_revision"] = CURRENT_DESIGN_REVISION
+    return payload
+
+
+@app.get("/v1/digital-twin/assembly")
+def current_digital_twin_assembly() -> dict[str, Any]:
+    design = _load_current_design()
+    geometry = design["geometry"]
+    part_data = geometry["parts"]
+    assembly_data = geometry["assembly"]
+
+    parts = []
+    for key in assembly_data["serial_airframe_sequence"]:
+        item = part_data[key]
+        length_mm = item.get("raw_part_length_mm", item.get("length_mm"))
+        parts.append(AxialPart(key=key, name=key, raw_length_m=float(length_mm) / 1000.0))
+
+    interfaces = []
+    for item in assembly_data["interfaces"]:
+        value = item["overlap_mm"]["value"]
+        interfaces.append(
+            AxialInterface(
+                upstream_key=item["upstream"],
+                downstream_key=item["downstream"],
+                overlap_m=None if value is None else float(value) / 1000.0,
+            )
+        )
+
+    result = assemble_axially(tuple(parts), tuple(interfaces))
+    return {
+        "api_baseline_revision": CURRENT_DESIGN_REVISION,
+        "datum": assembly_data["datum"],
+        "resolved": result.resolved,
+        "total_length_mm": None if result.total_length_m is None else result.total_length_m * 1000.0,
+        "blockers": list(result.blockers),
+        "stations": [
+            {
+                "key": station.key,
+                "name": station.name,
+                "x_start_mm": None if station.x_start_m is None else station.x_start_m * 1000.0,
+                "x_end_mm": None if station.x_end_m is None else station.x_end_m * 1000.0,
+                "raw_length_mm": station.raw_length_m * 1000.0,
+            }
+            for station in result.stations
+        ],
+        "interfaces": assembly_data["interfaces"],
+        "internal_parts": assembly_data["internal_parts"],
+    }
+
+
+@app.get("/v1/digital-twin/cp")
+def current_digital_twin_cp() -> dict[str, Any]:
+    design = _load_current_design()
+    geometry = design["geometry"]
+    fins = design["fins"]
+
+    required = {
+        "geometry.outer_diameter_mm": geometry["outer_diameter_mm"]["value"],
+        "geometry.nose_length_mm": geometry["nose_length_mm"]["value"],
+        "geometry.total_length_mm": geometry["total_length_mm"]["value"],
+        "fins.count": fins["count"]["value"],
+        "fins.root_chord_mm": fins["root_chord_mm"]["value"],
+        "fins.tip_chord_mm": fins["tip_chord_mm"]["value"],
+        "fins.span_mm": fins["span_mm"]["value"],
+        "fins.sweep_length_mm": fins["sweep_length_mm"]["value"],
+        "fins.leading_edge_x_mm": fins["leading_edge_x_mm"]["value"],
+    }
+    blockers = [path for path, value in required.items() if value is None]
+    if blockers:
+        return {
+            "api_baseline_revision": CURRENT_DESIGN_REVISION,
+            "resolved": False,
+            "method": "Barrowman-style tangent-ogive + trapezoidal-fin set",
+            "blockers": blockers,
+        }
+
+    nose = tangent_ogive_cp(float(required["geometry.nose_length_mm"]) / 1000.0)
+    fin_set = trapezoidal_fin_set_cp(
+        count=int(required["fins.count"]),
+        body_diameter_m=float(required["geometry.outer_diameter_mm"]) / 1000.0,
+        root_chord_m=float(required["fins.root_chord_mm"]) / 1000.0,
+        tip_chord_m=float(required["fins.tip_chord_mm"]) / 1000.0,
+        span_m=float(required["fins.span_mm"]) / 1000.0,
+        sweep_length_m=float(required["fins.sweep_length_mm"]) / 1000.0,
+        leading_edge_x_m=float(required["fins.leading_edge_x_mm"]) / 1000.0,
+    )
+    result = combine_cp(nose, fin_set)
+    total_length_mm = float(required["geometry.total_length_mm"])
+    cp_from_nose_mm = result.x_cp_m * 1000.0
+    return {
+        "api_baseline_revision": CURRENT_DESIGN_REVISION,
+        "resolved": True,
+        "method": "Barrowman-style tangent-ogive + trapezoidal-fin set",
+        "status": "derived-current-geometry",
+        "datum": "nose_tip_x0_positive_aft",
+        "cp_x_mm_from_nose": cp_from_nose_mm,
+        "cp_x_mm_from_support": total_length_mm - cp_from_nose_mm,
+        "cn_alpha_total": result.cn_alpha_total,
+        "contributions": [
+            {
+                "name": item.name,
+                "cn_alpha": item.cn_alpha,
+                "x_cp_mm_from_nose": item.x_cp_m * 1000.0,
+            }
+            for item in result.contributions
+        ],
+        "notes": [
+            "CP is independent of the unresolved mass distribution.",
+            "Fin sweep is currently drawing-derived from the 1:1 Fusion view.",
+            "Static margin remains blocked until the vehicle CG is resolved.",
+        ],
+        "blockers": [],
+    }
+
+
 @app.get("/v1/capabilities", response_model=list[Capability])
 def capabilities() -> list[Capability]:
     return [
@@ -271,6 +407,11 @@ def _calculate_component_mass_properties(request: list[ComponentGeometryIn]) -> 
                 raise ValueError("axial_uniform requires x_start_mm and x_end_mm")
             x = axial_uniform_cg(x_start_m=item.x_start_mm / 1000.0, x_end_m=item.x_end_mm / 1000.0)
             source = "geometry:axial_uniform"
+        elif item.kind == "point_mass":
+            if item.x_cg_mm is None:
+                raise ValueError("point_mass requires x_cg_mm")
+            x = item.x_cg_mm / 1000.0
+            source = "estimate:drawing-derived-station"
         elif item.kind in {"tangent_ogive_shell", "profile_shell"}:
             if item.length_mm is None or item.base_radius_mm is None:
                 raise ValueError("nose shell requires length_mm and base_radius_mm")

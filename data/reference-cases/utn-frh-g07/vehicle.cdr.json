@@ -4,92 +4,144 @@
   "status": "cdr-cad-baseline-in-progress",
   "geometry": {
     "total_length_mm": {
-      "value": null,
-      "status": "tbd-assembled-cad",
-      "note": "Do not reuse the former 860 mm test vehicle. Final assembled length must account for threaded/press-fit overlaps."
+      "value": 825.05,
+      "status": "verified-assembly-drawing",
+      "note": "Longitud total acotada en plano de ensamble Hoja 2 del 21/09/2026."
     },
     "outer_diameter_mm": {
-      "value": 63.0,
+      "value": 63,
       "status": "verified-drawing"
     },
     "nose_length_mm": {
-      "value": 180.0,
-      "status": "verified-cad-filename-and-drawing"
+      "value": 200.05,
+      "status": "derived-from-assembly-total-and-team-segments",
+      "note": "825.05 - 225 - 215 - 185 = 200.05 mm; reemplaza el 195 mm aproximado informado previamente."
     },
     "parts": {
       "nose": {
-        "length_mm": 180.0,
-        "outer_diameter_mm": 63.0,
-        "interface_diameter_mm": 55.0,
+        "length_mm": 200.05,
+        "outer_diameter_mm": 63,
+        "interface_diameter_mm": 55,
         "profile": "tangent_ogive",
         "radii_mm": [
           561.54,
           559.04
         ],
-        "status": "verified-drawing"
+        "status": "derived-working-effective-length"
       },
       "c1_parachute_payload": {
-        "raw_part_length_mm": 215.0,
-        "outer_diameter_mm": 63.0,
+        "raw_part_length_mm": 185,
+        "outer_diameter_mm": 63,
         "diameters_mm": [
-          59.0,
-          52.0,
-          24.0,
-          8.0
+          59,
+          52,
+          24,
+          8
         ],
         "thread": "M58x4 6H",
-        "status": "verified-drawing"
+        "status": "team-confirmed-working-effective"
       },
       "c2": {
-        "raw_part_length_mm": 215.0,
-        "dimensioned_body_mm": 200.0,
-        "outer_diameter_mm": 63.0,
-        "inner_diameter_mm": 58.0,
+        "raw_part_length_mm": 215,
+        "dimensioned_body_mm": 200,
+        "outer_diameter_mm": 63,
+        "inner_diameter_mm": 58,
         "thread": "M58x4 6g",
         "status": "verified-drawing"
       },
       "tail_fin_can": {
-        "raw_part_length_mm": 225.0,
-        "outer_diameter_mm": 63.0,
-        "overall_fin_span_mm": 168.0,
+        "raw_part_length_mm": 225,
+        "outer_diameter_mm": 63,
+        "overall_fin_span_mm": 168,
         "airfoil": "NACA 0012",
         "status": "verified-drawing",
-        "note": "Fin-planform variables remain unmapped until drawing dimensions are assigned unambiguously to root chord, tip chord, radial span and sweep."
+        "note": "Fusion drawing dimensions: tail raw length 225 mm, root leading edge 125 mm from tail front, root chord 97.67 mm, tip chord 39.96 mm, overall tip-to-tip span 168 mm. Radial span is derived exactly as (168-63)/2 = 52.5 mm. Sweep is not directly dimensioned; 42.0 mm is derived from the 1:1 drawing geometry and remains drawing-derived.",
+        "root_le_from_tail_front_mm": 125,
+        "fin_root_chord_mm": 97.67,
+        "fin_tip_chord_mm": 39.96,
+        "radial_fin_span_mm": 52.5,
+        "fin_sweep_length_mm": 42
       },
       "motor_mount": {
-        "raw_part_length_mm": 190.0,
-        "outer_diameter_mm": 54.0,
-        "inner_diameter_mm": 33.0,
+        "raw_part_length_mm": 190,
+        "outer_diameter_mm": 54,
+        "inner_diameter_mm": 33,
         "status": "verified-drawing"
       }
     },
-    "assembly_note": "Raw part lengths are not summed as vehicle length because interfaces overlap when assembled."
+    "assembly_note": "Geometría axial de trabajo: nariz 200.05 mm + C1 185 mm + C2 215 mm + cola 225 mm = 825.05 mm, consistente con el plano de ensamble.",
+    "assembly": {
+      "datum": "nose_tip_x0_positive_aft",
+      "serial_airframe_sequence": [
+        "nose",
+        "c1_parachute_payload",
+        "c2",
+        "tail_fin_can"
+      ],
+      "interfaces": [
+        {
+          "upstream": "nose",
+          "downstream": "c1_parachute_payload",
+          "overlap_mm": {
+            "value": 0,
+            "status": "effective-lengths-already-assembled"
+          }
+        },
+        {
+          "upstream": "c1_parachute_payload",
+          "downstream": "c2",
+          "overlap_mm": {
+            "value": 0,
+            "status": "effective-lengths-already-assembled"
+          }
+        },
+        {
+          "upstream": "c2",
+          "downstream": "tail_fin_can",
+          "overlap_mm": {
+            "value": 0,
+            "status": "effective-lengths-already-assembled"
+          }
+        }
+      ],
+      "internal_parts": [
+        {
+          "key": "motor_mount",
+          "placement": "inside-tail-fin-can",
+          "status": "pending-axial-station"
+        }
+      ],
+      "note": "Las longitudes efectivas de trabajo ya representan el conjunto ensamblado según Simón; por eso no se vuelven a descontar encastres en este gemelo de prueba."
+    }
   },
-  "launch_angle_deg": 85.0,
+  "launch_angle_deg": 85,
   "fins": {
     "count": {
       "value": 4,
-      "status": "verified-cad"
+      "status": "verified-cad-and-drawing"
     },
     "root_chord_mm": {
-      "value": null,
-      "status": "tbd-map-from-drawing"
+      "value": 97.67,
+      "status": "verified-drawing"
     },
     "span_mm": {
-      "value": null,
-      "status": "tbd-map-from-drawing"
+      "value": 52.5,
+      "status": "derived-drawing",
+      "note": "(168 mm overall fin-tip span - 63 mm body OD)/2 = 52.5 mm radial span."
     },
     "tip_chord_mm": {
-      "value": null,
-      "status": "tbd-map-from-drawing"
+      "value": 39.96,
+      "status": "verified-drawing"
     },
     "sweep_length_mm": {
-      "value": null,
-      "status": "tbd-map-from-drawing"
+      "value": 42,
+      "status": "derived-1to1-drawing-geometry",
+      "note": "Not directly dimensioned on the Fusion drawing; derived from the 1:1 side-view geometry. Keep traceable as derived until Fusion parameter/export confirms it."
     },
     "leading_edge_x_mm": {
-      "value": null,
-      "status": "tbd-after-assembly-stations"
+      "value": 725.05,
+      "status": "derived-from-working-assembly",
+      "note": "La cola inicia en x=600.05 mm y el borde de ataque de raíz está a 125 mm del frente de cola."
     },
     "airfoil": {
       "type": "naca4",
@@ -105,73 +157,112 @@
     }
   },
   "masses": {
-    "status": "measured-structure-cg-stations-pending",
-    "measured_structure_total_g": 870.0,
+    "status": "measured-structure-cg-stations-estimated",
+    "measured_structure_total_g": 870,
     "measured_items": [
       {
         "name": "Cofia",
-        "mass_g": 126.0,
-        "status": "measured"
+        "mass_g": 126,
+        "status": "measured",
+        "x_cg_mm_from_nose": 111.7,
+        "x_cg_status": "geometry-derived"
       },
       {
         "name": "C1",
-        "mass_g": 190.0,
-        "status": "measured"
+        "mass_g": 190,
+        "status": "measured",
+        "x_cg_mm_from_nose": 292.55,
+        "x_cg_status": "working-midpoint-effective-segment"
       },
       {
         "name": "C2",
-        "mass_g": 146.0,
-        "status": "measured"
+        "mass_g": 146,
+        "status": "measured",
+        "x_cg_mm_from_nose": 492.55,
+        "x_cg_status": "working-midpoint-effective-segment"
       },
       {
         "name": "Cola + aletas",
-        "mass_g": 260.0,
-        "status": "measured"
+        "mass_g": 260,
+        "status": "measured",
+        "x_cg_mm_from_nose": 736.85,
+        "x_cg_status": "working-shifted-station"
       },
       {
         "name": "Portamotor",
-        "mass_g": 148.0,
-        "status": "measured"
+        "mass_g": 148,
+        "status": "measured",
+        "x_cg_mm_from_nose": 730.05,
+        "x_cg_status": "working-center-aft-installation"
       }
     ],
     "known_internal_items": [
       {
         "name": "Paracaidas",
-        "mass_g": 30.0,
-        "status": "project-confirmed"
+        "mass_g": 50,
+        "status": "team-estimate",
+        "x_cg_mm_from_nose": 292.55,
+        "x_cg_status": "working-center-of-c1"
       },
       {
         "name": "Electronica",
-        "mass_g": 80.0,
-        "status": "project-confirmed"
+        "mass_g": 80,
+        "status": "project-confirmed",
+        "x_cg_mm_from_nose": 546.3,
+        "x_cg_status": "working-lower-half-c2"
       },
       {
         "name": "Carga util",
-        "mass_g": 100.0,
-        "status": "project-confirmed"
+        "mass_g": 100,
+        "status": "project-confirmed",
+        "x_cg_mm_from_nose": 438.8,
+        "x_cg_status": "working-upper-half-c2"
       }
     ],
-    "note": "Measured masses are authoritative for the current printed structure. Numeric CG remains blocked until each item has an axial CG station referenced to the nose tip."
+    "note": "Masas estructurales medidas. Paracaídas 50 g estimado; carga útil 100 g y electrónica 80 g. Arquitectura de trabajo: paracaídas en C1; carga útil en la parte superior de C2; electrónica debajo, también en C2. Las estaciones axiales internas siguen siendo provisionales hasta el plano de ensamble/CAD final."
   },
   "motor": {
     "designation": "A-100 RN (29%H)",
     "propellant": "KNDX",
     "burn_time_s": 0.5,
-    "total_impulse_n_s": 207.0,
-    "average_thrust_n": 441.0,
-    "max_thrust_n": 600.0,
-    "propellant_mass_g": 140.0,
-    "dry_mass_g": 350.0,
-    "status": "tp-specified"
+    "total_impulse_n_s": 207,
+    "average_thrust_n": 441,
+    "max_thrust_n": 600,
+    "propellant_mass_g": 140,
+    "dry_mass_g": 350,
+    "status": "tp-specified",
+    "x_cg_mm_from_nose": 730.05,
+    "x_cg_status": "working-center-of-190mm-aft-installation"
   },
   "aerodynamics": {
     "cd": {
-      "value": null,
-      "status": "tbd"
+      "value": 0.345,
+      "status": "provisional-from-prior-geometry-recalculate",
+      "method": "single-effective-cd-at-qmax-iterated",
+      "reference_velocity_m_s": 130.682,
+      "reference_altitude_m": 33.673,
+      "reference_mach": 0.38417,
+      "reference_reynolds": 7040101,
+      "components": {
+        "skin_friction": 0.18075,
+        "nose_pressure": 0,
+        "fin_pressure": 0.02473,
+        "base_drag": 0.13919
+      },
+      "assumptions": [
+        "subsonic",
+        "alpha approximately zero",
+        "smooth surface",
+        "fully turbulent boundary layer",
+        "no parasitic launch-guide drag included",
+        "tangent-ogive smooth body transition",
+        "NACA 0012 rounded leading edge and tapered trailing edge"
+      ],
+      "source": "Niskanen/OpenRocket Technical Documentation: Eq. 3.78, 3.82, 3.85, 3.89, 3.91, 3.94, 3.97"
     },
-    "note": "Drag coefficient intentionally remains TBD until a defensible CDR assumption or source is selected."
+    "note": "Cd=0.345 se conserva sólo como valor provisional del caso anterior para permitir pruebas del gemelo. Debe recalcularse para la geometría ensamblada de 825.05 mm."
   },
-  "revision": "2026-09-19-cad-pdf-mass-ingest",
+  "revision": "2026-09-21-provisional-cg-cp-rk4-baseline",
   "datum": "nose_tip_x0_positive_aft",
   "sources": {
     "cad_and_drawings_date": "2026-09-19",
@@ -189,19 +280,47 @@
       "Modelado 2 de cola - perfil NACA 0012.f3d",
       "Modelado 2 de Portamotor.f3d"
     ],
-    "mass_source": "team measured-mass note supplied 2026-09-20"
+    "mass_source": "team measured-mass note supplied 2026-09-20",
+    "assembly_source": "Plano de ensamble Hoja 2, 21/09/2026: longitud total acotada 825.05 mm. Tramos de trabajo: C1 185 mm, C2 215 mm, cola 225 mm; nariz efectiva deducida 200.05 mm."
   },
   "legacy_test_vehicle": {
     "status": "simulation-fixture-only-not-current-design",
-    "total_length_mm": 860.0,
-    "nose_length_mm": 180.0,
-    "modular_bay_length_mm": 180.0,
-    "lower_body_length_mm": 500.0,
-    "fin_root_chord_mm": 80.0,
-    "fin_tip_chord_mm": 40.0,
-    "fin_span_mm": 50.0,
-    "fin_sweep_mm": 40.0,
-    "fin_leading_edge_x_mm": 780.0,
+    "total_length_mm": 860,
+    "nose_length_mm": 180,
+    "modular_bay_length_mm": 180,
+    "lower_body_length_mm": 500,
+    "fin_root_chord_mm": 80,
+    "fin_tip_chord_mm": 40,
+    "fin_span_mm": 50,
+    "fin_sweep_mm": 40,
+    "fin_leading_edge_x_mm": 780,
     "note": "Retained only to document the former functional test configuration. Do not use these values as CDR design truth."
+  },
+  "working_baseline": {
+    "status": "provisional-for-trajectory-simulation",
+    "note": "Baseline de trabajo para ejecutar la simulación. CG/CP se reemplazan cuando el equipo entregue valores definitivos.",
+    "initial_mass_g": 1590.0,
+    "cg_x_mm_from_nose": 567.75,
+    "cg_x_mm_from_support": 257.3,
+    "cp_x_mm_from_nose": 608.16,
+    "cp_x_mm_from_support": 216.89,
+    "static_margin_calibers": 0.64,
+    "method": {
+      "cg": "masas medidas + estaciones axiales estimadas de planos/cotas/distribución interna",
+      "cp": "Barrowman, ojiva tangente + 4 aletas trapezoidales",
+      "trajectory": "RK4 2D, dt=0.002 s, atmósfera ISA, masa variable y curva de empuje A-100 RN/KNDX",
+      "cd": "0.345 provisional"
+    },
+    "first_trajectory_run": {
+      "hmax_m": 662.14,
+      "time_to_hmax_s": 11.28,
+      "vmax_m_s": 128.95,
+      "max_mach": 0.379,
+      "qmax_pa": 10152.07,
+      "burnout_time_s": 0.5,
+      "burnout_altitude_m": 36.56,
+      "burnout_speed_m_s": 128.73,
+      "burnout_q_pa": 10114.74
+    }
   }
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { MissionSample } from './missionTypes';
 import { EngineeringEquations } from './EngineeringEquations';
 import { RocketRealistic } from './RocketRealistic';
@@ -13,8 +14,9 @@ type VehicleLike = {
   noseProfile: string;
   airfoil: string;
 };
-export type ComponentRow = { id: number; name: string; massG: NumericField; lengthMm: NumericField; diameterMm: NumericField; kind: string; note: string };
+export type ComponentRow = { id: number; name: string; massG: NumericField; lengthMm: NumericField; diameterMm: NumericField; xCgMm?: NumericField; kind: string; note: string };
 type ComponentOut = { name: string; mass_g: number; x_cg_mm: number; source: string };
+type AssemblyStation = { key: string; name: string; x_start_mm: number | null; x_end_mm: number | null; raw_length_mm: number };
 type UnifiedComponentOut = {
   name: string;
   mass_g: number;
@@ -23,7 +25,7 @@ type UnifiedComponentOut = {
   source: string;
 };
 type ComponentResponse = { components: ComponentOut[]; total_mass_g: number; total_cg_mm: number };
-type ComponentPayload = { name: string; mass_g: number; kind: string; x_start_mm?: number; x_end_mm?: number; length_mm?: number; base_radius_mm?: number; leading_edge_x_mm?: number; root_chord_mm?: number; tip_chord_mm?: number; span_mm?: number; sweep_mm?: number; profile?: string; power_exponent?: number };
+type ComponentPayload = { name: string; mass_g: number; kind: string; x_start_mm?: number; x_end_mm?: number; x_cg_mm?: number; length_mm?: number; base_radius_mm?: number; leading_edge_x_mm?: number; root_chord_mm?: number; tip_chord_mm?: number; span_mm?: number; sweep_mm?: number; profile?: string; power_exponent?: number };
 type Analysis = {
   total_mass_g: number;
   components?: UnifiedComponentOut[];
@@ -47,6 +49,80 @@ type Analysis = {
   time_to_apogee_s?: number;
   mission_timeline?: MissionSample[];
 };
+
+function CdWheelSelector({ value, onChange }: { value: NumericField; onChange: (value: NumericField) => void }) {
+  const [open, setOpen] = useState(false);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const current = value === '' ? 0.345 : Number(value);
+  const [draft, setDraft] = useState(current);
+  const step = 0.005;
+  const min = 0.05;
+  const max = 1.5;
+  const radius = 120;
+  const start = Math.max(min, current - radius * step);
+  const end = Math.min(max, current + radius * step);
+  const count = Math.round((end - start) / step);
+  const options = Array.from({ length: count + 1 }, (_, index) => Number((start + index * step).toFixed(3)));
+
+  useEffect(() => {
+    if (!open) return;
+    setDraft(current);
+    window.requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>('.active')?.scrollIntoView({ block: 'center' }));
+  }, [open, current]);
+
+  const updateDraftFromScroll = () => {
+    const list = listRef.current;
+    if (!list) return;
+    const center = list.scrollTop + list.clientHeight / 2;
+    let bestValue = draft;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    list.querySelectorAll<HTMLButtonElement>('button[data-value]').forEach((button) => {
+      const buttonCenter = button.offsetTop + button.offsetHeight / 2;
+      const distance = Math.abs(buttonCenter - center);
+      const option = Number(button.dataset.value);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestValue = option;
+      }
+    });
+    setDraft(bestValue);
+  };
+
+  const confirm = () => {
+    onChange(Number(draft.toFixed(3)));
+    setOpen(false);
+  };
+
+  return <div className={open ? 'numeric-wheel-control editing' : 'numeric-wheel-control'}>
+    <button type="button" className={open ? 'numeric-wheel-trigger active' : 'numeric-wheel-trigger'} onClick={() => setOpen(true)} aria-expanded={open} aria-label="Seleccionar Cd">
+      <span>{value === '' ? '—' : Number(value).toFixed(3)}</span>
+      <b>↕</b>
+    </button>
+    {open && typeof document !== 'undefined' && createPortal(
+      <div className="numeric-wheel-overlay" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}>
+        <div className="numeric-wheel-sheet" role="dialog" aria-modal="true" aria-label="Seleccionar Cd" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
+          <div className="numeric-wheel-sheet-head"><span>SELECCIONAR Cd</span></div>
+          <div className="numeric-wheel-viewport">
+            <div className="numeric-wheel-list" ref={listRef} onScroll={updateDraftFromScroll}>
+              {options.map((option) => <button type="button" key={option} data-value={option} className={Math.abs(option - draft) < 1e-9 ? 'active' : ''} onClick={(event) => {
+                event.stopPropagation();
+                setDraft(option);
+                window.requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>('button[data-value="' + option + '"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+              }}>{option.toFixed(3)}</button>)}
+            </div>
+            <div className="numeric-wheel-focus-band" aria-hidden="true"/>
+            <div className="numeric-wheel-fade top"/><div className="numeric-wheel-fade bottom"/>
+          </div>
+          <div className="numeric-wheel-actions">
+            <button type="button" className="cancel" onClick={() => setOpen(false)}>CANCELAR</button>
+            <button type="button" className="confirm" onClick={confirm}>✓ OK</button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )}
+  </div>;
+}
 
 function AnimatedValue({ value, decimals = 1, suffix = '' }: { value?: number; decimals?: number; suffix?: string }) {
   const [shown, setShown] = useState(0);
@@ -72,13 +148,15 @@ function AnimatedValue({ value, decimals = 1, suffix = '' }: { value?: number; d
 }
 
 export const initialComponentRows: ComponentRow[] = [
-  { id: 1, name: 'Cofia', massG: 100, lengthMm: 180, diameterMm: 63, kind: 'nose', note: 'xCG from selected nose-profile shell' },
-  { id: 2, name: 'Cuerpo principal', massG: 330, lengthMm: 500, diameterMm: 63, kind: 'body', note: 'xCG from axial shell envelope' },
-  { id: 3, name: 'Motor', massG: 490, lengthMm: 190, diameterMm: 50, kind: 'motor', note: 'xCG from motor axial envelope' },
-  { id: 4, name: 'Paracaídas', massG: 30, lengthMm: 60, diameterMm: 50, kind: 'parachute', note: 'upper third of modular bay · demo geometry' },
-  { id: 5, name: 'Electrónica', massG: 80, lengthMm: 60, diameterMm: 50, kind: 'electronics', note: 'middle third of modular bay · demo geometry' },
-  { id: 6, name: 'Carga útil', massG: 100, lengthMm: 60, diameterMm: 50, kind: 'payload', note: 'lower third of modular bay · demo geometry' },
-  { id: 7, name: 'Aletas · 4 total', massG: 20, lengthMm: 80, diameterMm: 0, kind: 'fins', note: 'xCG from trapezoidal planform' },
+  { id: 1, name: 'Cofia', massG: 126, lengthMm: 200.05, diameterMm: 63, kind: 'nose', note: 'masa medida · longitud efectiva ensamblada de trabajo según Simón' },
+  { id: 2, name: 'C1', massG: 190, lengthMm: 185, diameterMm: 63, xCgMm: 292.55, kind: 'point_mass', note: 'masa medida · estación provisional en el centro del tramo efectivo C1' },
+  { id: 3, name: 'C2', massG: 146, lengthMm: 215, diameterMm: 63, xCgMm: 492.55, kind: 'point_mass', note: 'masa medida · estación provisional en el centro del tramo efectivo C2' },
+  { id: 4, name: 'Cola + aletas', massG: 260, lengthMm: 225, diameterMm: 63, xCgMm: 736.85, kind: 'point_mass', note: 'masa medida · estación provisional trasladada con el nuevo inicio de cola' },
+  { id: 5, name: 'Portamotor', massG: 148, lengthMm: 190, diameterMm: 54, xCgMm: 730.05, kind: 'point_mass', note: 'masa medida · centro axial provisional del portamotor instalado hacia la base' },
+  { id: 6, name: 'Paracaídas', massG: 50, lengthMm: 185, diameterMm: 52, xCgMm: 292.55, kind: 'point_mass', note: 'estimación 50 g · ubicado en C1 inmediatamente debajo de la cofia' },
+  { id: 7, name: 'Carga útil', massG: 100, lengthMm: 107.5, diameterMm: 52, xCgMm: 438.8, kind: 'point_mass', note: '100 g · ubicación provisional en la mitad superior de C2' },
+  { id: 8, name: 'Electrónica', massG: 80, lengthMm: 107.5, diameterMm: 52, xCgMm: 546.3, kind: 'point_mass', note: '80 g · ubicación provisional debajo de la carga útil, en la mitad inferior de C2' },
+  { id: 9, name: 'Motor', massG: 490, lengthMm: 190, diameterMm: 28, kind: 'motor', note: 'A-100 RN húmedo · xCG provisional en el centro axial del motor' },
 ];
 
 export function LiveAnalysisPanel({
@@ -90,6 +168,10 @@ export function LiveAnalysisPanel({
   rows,
   onRowsChange,
   onOpenFlight,
+  massStationsReady = true,
+  assemblyStations = [],
+  estimatedCd = 0.345,
+  onCdChange,
   lang = 'es',
 }: {
   vehicle: VehicleLike;
@@ -100,6 +182,10 @@ export function LiveAnalysisPanel({
   rows: ComponentRow[];
   onRowsChange: React.Dispatch<React.SetStateAction<ComponentRow[]>>;
   onOpenFlight?: () => void;
+  massStationsReady?: boolean;
+  assemblyStations?: AssemblyStation[];
+  estimatedCd?: number;
+  onCdChange?: (value: NumericField) => void;
   lang?: 'es' | 'en';
 }) {
   const isEs = lang === 'es';
@@ -108,6 +194,7 @@ export function LiveAnalysisPanel({
   const displaySource = (source: string) => {
     if (!isEs) return source;
     if (source === 'geometry:axial_uniform') return 'geometría: distribución axial uniforme';
+    if (source === 'estimate:drawing-derived-station') return 'estimado desde plano / estación axial';
     if (source === 'geometry:trapezoidal_fin_planform') return 'geometría: planta trapezoidal de aletas';
     if (source.startsWith('geometry:') && source.endsWith('_shell')) return 'geometría: envolvente de cofia ' + source.slice(9, -6).replace(/_/g, ' ');
     return source;
@@ -130,7 +217,10 @@ export function LiveAnalysisPanel({
   const [error, setError] = useState('');
   const [running, setRunning] = useState(false);
   const [showMassEditor, setShowMassEditor] = useState(false);
+  const [datumMode, setDatumMode] = useState<'support' | 'nose'>('support');
+  const [stabilityStatusSelected, setStabilityStatusSelected] = useState(false);
   const lastAutoRunToken = useRef(0);
+  const cdIsEstimated = vehicle.cd !== '' && Math.abs(Number(vehicle.cd) - estimatedCd) < 1e-6;
 
   useEffect(() => {
     if (resetToken > 0) {
@@ -146,6 +236,7 @@ export function LiveAnalysisPanel({
   const componentPayload = useMemo<ComponentPayload[]>(() => rows.flatMap<ComponentPayload>((row) => {
     const common = { name: row.name, mass_g: Number(row.massG) };
     if (row.kind === 'nose') return [{ ...common, kind: 'profile_shell', profile: vehicle.noseProfile, length_mm: Number(row.lengthMm) || Number(vehicle.noseLength), base_radius_mm: (Number(row.diameterMm) || Number(vehicle.diameter)) / 2, power_exponent: 0.75 }];
+    if (row.kind === 'point_mass' && row.xCgMm !== '' && row.xCgMm != null) return [{ ...common, kind: 'point_mass', x_cg_mm: Number(row.xCgMm) }];
     if (row.kind === 'body') {
       const xStart = Number(vehicle.noseLength) + Number(vehicle.bayLength);
       return [{ ...common, kind: 'axial_uniform', x_start_mm: xStart, x_end_mm: Math.min(xStart + (Number(row.lengthMm) || Number(vehicle.bodyLength)), Number(vehicle.totalLength)) }];
@@ -168,7 +259,7 @@ export function LiveAnalysisPanel({
 
   useEffect(() => {
     setAnalysis(null);
-    if (!massesReady) { setComponentResult(null); return; }
+    if (!massStationsReady || !massesReady) { setComponentResult(null); return; }
     setComponentResult(null);
     const timer = window.setTimeout(async () => {
       try {
@@ -180,7 +271,7 @@ export function LiveAnalysisPanel({
       } catch { setComponentResult(null); }
     }, 180);
     return () => window.clearTimeout(timer);
-  }, [componentPayload, massesReady]);
+  }, [componentPayload, massesReady, massStationsReady]);
 
   const updateMass = (id: number, value: NumericField) => {
     onRowsChange((current) => current.map((row) => row.id === id ? { ...row, massG: value, note: 'mass edited locally; xCG remains geometry-derived' } : row));
@@ -193,7 +284,7 @@ export function LiveAnalysisPanel({
   };
 
     const run = async () => {
-    if (!planformReady || !componentResult || componentPayload.length !== rows.length) return;
+    if (!massStationsReady || !planformReady || !componentResult || componentPayload.length !== rows.length) return;
     setRunning(true);
     setError('');
     try {
@@ -263,6 +354,7 @@ export function LiveAnalysisPanel({
     onAnalysisUpdate?.(analysis, componentResult);
   }, [analysis, componentResult, onAnalysisUpdate]);
 
+
   const totalMass = analysis?.total_mass_g ?? componentResult?.total_mass_g;
   const totalCgFromNose = analysis?.cg_x_mm_from_nose ?? componentResult?.total_cg_mm;
   const totalLengthMm = Number(vehicle.totalLength);
@@ -271,19 +363,35 @@ export function LiveAnalysisPanel({
   const cpCatedra = analysis?.cp_x_mm_from_support ??
     (analysis?.cp_x_mm_from_nose !== undefined ? totalLengthMm - analysis.cp_x_mm_from_nose : undefined);
   const cgCpSeparation = totalCgCatedra !== undefined && cpCatedra !== undefined ? Math.abs(totalCgCatedra - cpCatedra) : undefined;
-  const cgPct = totalCgCatedra !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (totalCgCatedra / totalLengthMm) * 100)) : 50;
-  const cpPct = cpCatedra !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (cpCatedra / totalLengthMm) * 100)) : 50;
+  const displayCg = datumMode === 'support' ? totalCgCatedra : totalCgFromNose;
+  const displayCp = datumMode === 'support' ? cpCatedra : analysis?.cp_x_mm_from_nose;
+  // Physical marker positions must stay fixed when the datum display changes.
+  // The rail is drawn nose -> support, so marker percentages always use nose-based coordinates.
+  const cgPct = totalCgFromNose !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (totalCgFromNose / totalLengthMm) * 100)) : 50;
+  const cpPct = analysis?.cp_x_mm_from_nose !== undefined && totalLengthMm > 0 ? Math.max(2, Math.min(98, (analysis.cp_x_mm_from_nose / totalLengthMm) * 100)) : 50;
 
   return <div className={running ? 'panel mass-panel analysis-running' : 'panel mass-panel'} id="engineering-analysis" aria-busy={running}>
-    <div className="panel-title compact"><div><p>{txt('PROPIEDADES DE MASA DERIVADAS DE LA GEOMETRÍA', 'GEOMETRY-DERIVED MASS PROPERTIES')}</p><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
-      <button
-        className="run"
-        disabled={!planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
-        onClick={run}
-      >
-        {running && <span className="run-spinner" aria-hidden="true" />}
-        <span>{running ? txt('EJECUTANDO ANÁLISIS…', 'RUNNING ANALYSIS…') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</span>
-      </button></div>
+    <div className="panel-title compact"><div><h2>{txt('CG de componentes → CG del vehículo → CP → vuelo → recuperación', 'Component CG → vehicle CG → CP → flight → recovery')}</h2></div>
+      <div className="analysis-run-row">
+        <button
+          className="run"
+          disabled={!massStationsReady || !planformReady || !motorReady || !componentResult || componentPayload.length !== rows.length || vehicle.cd === '' || vehicle.launchAngle === '' || running}
+          onClick={run}
+        >
+          {running && <span className="run-spinner" aria-hidden="true" />}
+          <span>{running ? txt('EJECUTANDO ANÁLISIS…', 'RUNNING ANALYSIS…') : !massStationsReady ? txt('FIJAR xCG REALES PARA CONTINUAR', 'SET REAL xCG TO CONTINUE') : !planformReady ? txt('INGRESAR GEOMETRÍA DE ALETAS', 'ENTER FIN GEOMETRY') : !motorReady ? txt('COMPLETAR MOTOR', 'COMPLETE MOTOR') : vehicle.cd === '' || vehicle.launchAngle === '' ? txt('INGRESAR DATOS DE VUELO', 'ENTER FLIGHT INPUTS') : txt('EJECUTAR ANÁLISIS COMPLETO', 'RUN FULL ANALYSIS')}</span>
+        </button>
+        <div className={cdIsEstimated ? 'analysis-cd-control estimated' : 'analysis-cd-control manual'} title={txt('Cd usado por la simulación', 'Cd used by the simulation')}>
+          <div className="analysis-cd-head"><span>Cd</span><small>{cdIsEstimated ? txt('ESTIMADO', 'ESTIMATED') : txt('MANUAL', 'MANUAL')}</small></div>
+          <CdWheelSelector value={vehicle.cd} onChange={(value) => {
+            onCdChange?.(value);
+            setAnalysis(null);
+          }}/>
+          {cdIsEstimated
+            ? <em className="analysis-cd-source">OPENROCKET</em>
+            : <button className="analysis-cd-restore" type="button" onClick={() => { onCdChange?.(estimatedCd); setAnalysis(null); }} aria-label={txt('Restaurar Cd estimado', 'Restore estimated Cd')}>{txt('↺ USAR ESTIMADO', '↺ USE ESTIMATED')}</button>}
+        </div>
+      </div></div>
     {running && <div className="analysis-execution-live">
       <div className="analysis-execution-orbit"><i/><i/><b>Σ</b></div>
       <div><span>{txt('PROCESANDO MODELO', 'PROCESSING MODEL')}</span><strong>{txt('Calculando CG · CP · estabilidad…', 'Calculating CG · CP · stability…')}</strong></div>
@@ -294,15 +402,21 @@ export function LiveAnalysisPanel({
         <b>✓ {txt('COMPLETADO', 'COMPLETE')}</b>
       </div>
 
+      <div className="cdr-datum-switch" role="group" aria-label={txt('Datum longitudinal', 'Longitudinal datum')}>
+        <span>{txt('DATUM', 'DATUM')}</span>
+        <button type="button" className={datumMode === 'support' ? 'active' : ''} onClick={() => setDatumMode('support')}>{txt('APOYO · CÁTEDRA', 'SUPPORT · COURSE')}</button>
+        <button type="button" className={datumMode === 'nose' ? 'active' : ''} onClick={() => setDatumMode('nose')}>{txt('PUNTA / NARIZ', 'NOSE TIP')}</button>
+      </div>
+
       <div className="cdr-hero-values">
         <article className="cg">
-          <span>CG · {txt('DESDE APOYO', 'FROM SUPPORT')}</span>
-          <strong><AnimatedValue value={totalCgCatedra} decimals={1} suffix=" mm"/></strong>
+          <span>CG · {datumMode === 'support' ? txt('DESDE APOYO', 'FROM SUPPORT') : txt('DESDE NARIZ', 'FROM NOSE')}</span>
+          <strong><AnimatedValue value={displayCg} decimals={1} suffix=" mm"/></strong>
           <small>{txt('Centro de gravedad del vehículo', 'Vehicle center of gravity')}</small>
         </article>
         <article className="cp">
-          <span>CP · {txt('DESDE APOYO', 'FROM SUPPORT')}</span>
-          <strong><AnimatedValue value={cpCatedra} decimals={1} suffix=" mm"/></strong>
+          <span>CP · {datumMode === 'support' ? txt('DESDE APOYO', 'FROM SUPPORT') : txt('DESDE NARIZ', 'FROM NOSE')}</span>
+          <strong><AnimatedValue value={displayCp} decimals={1} suffix=" mm"/></strong>
           <small>{txt('Centro de presión aerodinámico', 'Aerodynamic center of pressure')}</small>
         </article>
       </div>
@@ -318,20 +432,27 @@ export function LiveAnalysisPanel({
         <div><span>{txt('SEPARACIÓN CG–CP', 'CG–CP SEPARATION')}</span><strong><AnimatedValue value={cgCpSeparation} decimals={1} suffix=" mm"/></strong></div>
         <div><span>{txt('MARGEN ESTÁTICO', 'STATIC MARGIN')}</span><strong><AnimatedValue value={analysis.static_margin_calibers} decimals={2} suffix=" cal"/></strong></div>
       </div>
-      <div className={
-        analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
-          ? 'stability-status stable'
-          : analysis.static_margin_calibers < 1.5
-            ? 'stability-status warning'
-            : 'stability-status review'
-      }>
+      <button
+        type="button"
+        className={
+          'stability-status selectable ' +
+          (analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
+            ? 'stable '
+            : analysis.static_margin_calibers < 1.5
+              ? 'warning '
+              : 'review ') +
+          (stabilityStatusSelected ? 'selected' : '')
+        }
+        onClick={() => setStabilityStatusSelected((value) => !value)}
+        aria-pressed={stabilityStatusSelected}
+      >
         <i />
         <strong>{
           analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
             ? txt('ESTABLE', 'STABLE')
             : analysis.static_margin_calibers < 1.5
               ? txt('MARGEN BAJO', 'LOW MARGIN')
-              : txt('REVISAR ESTABILIDAD', 'CHECK STABILITY')
+              : txt('MARGEN ALTO', 'HIGH MARGIN')
         }</strong>
         <span>{
           analysis.static_margin_calibers >= 1.5 && analysis.static_margin_calibers <= 2
@@ -340,15 +461,19 @@ export function LiveAnalysisPanel({
               ? txt('Aumentá la separación CG–CP', 'Increase CG–CP separation')
               : txt('Margen superior al rango objetivo', 'Margin above target range')
         }</span>
-      </div>
+      </button>
 
-      <div className="cdr-secondary-results">
+      <div className="cdr-metrics-section-head">
+        <span>{txt('MÉTRICAS DE VUELO', 'FLIGHT METRICS')}</span>
+        <strong>{txt('Resultados de la simulación', 'Simulation results')}</strong>
+      </div>
+      <div className="cdr-secondary-results cdr-secondary-clean">
         <article><span>{txt('MASA TOTAL', 'TOTAL MASS')}</span><strong><AnimatedValue value={totalMass} decimals={1} suffix=" g"/></strong></article>
-        <article><span>{txt('APOGEO', 'APOGEE')}</span><strong><AnimatedValue value={analysis.apogee_m} decimals={1} suffix=" m"/></strong></article>
-        <article><span>{txt('Q MÁX', 'MAX Q')}</span><strong><AnimatedValue value={analysis.max_q_pa} decimals={0} suffix=" Pa"/></strong></article>
-        <article><span>{txt('VELOCIDAD MÁX', 'MAX SPEED')}</span><strong><AnimatedValue value={analysis.max_speed_m_s} decimals={1} suffix=" m/s"/></strong></article>
-        <article><span>{txt('MACH MÁX', 'MAX MACH')}</span><strong><AnimatedValue value={analysis.max_mach} decimals={3}/></strong></article>
-        <article><span>{txt('IMPACTO', 'IMPACT')}</span><strong><AnimatedValue value={analysis.impact_speed_m_s} decimals={2} suffix=" m/s"/></strong></article>
+        <article><span>{txt('ALTURA MÁXIMA', 'MAX ALTITUDE')}</span><strong><AnimatedValue value={analysis.apogee_m} decimals={1} suffix=" m"/></strong></article>
+        <article><span>{txt('PRESIÓN DINÁMICA', 'DYNAMIC PRESSURE')}</span><strong><AnimatedValue value={analysis.max_q_pa} decimals={0} suffix=" Pa"/></strong></article>
+        <article><span>{txt('VELOCIDAD MÁXIMA', 'MAX SPEED')}</span><strong><AnimatedValue value={analysis.max_speed_m_s} decimals={1} suffix=" m/s"/></strong></article>
+        <article><span>{txt('MACH MÁXIMO', 'MAX MACH')}</span><strong><AnimatedValue value={analysis.max_mach} decimals={3}/></strong></article>
+        <article><span>{txt('VEL. DE IMPACTO', 'IMPACT SPEED')}</span><strong><AnimatedValue value={analysis.impact_speed_m_s} decimals={2} suffix=" m/s"/></strong></article>
       </div>
 
       <section className="cdr-vehicle-map">
@@ -361,33 +486,34 @@ export function LiveAnalysisPanel({
           cgMm={totalCgFromNose ?? null}
           cpMm={analysis.cp_x_mm_from_nose ?? null}
           componentCgs={componentResult?.components ?? []}
+          assemblyStations={assemblyStations}
           showComponentCgs
           lang={lang}
         />
       </section>
     </section>}
-    <div className="mass-editor-gate">
+    {massStationsReady ? <div className="mass-editor-gate">
       <div>
         <span>{txt('MASAS Y xCG', 'MASSES & xCG')}</span>
         <strong>{txt('Derivados automáticamente desde PDR', 'Automatically derived from PDR')}</strong>
         <small>{txt('No necesitás volver a cargar datos. Abrí este editor sólo si querés ajustar una masa.', 'No re-entry required. Open only if you want to adjust a mass.')}</small>
       </div>
       <button type="button" onClick={() => setShowMassEditor((value) => !value)}>{showMassEditor ? txt('OCULTAR', 'HIDE') : txt('AJUSTAR', 'ADJUST')}</button>
-    </div>
-    {showMassEditor && <div className="mass-editor-collapsible">
+    </div> : <div className="demo-banner">{txt('Geometría Fusion y masas medidas cargadas. El modelo de CG queda bloqueado hasta fijar xCG de Cofia, C1, C2, Cola + aletas, Portamotor e internos.', 'Fusion geometry and measured masses are loaded. CG stays blocked until xCG is fixed for Nose, C1, C2, Tail + fins, motor mount and internals.')}</div>}
+    {massStationsReady && showMassEditor && <div className="mass-editor-collapsible">
       <div className="demo-banner">{txt('El backend conserva xCG derivado de la geometría; sólo la masa es editable.', 'The backend keeps geometry-derived xCG; only mass is editable.')}</div>
-      <div className="mass-head derived"><span>{txt('Componente', 'Component')}</span><span>{txt('Masa [g]', 'Mass [g]')}</span><span>xCG {txt('CÁTEDRA', 'COURSE')} [mm]</span></div>
+      <div className="mass-head derived"><span>{txt('Componente', 'Component')}</span><span>{txt('Masa [g]', 'Mass [g]')}</span><span>xCG {datumMode === 'support' ? txt('DESDE APOYO', 'FROM SUPPORT') : txt('DESDE NARIZ', 'FROM NOSE')} [mm]</span></div>
       <div className="mass-table">{rows.map((row) => {
         const computed = componentResult?.components.find((item) => item.name === row.name);
         return <div className="mass-row-wrap" key={row.id}><div className="mass-row derived">
           <span>{componentName(row)}</span>
           <input type="number" value={row.massG} disabled={row.kind === 'motor'} onFocus={keepInputVisible} title={row.kind === 'motor' ? txt('La masa del motor se deriva de la configuración activa.', 'Motor mass is derived from the active configuration.') : undefined} onChange={(e) => updateMass(row.id, e.target.value === '' ? '' : Number(e.target.value))}/>
-          <output>{computed ? (totalLengthMm - computed.x_cg_mm).toFixed(1) : txt('POR DEFINIR', 'TBD')}</output>
+          <output>{computed ? (datumMode === 'support' ? totalLengthMm - computed.x_cg_mm : computed.x_cg_mm).toFixed(1) : txt('POR DEFINIR', 'TBD')}</output>
         </div><small>{computed ? displaySource(computed.source) : displayNote(row)}</small></div>;
       })}</div>
     </div>}
     {!planformReady && <div className="analysis-note">{txt('El xCG de las aletas y el CP permanecen bloqueados hasta definir cuerda de punta, desplazamiento del borde de ataque y posición axial de la aleta.', 'Fin xCG and CP remain blocked until tip chord, sweep and fin X are defined.')}</div>}
-    {planformReady && vehicle.cd === '' && <div className="analysis-note">{txt('CG + CP disponibles. Ingresá Cd para habilitar trayectoria, apogeo, Q máx y Mach.', 'CG + CP available. Enter Cd to unlock trajectory, apogee, MaxQ and Mach.')}</div>}
+    {massStationsReady && planformReady && vehicle.cd === '' && <div className="analysis-note">{txt('CG + CP disponibles. Ingresá Cd para habilitar trayectoria, apogeo, qₘₐₓ y Mach.', 'CG + CP available. Enter Cd to unlock trajectory, apogee, qmax and Mach.')}</div>}
     {error && <div className="analysis-error">{txt('Error de API', 'API error')}: {error}</div>}
     <EngineeringEquations lang={lang} />
   </div>;

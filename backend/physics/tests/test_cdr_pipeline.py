@@ -20,15 +20,9 @@ def test_real_reference_case_fails_closed_on_known_tbd_inputs():
     result = run_cdr_case(_baseline_path())
     assert result.vehicle_id == "utn-frh-g07-cdr"
     assert not result.ready_for_numeric_cdr
-    assert "masses.items" in result.blockers
-    assert "fins.root_chord_mm" in result.blockers
-    assert "fins.tip_chord_mm" in result.blockers
-    assert "fins.span_mm" in result.blockers
-    assert "fins.sweep_length_mm" in result.blockers
-    assert "fins.leading_edge_x_mm" in result.blockers
-    assert "aerodynamics.cd" in result.blockers
+    assert result.blockers == ("masses.items",)
     assert result.cg is None
-    assert result.cp_x_m is None
+    assert result.cp_x_m is not None
     assert result.trajectory is None
 
 

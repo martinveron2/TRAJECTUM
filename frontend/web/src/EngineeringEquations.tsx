@@ -87,7 +87,7 @@ const cdrEquations: EquationItem[] = [
     title: 'Presión dinámica',
     model: 'Flight state',
     tex: String.raw`q=\frac{1}{2}\rho(h)V^2`,
-    note: 'MaxQ es el máximo de q a lo largo de la trayectoria.',
+    note: 'qmax es el máximo de q a lo largo de la trayectoria.',
   },
   {
     title: 'Velocidad del sonido y Mach',

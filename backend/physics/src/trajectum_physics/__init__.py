@@ -7,6 +7,7 @@ from .aerodynamics import (
     trapezoidal_fin_set_cp,
 )
 from .analysis import EngineeringResult, MissionSample, analyze_vehicle
+from .assembly import AxialAssembly, AxialInterface, AxialPart, AxialStation, assemble_axially
 from .atmosphere import AtmosphereState, isa_troposphere
 from .cdr import CDRRun, run_cdr_case
 from .components import (
@@ -35,6 +36,10 @@ __version__ = "0.1.0-dev0"
 
 __all__ = [
     "AtmosphereState",
+    "AxialAssembly",
+    "AxialInterface",
+    "AxialPart",
+    "AxialStation",
     "CDRRun",
     "CPContribution",
     "CPResult",
@@ -55,6 +60,7 @@ __all__ = [
     "StaticMargin",
     "a100_rn_kndx_motor",
     "analyze_vehicle",
+    "assemble_axially",
     "axial_uniform_cg",
     "axisymmetric_nose_cp_from_profile",
     "axisymmetric_shell_cg_from_profile",
