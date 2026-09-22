@@ -1,10 +1,6 @@
 # TRAJECTUM
 
 <p align="center">
-  <img src="assets/trajectum-rocket.svg" alt="TRAJECTUM aerospace engineering visualization" width="100%">
-</p>
-
-<p align="center">
   <strong>Aerospace engineering and flight-simulation software for vehicle definition, stability analysis, trajectory modelling and technical review.</strong>
 </p>
 
