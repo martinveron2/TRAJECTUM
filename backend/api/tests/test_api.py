@@ -16,17 +16,17 @@ def test_current_digital_twin_exposes_verified_cad_and_measured_masses():
     assert response.status_code == 200
     data = response.json()
     assert data["geometry"]["outer_diameter_mm"]["value"] == 63.0
-    assert data["geometry"]["nose_length_mm"]["value"] == 180.0
-    assert data["geometry"]["total_length_mm"]["value"] == 789.0
+    assert data["geometry"]["nose_length_mm"]["value"] == 185.44
+    assert data["geometry"]["total_length_mm"]["value"] == 825.05
     masses = data["masses"]
     assert masses["measured_structure_total_g"] == 870.0
     assert sum(item["mass_g"] for item in masses["measured_items"]) == 870.0
     assert data["fins"]["airfoil"]["designation"]["value"] == "NACA 0012"
     assert data["fins"]["root_chord_mm"]["value"] == 97.67
     assert data["fins"]["tip_chord_mm"]["value"] == 39.96
-    assert data["fins"]["span_mm"]["value"] == 52.5
-    assert data["fins"]["sweep_length_mm"]["value"] == 42.0
-    assert data["fins"]["leading_edge_x_mm"]["value"] == 689.0
+    assert data["fins"]["span_mm"]["value"] == 52.55
+    assert data["fins"]["sweep_length_mm"]["value"] == 28.9
+    assert data["fins"]["leading_edge_x_mm"]["value"] == 725.05
     assert data["legacy_test_vehicle"]["status"] == "simulation-fixture-only-not-current-design"
 
 
@@ -35,10 +35,10 @@ def test_current_digital_twin_cp_uses_current_fusion_geometry_without_mass_input
     assert response.status_code == 200
     data = response.json()
     assert data["resolved"] is True
-    assert data["status"] == "derived-current-geometry"
+    assert data["status"] == "team-tp-cdr-reference"
     assert data["blockers"] == []
-    assert abs(data["cp_x_mm_from_nose"] - 578.2305610742484) < 1e-9
-    assert abs(data["cp_x_mm_from_support"] - 210.76943892575156) < 1e-9
+    assert abs(data["cp_x_mm_from_nose"] - 602.68) < 1e-9
+    assert abs(data["cp_x_mm_from_support"] - 222.37) < 1e-9
     assert [item["name"] for item in data["contributions"]] == ["nose", "fins"]
 
 
@@ -48,17 +48,17 @@ def test_current_digital_twin_assembly_uses_drawing_derived_engagements():
     data = response.json()
     assert data["datum"] == "nose_tip_x0_positive_aft"
     assert data["resolved"] is True
-    assert abs(data["total_length_mm"] - 789.0) < 1e-9
+    assert abs(data["total_length_mm"] - 825.05) < 1e-9
     assert data["blockers"] == []
     stations = {item["key"]: item for item in data["stations"]}
     assert stations["nose"]["x_start_mm"] == 0.0
-    assert stations["nose"]["x_end_mm"] == 180.0
-    assert abs(stations["c1_parachute_payload"]["x_start_mm"] - 165.0) < 1e-9
-    assert abs(stations["c1_parachute_payload"]["x_end_mm"] - 380.0) < 1e-9
-    assert abs(stations["c2"]["x_start_mm"] - 365.0) < 1e-9
-    assert abs(stations["c2"]["x_end_mm"] - 580.0) < 1e-9
-    assert abs(stations["tail_fin_can"]["x_start_mm"] - 564.0) < 1e-9
-    assert abs(stations["tail_fin_can"]["x_end_mm"] - 789.0) < 1e-9
+    assert stations["nose"]["x_end_mm"] == 185.44
+    assert abs(stations["c1_parachute_payload"]["x_start_mm"] - 170.05) < 1e-9
+    assert abs(stations["c1_parachute_payload"]["x_end_mm"] - 385.05) < 1e-9
+    assert abs(stations["c2"]["x_start_mm"] - 385.05) < 1e-9
+    assert abs(stations["c2"]["x_end_mm"] - 600.05) < 1e-9
+    assert abs(stations["tail_fin_can"]["x_start_mm"] - 600.05) < 1e-9
+    assert abs(stations["tail_fin_can"]["x_end_mm"] - 825.05) < 1e-9
     assert data["internal_parts"][0]["key"] == "motor_mount"
 
 

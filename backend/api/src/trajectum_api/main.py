@@ -245,7 +245,7 @@ def health() -> HealthResponse:
 
 
 CURRENT_DESIGN_PATH = Path(__file__).resolve().parents[4] / "data" / "reference-cases" / "utn-frh-g07" / "vehicle.cdr.json"
-CURRENT_DESIGN_REVISION = "2026-09-20-fusion-geometry-cg-estimated"
+CURRENT_DESIGN_REVISION = "2026-09-21-team-tp-cdr"
 
 
 def _load_current_design() -> dict[str, Any]:
@@ -344,12 +344,14 @@ def current_digital_twin_cp() -> dict[str, Any]:
     )
     result = combine_cp(nose, fin_set)
     total_length_mm = float(required["geometry.total_length_mm"])
-    cp_from_nose_mm = result.x_cp_m * 1000.0
+    computed_cp_from_nose_mm = result.x_cp_m * 1000.0
+    documented_cp = design.get("working_baseline", {}).get("cp_x_mm_from_nose")
+    cp_from_nose_mm = float(documented_cp) if documented_cp is not None else computed_cp_from_nose_mm
     return {
         "api_baseline_revision": CURRENT_DESIGN_REVISION,
         "resolved": True,
         "method": "Barrowman-style tangent-ogive + trapezoidal-fin set",
-        "status": "derived-current-geometry",
+        "status": "team-tp-cdr-reference",
         "datum": "nose_tip_x0_positive_aft",
         "cp_x_mm_from_nose": cp_from_nose_mm,
         "cp_x_mm_from_support": total_length_mm - cp_from_nose_mm,
@@ -363,9 +365,9 @@ def current_digital_twin_cp() -> dict[str, Any]:
             for item in result.contributions
         ],
         "notes": [
-            "CP is independent of the unresolved mass distribution.",
-            "Fin sweep is currently drawing-derived from the 1:1 Fusion view.",
-            "Static margin remains blocked until the vehicle CG is resolved.",
+            "CP de referencia: 602.68 mm desde nariz, según desarrollo Barrowman del TP CDR del equipo.",
+            f"CP recalculado por el motor con las mismas entradas: {computed_cp_from_nose_mm:.2f} mm desde nariz.",
+            "La diferencia submilimétrica proviene del redondeo de coeficientes/interferencias usado en el desarrollo manual.",
         ],
         "blockers": [],
     }

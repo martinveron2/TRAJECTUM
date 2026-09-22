@@ -1,36 +1,36 @@
 {
   "schema_version": "0.1",
   "id": "utn-frh-g07-cdr",
-  "status": "cdr-cad-baseline-in-progress",
+  "status": "cdr-rev0-team-tp-2026-09-21",
   "geometry": {
     "total_length_mm": {
       "value": 825.05,
-      "status": "verified-assembly-drawing",
-      "note": "Longitud total acotada en plano de ensamble Hoja 2 del 21/09/2026."
+      "status": "verified-team-tp-cdr",
+      "note": "Longitud total del diseño CDR en el TP Grupo 07 Rev 0.1."
     },
     "outer_diameter_mm": {
       "value": 63,
-      "status": "verified-drawing"
+      "status": "verified-team-tp-cdr"
     },
     "nose_length_mm": {
-      "value": 200.05,
-      "status": "derived-from-assembly-total-and-team-segments",
-      "note": "825.05 - 225 - 215 - 185 = 200.05 mm; reemplaza el 195 mm aproximado informado previamente."
+      "value": 185.44,
+      "status": "verified-team-tp-cdr",
+      "note": "Longitud de cofia utilizada en el cálculo Barrowman del CDR."
     },
     "parts": {
       "nose": {
-        "length_mm": 200.05,
+        "length_mm": 185.44,
         "outer_diameter_mm": 63,
-        "interface_diameter_mm": 55,
+        "interface_diameter_mm": 63,
         "profile": "tangent_ogive",
         "radii_mm": [
           561.54,
           559.04
         ],
-        "status": "derived-working-effective-length"
+        "status": "team-tp-cdr"
       },
       "c1_parachute_payload": {
-        "raw_part_length_mm": 185,
+        "raw_part_length_mm": 215,
         "outer_diameter_mm": 63,
         "diameters_mm": [
           59,
@@ -39,7 +39,7 @@
           8
         ],
         "thread": "M58x4 6H",
-        "status": "team-confirmed-working-effective"
+        "status": "team-tp-cdr-drawing"
       },
       "c2": {
         "raw_part_length_mm": 215,
@@ -47,20 +47,20 @@
         "outer_diameter_mm": 63,
         "inner_diameter_mm": 58,
         "thread": "M58x4 6g",
-        "status": "verified-drawing"
+        "status": "team-tp-cdr-drawing"
       },
       "tail_fin_can": {
         "raw_part_length_mm": 225,
         "outer_diameter_mm": 63,
         "overall_fin_span_mm": 168,
         "airfoil": "NACA 0012",
-        "status": "verified-drawing",
-        "note": "Fusion drawing dimensions: tail raw length 225 mm, root leading edge 125 mm from tail front, root chord 97.67 mm, tip chord 39.96 mm, overall tip-to-tip span 168 mm. Radial span is derived exactly as (168-63)/2 = 52.5 mm. Sweep is not directly dimensioned; 42.0 mm is derived from the 1:1 drawing geometry and remains drawing-derived.",
+        "status": "team-tp-cdr",
+        "note": "TP CDR: cola 225 mm; borde de ataque de raíz a 125 mm del frente de cola; cuerda raíz 97.67 mm; cuerda punta 39.96 mm; envergadura radial 52.55 mm; barrido axial Xf 28.9 mm; ancho total 168 mm; perfil NACA 0012.",
         "root_le_from_tail_front_mm": 125,
         "fin_root_chord_mm": 97.67,
         "fin_tip_chord_mm": 39.96,
-        "radial_fin_span_mm": 52.5,
-        "fin_sweep_length_mm": 42
+        "radial_fin_span_mm": 52.55,
+        "fin_sweep_length_mm": 28.9
       },
       "motor_mount": {
         "raw_part_length_mm": 190,
@@ -69,7 +69,7 @@
         "status": "verified-drawing"
       }
     },
-    "assembly_note": "Geometría axial de trabajo: nariz 200.05 mm + C1 185 mm + C2 215 mm + cola 225 mm = 825.05 mm, consistente con el plano de ensamble.",
+    "assembly_note": "TP CDR: longitudes brutas cofia 185.44 mm, C1 215 mm, C2 215 mm y cola 225 mm. El solape cofia-C1 de 15.39 mm se deriva por cierre dimensional para reproducir la longitud ensamblada 825.05 mm.",
     "assembly": {
       "datum": "nose_tip_x0_positive_aft",
       "serial_airframe_sequence": [
@@ -83,8 +83,8 @@
           "upstream": "nose",
           "downstream": "c1_parachute_payload",
           "overlap_mm": {
-            "value": 0,
-            "status": "effective-lengths-already-assembled"
+            "value": 15.39,
+            "status": "derived-by-total-length-closure"
           }
         },
         {
@@ -92,7 +92,7 @@
           "downstream": "c2",
           "overlap_mm": {
             "value": 0,
-            "status": "effective-lengths-already-assembled"
+            "status": "effective-interface"
           }
         },
         {
@@ -100,7 +100,7 @@
           "downstream": "tail_fin_can",
           "overlap_mm": {
             "value": 0,
-            "status": "effective-lengths-already-assembled"
+            "status": "effective-interface"
           }
         }
       ],
@@ -111,37 +111,37 @@
           "status": "pending-axial-station"
         }
       ],
-      "note": "Las longitudes efectivas de trabajo ya representan el conjunto ensamblado según Simón; por eso no se vuelven a descontar encastres en este gemelo de prueba."
+      "note": "Ensamblaje cerrado a 825.05 mm usando las dimensiones del TP actual. El solape de 15.39 mm se obtiene como 185.44+215+215+225-825.05."
     }
   },
   "launch_angle_deg": 85,
   "fins": {
     "count": {
       "value": 4,
-      "status": "verified-cad-and-drawing"
+      "status": "team-tp-cdr"
     },
     "root_chord_mm": {
       "value": 97.67,
-      "status": "verified-drawing"
+      "status": "team-tp-cdr"
     },
     "span_mm": {
-      "value": 52.5,
-      "status": "derived-drawing",
-      "note": "(168 mm overall fin-tip span - 63 mm body OD)/2 = 52.5 mm radial span."
+      "value": 52.55,
+      "status": "team-tp-cdr",
+      "note": "Valor usado en el desarrollo Barrowman del TP."
     },
     "tip_chord_mm": {
       "value": 39.96,
-      "status": "verified-drawing"
+      "status": "team-tp-cdr"
     },
     "sweep_length_mm": {
-      "value": 42,
-      "status": "derived-1to1-drawing-geometry",
-      "note": "Not directly dimensioned on the Fusion drawing; derived from the 1:1 side-view geometry. Keep traceable as derived until Fusion parameter/export confirms it."
+      "value": 28.9,
+      "status": "team-tp-cdr",
+      "note": "Desplazamiento axial usado explícitamente en el cálculo de CP del TP."
     },
     "leading_edge_x_mm": {
       "value": 725.05,
-      "status": "derived-from-working-assembly",
-      "note": "La cola inicia en x=600.05 mm y el borde de ataque de raíz está a 125 mm del frente de cola."
+      "status": "team-tp-cdr",
+      "note": "Posición axial del borde de ataque indicada en el desarrollo de CP del TP."
     },
     "airfoil": {
       "type": "naca4",
@@ -157,69 +157,55 @@
     }
   },
   "masses": {
-    "status": "measured-structure-cg-stations-estimated",
+    "status": "team-tp-cdr-analytic-stations-plus-cad-cg",
     "measured_structure_total_g": 870,
     "measured_items": [
       {
         "name": "Cofia",
         "mass_g": 126,
-        "status": "measured",
-        "x_cg_mm_from_nose": 111.7,
-        "x_cg_status": "geometry-derived"
+        "status": "team-tp-cdr",
+        "x_cg_mm_from_nose": 100,
+        "x_cg_status": "tp-analytic"
       },
       {
-        "name": "C1",
-        "mass_g": 190,
-        "status": "measured",
-        "x_cg_mm_from_nose": 292.55,
-        "x_cg_status": "working-midpoint-effective-segment"
+        "name": "Aletas (qty 4)",
+        "mass_g": 20,
+        "status": "team-tp-cdr",
+        "x_cg_mm_from_nose": 773.9,
+        "x_cg_status": "tp-analytic"
       },
       {
-        "name": "C2",
-        "mass_g": 146,
-        "status": "measured",
-        "x_cg_mm_from_nose": 492.55,
-        "x_cg_status": "working-midpoint-effective-segment"
-      },
-      {
-        "name": "Cola + aletas",
-        "mass_g": 260,
-        "status": "measured",
-        "x_cg_mm_from_nose": 736.85,
-        "x_cg_status": "working-shifted-station"
+        "name": "Cuerpo",
+        "mass_g": 576,
+        "status": "team-tp-cdr",
+        "x_cg_mm_from_nose": 505.23,
+        "x_cg_status": "tp-analytic"
       },
       {
         "name": "Portamotor",
         "mass_g": 148,
-        "status": "measured",
-        "x_cg_mm_from_nose": 730.05,
-        "x_cg_status": "working-center-aft-installation"
+        "status": "team-tp-cdr",
+        "x_cg_mm_from_nose": 525.02,
+        "x_cg_status": "tp-grouped-motor-station"
       }
     ],
     "known_internal_items": [
       {
         "name": "Paracaidas",
-        "mass_g": 50,
-        "status": "team-estimate",
-        "x_cg_mm_from_nose": 292.55,
-        "x_cg_status": "working-center-of-c1"
-      },
-      {
-        "name": "Electronica",
-        "mass_g": 80,
-        "status": "project-confirmed",
-        "x_cg_mm_from_nose": 546.3,
-        "x_cg_status": "working-lower-half-c2"
+        "mass_g": 30,
+        "status": "team-tp-cdr",
+        "x_cg_mm_from_nose": 200,
+        "x_cg_status": "tp-grouped-recovery-payload-station"
       },
       {
         "name": "Carga util",
         "mass_g": 100,
-        "status": "project-confirmed",
-        "x_cg_mm_from_nose": 438.8,
-        "x_cg_status": "working-upper-half-c2"
+        "status": "team-tp-cdr",
+        "x_cg_mm_from_nose": 200,
+        "x_cg_status": "tp-grouped-recovery-payload-station"
       }
     ],
-    "note": "Masas estructurales medidas. Paracaídas 50 g estimado; carga útil 100 g y electrónica 80 g. Arquitectura de trabajo: paracaídas en C1; carga útil en la parte superior de C2; electrónica debajo, también en C2. Las estaciones axiales internas siguen siendo provisionales hasta el plano de ensamble/CAD final."
+    "note": "TP Grupo 07 Rev 0.1: cofia 126 g, aletas 20 g, cuerpo 576 g, conjunto motor+portamotor 638 g, paracaídas+carga útil 130 g; masa total 1490 g. CG analítico 456.41 mm desde nariz; CAD de referencia 523.49 mm desde nariz, usado como valor conservador para margen estático."
   },
   "motor": {
     "designation": "A-100 RN (29%H)",
@@ -231,8 +217,8 @@
     "propellant_mass_g": 140,
     "dry_mass_g": 350,
     "status": "tp-specified",
-    "x_cg_mm_from_nose": 730.05,
-    "x_cg_status": "working-center-of-190mm-aft-installation"
+    "x_cg_mm_from_nose": 525.02,
+    "x_cg_status": "tp-grouped-motor-station"
   },
   "aerodynamics": {
     "cd": {
@@ -260,9 +246,9 @@
       ],
       "source": "Niskanen/OpenRocket Technical Documentation: Eq. 3.78, 3.82, 3.85, 3.89, 3.91, 3.94, 3.97"
     },
-    "note": "Cd=0.345 se conserva sólo como valor provisional del caso anterior para permitir pruebas del gemelo. Debe recalcularse para la geometría ensamblada de 825.05 mm."
+    "note": "Cd=0.345 se conserva como valor provisional de la corrida CDR; geometría y masas actualizadas al TP Grupo 07 Rev 0.1."
   },
-  "revision": "2026-09-21-provisional-cg-cp-rk4-baseline",
+  "revision": "2026-09-21-team-tp-cdr-cg-cp-rk4",
   "datum": "nose_tip_x0_positive_aft",
   "sources": {
     "cad_and_drawings_date": "2026-09-19",
@@ -280,8 +266,8 @@
       "Modelado 2 de cola - perfil NACA 0012.f3d",
       "Modelado 2 de Portamotor.f3d"
     ],
-    "mass_source": "team measured-mass note supplied 2026-09-20",
-    "assembly_source": "Plano de ensamble Hoja 2, 21/09/2026: longitud total acotada 825.05 mm. Tramos de trabajo: C1 185 mm, C2 215 mm, cola 225 mm; nariz efectiva deducida 200.05 mm."
+    "mass_source": "TPI-PDR(A)-Grupo07.docx Rev 0.1 recibido 21/09/2026",
+    "assembly_source": "TP Grupo 07 CDR: L=825.05 mm; cofia 185.44 mm; C1/C2/cola según planos; fin LE x=725.05 mm."
   },
   "legacy_test_vehicle": {
     "status": "simulation-fixture-only-not-current-design",
@@ -297,30 +283,34 @@
     "note": "Retained only to document the former functional test configuration. Do not use these values as CDR design truth."
   },
   "working_baseline": {
-    "status": "provisional-for-trajectory-simulation",
-    "note": "Baseline de trabajo para ejecutar la simulación. CG/CP se reemplazan cuando el equipo entregue valores definitivos.",
-    "initial_mass_g": 1590.0,
-    "cg_x_mm_from_nose": 567.75,
-    "cg_x_mm_from_support": 257.3,
-    "cp_x_mm_from_nose": 608.16,
-    "cp_x_mm_from_support": 216.89,
-    "static_margin_calibers": 0.64,
+    "status": "team-tp-cdr-reference-run",
+    "note": "Corrida actualizada con masa total 1490 g y geometría del TP. Para estabilidad se conserva el CG CAD 523.49 mm y el CP analítico del equipo 602.68 mm como referencias documentales.",
+    "initial_mass_g": 1490.0,
+    "post_burn_mass_g": 1350.0,
+    "cg_analytic_x_mm_from_nose": 456.41,
+    "cg_cad_x_mm_from_nose": 523.49,
+    "cg_cad_x_mm_from_support": 301.56,
+    "cp_x_mm_from_nose": 602.68,
+    "cp_x_mm_from_support": 222.37,
+    "static_margin_calibers_cad": 1.26,
     "method": {
-      "cg": "masas medidas + estaciones axiales estimadas de planos/cotas/distribución interna",
-      "cp": "Barrowman, ojiva tangente + 4 aletas trapezoidales",
-      "trajectory": "RK4 2D, dt=0.002 s, atmósfera ISA, masa variable y curva de empuje A-100 RN/KNDX",
+      "cg": "TP analítico + verificación CAD Fusion 360",
+      "cp": "Barrowman del TP",
+      "trajectory": "RK4 2D, dt=0.002 s, ISA, masa variable y curva A-100 RN/KNDX",
       "cd": "0.345 provisional"
     },
-    "first_trajectory_run": {
-      "hmax_m": 662.14,
-      "time_to_hmax_s": 11.28,
-      "vmax_m_s": 128.95,
-      "max_mach": 0.379,
-      "qmax_pa": 10152.07,
+    "trajectory_run": {
+      "hmax_m": 720.45,
+      "time_to_hmax_s": 11.662,
+      "vmax_m_s": 138.08,
+      "max_mach": 0.4059,
+      "qmax_pa": 11637.57,
       "burnout_time_s": 0.5,
-      "burnout_altitude_m": 36.56,
-      "burnout_speed_m_s": 128.73,
-      "burnout_q_pa": 10114.74
+      "burnout_altitude_m": 39.15,
+      "burnout_speed_m_s": 137.83,
+      "burnout_q_pa": 11592.4,
+      "landing_time_s": 95.686,
+      "impact_speed_m_s": 8.49
     }
   }
 }
