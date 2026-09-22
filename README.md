@@ -89,6 +89,12 @@ TRAJECTUM/
 └── infra/            # development / deployment infrastructure
 ```
 
+## Documentation
+
+- **[User Guide](docs/USER_GUIDE.md)** — operating workflow, engineering inputs, analysis, result interpretation and current model limitations.
+- **[Fin Input Contract](docs/FIN_INPUT_CONTRACT.md)** — fin geometry and airfoil input conventions.
+- **[Licensing](LICENSING.md)** — public and commercial licensing scope.
+
 ## Development Roadmap
 
 - [x] Consolidated modular monorepo
