@@ -16,6 +16,15 @@
   <img src="https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white" alt="Docker">
   <img src="https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-6C63FF" alt="License">
+  <a href="https://github.com/martinveron2/TRAJECTUM/actions/workflows/ci.yml"><img src="https://github.com/martinveron2/TRAJECTUM/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
+
+<p align="center">
+  <a href="https://trajectum-vercel.vercel.app"><strong>Live Demo</strong></a>
+  ·
+  <a href="docs/USER_GUIDE.md">User Guide</a>
+  ·
+  <a href="docs/VALIDATION.md">Validation</a>
 </p>
 
 ---
@@ -93,6 +102,7 @@ TRAJECTUM/
 
 - **[User Guide](docs/USER_GUIDE.md)** — operating workflow, engineering inputs, analysis, result interpretation and current model limitations.
 - **[Fin Input Contract](docs/FIN_INPUT_CONTRACT.md)** — fin geometry and airfoil input conventions.
+- **[Validation](docs/VALIDATION.md)** — independent cross-checks, validation scope and reproducibility notes.
 - **[Licensing](LICENSING.md)** — public and commercial licensing scope.
 
 ## Development Roadmap
@@ -108,6 +118,12 @@ TRAJECTUM/
 - [ ] Expand trajectory and stability visualization
 - [ ] Publish reproducible validation cases
 - [x] Release an interactive technical demonstration
+
+## Validation
+
+TRAJECTUM uses explicit reference cases and independent cross-checks to verify numerical behavior. The current CDR trajectory has been compared against **RocketPy 1.13.0** under matched first-order assumptions, with close agreement in apogee, burnout state, maximum velocity, Mach number and dynamic pressure.
+
+This comparison is treated as an **independent cross-check**, not as experimental validation. See **[Validation](docs/VALIDATION.md)** for assumptions, numerical results and scope.
 
 ## Engineering Principles
 
