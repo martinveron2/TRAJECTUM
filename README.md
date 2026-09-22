@@ -117,7 +117,7 @@ The active application stack is centered on **Python** for engineering computati
 
 TRAJECTUM is source-available under the **PolyForm Noncommercial License 1.0.0**.
 
-Personal, academic, educational, research and other permitted noncommercial uses are governed by the public license. Commercial use requires a separate written commercial license from the copyright holder.
+Use, modification and distribution for permitted noncommercial purposes are governed by the public license. Commercial use requires a separate written commercial license from the copyright holder. Third-party components remain subject to their own licenses and notices.
 
 See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md) and [NOTICE](NOTICE).
 
