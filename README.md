@@ -25,6 +25,14 @@
 
 ---
 
+## Academic Engineering Context
+
+TRAJECTUM is currently used as an auxiliary engineering and simulation platform within an academic aerospace project developed at **Universidad Tecnológica Nacional — Facultad Regional Haedo (UTN FRH)**.
+
+The active academic reference case corresponds to the **Grupo 07** configuration used in the **Mecánica de los Fluidos** integrative project and its design-review workflow, including PDR and CDR stages.
+
+This repository is an independently developed software project. It is **not an official UTN institutional product**, endorsement, certification, or publication.
+
 ## What TRAJECTUM does
 
 TRAJECTUM is a modular aerospace engineering platform with a Python physics core and a TypeScript/React web interface. The current CDR workflow brings vehicle geometry, mass properties, propulsion, stability, trajectory, recovery and engineering reporting into one traceable analysis environment.
@@ -150,3 +158,6 @@ See [LICENSING.md](LICENSING.md) and [NOTICE](NOTICE).
 A `CITATION.cff` file has not been added yet because the repository currently exposes both the CDR documentation identifier `v0.1.0-cdr` and the web package version `0.1.0-dev0`.
 
 **[DECISIÓN PENDIENTE: confirmar la versión pública que debe utilizarse para la cita antes de crear CITATION.cff.]**
+---
+
+**Current academic reference:** UTN FRH · Mecánica de los Fluidos · Grupo 07 · CDR 2026
