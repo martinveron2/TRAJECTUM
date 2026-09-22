@@ -103,6 +103,9 @@ TRAJECTUM/
 - **[User Guide](docs/USER_GUIDE.md)** — operating workflow, engineering inputs, analysis, result interpretation and current model limitations.
 - **[Fin Input Contract](docs/FIN_INPUT_CONTRACT.md)** — fin geometry and airfoil input conventions.
 - **[Validation](docs/VALIDATION.md)** — independent cross-checks, validation scope and reproducibility notes.
+- **[Engineering Evidence](docs/ENGINEERING_EVIDENCE.md)** — capability-by-capability evidence, status and limitations.
+- **[Changelog](CHANGELOG.md)** — milestone history and release evolution.
+- **[v0.1.0-cdr Release Notes](docs/RELEASE_NOTES_v0.1.0-cdr.md)** — scope, validation status and known limits.
 - **[Licensing](LICENSING.md)** — public and commercial licensing scope.
 
 ## Development Roadmap
@@ -124,6 +127,12 @@ TRAJECTUM/
 TRAJECTUM uses explicit reference cases and independent cross-checks to verify numerical behavior. The current CDR trajectory has been compared against **RocketPy 1.13.0** under matched first-order assumptions, with close agreement in apogee, burnout state, maximum velocity, Mach number and dynamic pressure.
 
 This comparison is treated as an **independent cross-check**, not as experimental validation. See **[Validation](docs/VALIDATION.md)** for assumptions, numerical results and scope.
+
+## Engineering Evidence
+
+TRAJECTUM separates **software maturity** from **physical-model maturity**. Each major capability is tied to an explicit method, evidence source, status and limitation so that a passing build is never mistaken for experimental validation.
+
+See **[Engineering Evidence](docs/ENGINEERING_EVIDENCE.md)** for the current verification matrix.
 
 ## Engineering Principles
 
