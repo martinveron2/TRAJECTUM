@@ -1,22 +1,16 @@
 # TRAJECTUM
 
 <p align="center">
-  <img src="assets/trajectum-rocket.svg" alt="TRAJECTUM aerospace engineering visualization" width="100%">
+  <strong>Aerospace engineering and flight-simulation software for vehicle definition, stability analysis, trajectory modelling and technical review.</strong>
 </p>
 
 <p align="center">
-  <strong>Aerospace Engineering & Flight Simulation Platform</strong><br>
-  Modular engineering software for vehicle geometry, flight physics, trajectory analysis, aerodynamics, validation and technical reporting.
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/TypeScript-Frontend-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/React-Web-61DAFB?logo=react&logoColor=111" alt="React">
-  <img src="https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white" alt="Docker">
-  <img src="https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-6C63FF" alt="License">
   <a href="https://github.com/martinveron2/TRAJECTUM/actions/workflows/ci.yml"><img src="https://github.com/martinveron2/TRAJECTUM/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/CDR-v0.1.0--cdr-555" alt="CDR v0.1.0-cdr">
+  <img src="https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-555" alt="PolyForm Noncommercial 1.0.0">
+  <a href="https://trajectum-vercel.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-TRAJECTUM-555" alt="Live Demo"></a>
+  <img src="https://img.shields.io/badge/Independent%20Cross--Check-RocketPy-555" alt="Independent cross-check against RocketPy">
 </p>
 
 <p align="center">
@@ -25,136 +19,145 @@
   <a href="docs/USER_GUIDE.md">User Guide</a>
   ·
   <a href="docs/VALIDATION.md">Validation</a>
+  ·
+  <a href="docs/ENGINEERING_EVIDENCE.md">Engineering Evidence</a>
 </p>
 
 ---
 
-## Mission
+## Academic Engineering Context
 
-TRAJECTUM is being built as a serious aerospace engineering platform rather than a single-purpose calculator. The repository is organized as a modular monorepo so that geometry, physics, CAD, APIs, validation, reporting and user interfaces can evolve independently while sharing a common engineering model.
+TRAJECTUM is currently used as an auxiliary engineering and simulation platform within an academic aerospace project developed at **Universidad Tecnológica Nacional — Facultad Regional Haedo (UTN FRH)**.
 
-Current focus: **`v0.1.0-cdr`**.
+The active academic reference case corresponds to the **Grupo 07** configuration used in the **Mecánica de los Fluidos** integrative project and its design-review workflow, including PDR and CDR stages.
 
-## Engineering Scope
+This repository is an independently developed software project. It is **not an official UTN institutional product**, endorsement, certification, or publication.
 
-- **Mass properties** — mass, center of gravity and configuration state.
-- **Flight physics** — atmosphere, propulsion, stability, recovery and trajectory foundations.
-- **Aerodynamics** — interfaces for low- and higher-fidelity aerodynamic analysis.
-- **CAD & geometry** — vehicle geometry and engineering model integration.
-- **Validation** — traceable engineering checks, reference cases and verification workflows.
-- **Reporting** — reproducible technical outputs for design reviews.
-- **Platform interfaces** — API and web layers for future interactive engineering workflows.
+## What TRAJECTUM does
+
+TRAJECTUM is a modular aerospace engineering platform with a Python physics core and a TypeScript/React web interface. The current CDR workflow brings vehicle geometry, mass properties, propulsion, stability, trajectory, recovery and engineering reporting into one traceable analysis environment.
+
+The project keeps model assumptions and evidence levels explicit. A passing software test is not treated as physical validation, and cross-tool agreement is not presented as experimental validation.
+
+## Quick Start
+
+The repository includes a Windows launcher that verifies Git, Python and npm, updates the local checkout, prepares dependencies, starts the API and web interface, and runs the current UTN CDR reference case.
+
+```bat
+git clone https://github.com/martinveron2/TRAJECTUM.git
+cd TRAJECTUM
+ACTUALIZAR_E_INICIAR.bat
+```
+
+When startup succeeds, the script reports the local web and API addresses and executes the reference case through the existing physics CLI.
+
+For the deployed interface, use the [Live Demo](https://trajectum-vercel.vercel.app).
+
+## Capabilities
+
+| Capability | Current approach |
+| --- | --- |
+| Mass properties / CG | Component mass moments and axial stations |
+| CP / stability | Barrowman-style first-order CP model and static margin |
+| Propulsion | Time-varying thrust curve and propellant depletion |
+| Atmosphere | Standard-atmosphere implementation |
+| Trajectory | 2D point-mass equations integrated with RK4 |
+| Recovery | Simplified drag-based descent model |
+| Validation | Analytical checks, regression tests and independent cross-tool comparison |
+| Reporting | Engineering results, exports and design-review documentation |
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    WEB[Web / Visualization] --> API[API Layer]
+    WEB[Web Interface] --> API[FastAPI]
     API --> CORE[Engineering Core]
-
-    CORE --> PHYS[Physics]
-    CORE --> CAD[CAD & Geometry]
+    CORE --> MASS[Mass / CG]
+    CORE --> AERO[CP / Aerodynamics]
+    CORE --> PROP[Propulsion]
+    CORE --> ATM[Atmosphere]
+    CORE --> TRAJ[Trajectory]
+    CORE --> REC[Recovery]
     CORE --> VAL[Validation]
-    CORE --> REP[Reporting]
-
-    PHYS --> MASS[Mass & CG]
-    PHYS --> AERO[Aerodynamics]
-    PHYS --> PROP[Propulsion]
-    PHYS --> TRAJ[Trajectory]
-    PHYS --> STAB[Stability / Recovery]
-
-    CAD --> VEH[Vehicle Geometry]
-    VAL --> TRACE[Traceability]
-    REP --> DOCS[Engineering Reports]
 ```
 
-## Technology Stack
+The deployed application is assembled from the repository's existing `frontend/web`, `backend/*`, `main.py` and reference-case data. Runtime paths are intentionally left unchanged during documentation-only cleanup.
 
-| Layer | Technology |
-| --- | --- |
-| Engineering core | Python 3.11+ |
-| API | FastAPI + Pydantic |
-| Web interface | TypeScript + React + Vite |
-| Containers | Docker / Docker Compose |
-| Quality | Pytest, Ruff, MyPy |
-| CI | GitHub Actions |
-| Documentation | Markdown + Mermaid |
+## Validation & Engineering Evidence
+
+TRAJECTUM separates software verification, model verification, cross-tool verification and experimental validation.
+
+The current validation documentation includes an independent trajectory comparison against RocketPy under matched first-order assumptions. That comparison is used as a numerical cross-check, not as certification and not as a substitute for test or flight data.
+
+- [Validation](docs/VALIDATION.md)
+- [Engineering Evidence](docs/ENGINEERING_EVIDENCE.md)
+- [CDR status](docs/CDR_STATUS.md)
+- [Repository presentation audit](docs/REPOSITORY_AUDIT.md)
+- [ADR-001: RK4 integration](docs/adr/ADR-001-rk4-integration.md)
 
 ## Repository Layout
 
 ```text
 TRAJECTUM/
-├── backend/
-│   ├── api/          # API contracts and services
-│   ├── cad/          # CAD and geometry domain
-│   ├── core/         # shared engineering core
-│   ├── physics/      # flight physics engine
-│   ├── reporting/    # technical reporting
-│   └── validation/   # verification and validation
-├── frontend/web/     # TypeScript / React interface
-├── data/             # engineering datasets and vehicle definitions
-├── docs/             # architecture, roadmap and validation docs
-├── examples/         # reproducible engineering examples
-└── infra/            # development / deployment infrastructure
+├── .github/           # CI workflows
+├── backend/           # API, core, physics, CAD, reporting and validation
+├── cad/               # CAD reference material
+├── data/              # vehicle definitions and reference cases
+├── docs/              # engineering and project documentation
+├── examples/          # reproducible examples
+├── frontend/web/      # TypeScript / React / Vite application
+├── infra/             # development and deployment infrastructure
+├── scripts/           # local / cloud operational scripts
+├── main.py            # deployed FastAPI/static application entrypoint
+└── vercel.json        # Vercel build and function configuration
 ```
+
+## Status
+
+- **CDR documentation baseline:** `v0.1.0-cdr`
+- **Web package version:** `0.1.0-dev0`
+- **Development state:** active engineering development
+- **Release history:** [CHANGELOG.md](CHANGELOG.md)
+- **Release notes:** [v0.1.0-cdr](docs/RELEASE_NOTES_v0.1.0-cdr.md)
+- **Evidence matrix:** [Engineering Evidence](docs/ENGINEERING_EVIDENCE.md)
+
+The differing CDR documentation and web-package version identifiers are preserved explicitly rather than silently normalized.
 
 ## Documentation
 
-- **[User Guide](docs/USER_GUIDE.md)** — operating workflow, engineering inputs, analysis, result interpretation and current model limitations.
-- **[Fin Input Contract](docs/FIN_INPUT_CONTRACT.md)** — fin geometry and airfoil input conventions.
-- **[Validation](docs/VALIDATION.md)** — independent cross-checks, validation scope and reproducibility notes.
-- **[Engineering Evidence](docs/ENGINEERING_EVIDENCE.md)** — capability-by-capability evidence, status and limitations.
-- **[Changelog](CHANGELOG.md)** — milestone history and release evolution.
-- **[v0.1.0-cdr Release Notes](docs/RELEASE_NOTES_v0.1.0-cdr.md)** — scope, validation status and known limits.
-- **[Licensing](LICENSING.md)** — public and commercial licensing scope.
+- [User Guide](docs/USER_GUIDE.md)
+- [Validation](docs/VALIDATION.md)
+- [Engineering Evidence](docs/ENGINEERING_EVIDENCE.md)
+- [Fin Input Contract](docs/FIN_INPUT_CONTRACT.md)
+- [Repository Map](docs/architecture/REPOSITORY_MAP.md)
+- [Traceability](docs/architecture/TRACEABILITY.md)
+- [Mobile UI Navigation](docs/architecture/MOBILE_UI_NAVIGATION.md)
+- [Roadmap](docs/roadmap/V0.1_CDR_ROADMAP.md)
+- [Licensing](LICENSING.md)
 
-## Development Roadmap
+## Current limitations
 
-- [x] Consolidated modular monorepo
-- [x] Initial API, CAD, core, physics, reporting and validation domains
-- [x] Web application foundation
-- [x] CI and container infrastructure
-- [x] Source-available licensing model
-- [ ] Expand flight-physics models and reference cases
-- [ ] Strengthen CAD / vehicle geometry workflows
-- [ ] Add aerodynamic analysis integrations
-- [ ] Expand trajectory and stability visualization
-- [ ] Publish reproducible validation cases
-- [x] Release an interactive technical demonstration
+Depending on the active case and module, the current release includes first-order aerodynamic models, a 2D point-mass trajectory workflow rather than full 6-DOF dynamics, provisional aerodynamic inputs in some reference cases, and simplified recovery modelling.
 
-## Validation
+These limits are documented deliberately. Results should remain tied to their configuration revision and evidence state.
 
-TRAJECTUM uses explicit reference cases and independent cross-checks to verify numerical behavior. The current CDR trajectory has been compared against **RocketPy 1.13.0** under matched first-order assumptions, with close agreement in apogee, burnout state, maximum velocity, Mach number and dynamic pressure.
+## Roadmap
 
-This comparison is treated as an **independent cross-check**, not as experimental validation. See **[Validation](docs/VALIDATION.md)** for assumptions, numerical results and scope.
-
-## Engineering Evidence
-
-TRAJECTUM separates **software maturity** from **physical-model maturity**. Each major capability is tied to an explicit method, evidence source, status and limitation so that a passing build is never mistaken for experimental validation.
-
-See **[Engineering Evidence](docs/ENGINEERING_EVIDENCE.md)** for the current verification matrix.
-
-## Engineering Principles
-
-TRAJECTUM aims for **traceability, reproducibility and physical transparency**. Numerical outputs should be tied to explicit assumptions, models, units and validation evidence. Higher-fidelity capabilities should be added without hiding the engineering reasoning behind black-box interfaces.
-
-## Language Statistics
-
-GitHub's language bar reflects source-code volume, not developer proficiency. This repository uses GitHub Linguist attributes to keep generated files, vendored dependencies and documentation from distorting the code-language statistics.
-
-The active application stack is centered on **Python** for engineering computation and **TypeScript** for the web platform.
+The existing roadmap is maintained in [docs/roadmap/V0.1_CDR_ROADMAP.md](docs/roadmap/V0.1_CDR_ROADMAP.md). Future work includes stronger CAD-to-analysis interoperability, additional reference cases, expanded aerodynamic analysis, improved visualization and physical-test evidence where available.
 
 ## Licensing
 
 TRAJECTUM is source-available under the **PolyForm Noncommercial License 1.0.0**.
 
-Use, modification and distribution for permitted noncommercial purposes are governed by the public license. Commercial use requires a separate written commercial license from the copyright holder. Third-party components remain subject to their own licenses and notices.
+Permitted noncommercial use, modification and distribution are governed by [LICENSE](LICENSE). Commercial use requires separate written permission. Third-party material remains subject to its own licenses and notices.
 
-See [LICENSE](LICENSE), [LICENSING.md](LICENSING.md) and [NOTICE](NOTICE).
+See [LICENSING.md](LICENSING.md) and [NOTICE](NOTICE).
 
+## Citation
+
+A `CITATION.cff` file has not been added yet because the repository currently exposes both the CDR documentation identifier `v0.1.0-cdr` and the web package version `0.1.0-dev0`.
+
+**[DECISIÓN PENDIENTE: confirmar la versión pública que debe utilizarse para la cita antes de crear CITATION.cff.]**
 ---
 
-<p align="center">
-  <strong>TRAJECTUM</strong><br>
-  Aerospace Engineering · Flight Physics · Simulation · Validation
-</p>
+**Current academic reference:** UTN FRH · Mecánica de los Fluidos · Grupo 07 · CDR 2026
