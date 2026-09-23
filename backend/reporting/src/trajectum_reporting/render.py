@@ -14,10 +14,10 @@ def render_markdown(report: EngineeringReport) -> str:
                 f"- Model: {item.model}",
                 f"- Inputs: {', '.join(item.inputs)}",
                 f"- Source: {item.source}",
-                f"- Assumptions: {', '.join(item.assumptions) or 'None declared'}",
-                f"- Validity: {item.validity or 'Not specified'}",
-                f"- Version: {item.version or 'Not specified'}",
-                f"- Test: {item.test or 'Not specified'}",
+                f"- Assumptions: {', '.join(item.assumptions)}",
+                f"- Validity: {item.validity}",
+                f"- Version: {item.version}",
+                f"- Test: {item.test}",
                 "",
             ])
     return "\n".join(lines).rstrip() + "\n"
