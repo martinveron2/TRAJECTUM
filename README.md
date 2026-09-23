@@ -122,6 +122,8 @@ TRAJECTUM/
 - **[Changelog](CHANGELOG.md)** — milestone history and release evolution.
 - **[v0.1.0-cdr Release Notes](docs/RELEASE_NOTES_v0.1.0-cdr.md)** — scope, validation status and known limits.
 - **[Licensing](LICENSING.md)** — public and commercial licensing scope.
+- **[Contributing](CONTRIBUTING.md)** — engineering contribution and validation standards.
+- **[Launch Kit](docs/LAUNCH_KIT.md)** — concise technical copy for sharing the project responsibly.
 
 ## Development Roadmap
 
@@ -155,7 +157,7 @@ Technical review is welcome from engineers, researchers and developers working i
 
 Current review topics include trajectory integration, aerodynamic modelling, CG/CP and static stability, propulsion-curve treatment, variable mass, atmosphere and drag modelling, validation strategy and software reproducibility.
 
-Use **[Engineering Review #52](https://github.com/martinveron2/TRAJECTUM/issues/52)** for focused technical feedback. If you genuinely find the project useful or promising, a GitHub star is appreciated, but concrete engineering criticism is the priority.
+Use **[Engineering Review #52](https://github.com/martinveron2/TRAJECTUM/issues/52)** for focused technical feedback. GitHub Discussions are also enabled for broader technical conversation. If you genuinely find the project useful or promising, a GitHub star is appreciated, but concrete engineering criticism is the priority.
 
 ## Engineering Principles
 
