@@ -139,6 +139,25 @@ TRAJECTUM/
 - [ ] Publish reproducible validation cases
 - [x] Release an interactive technical demonstration
 
+## Current CDR Reference Case
+
+The current CDR reference run uses RK4 2D with a 0.002 s integration step, ISA atmosphere, variable mass, the A-100 RN/KNDX thrust curve and a provisional vehicle drag coefficient of 0.345.
+
+| Parameter | Value |
+| --- | ---: |
+| Apogee | **720.45 m** |
+| Time to apogee | **11.66 s** |
+| Maximum velocity | **138.08 m/s** |
+| Maximum Mach | **0.406** |
+| Maximum dynamic pressure | **11.64 kPa** |
+| CG from nose | **523.49 mm** |
+| CG from support point | **301.56 mm** |
+| CP from nose | **602.68 mm** |
+| CP from support point | **222.37 mm** |
+| Static margin | **1.26 calibers** |
+
+The independent RocketPy cross-check gives **728.60 m** apogee under matched first-order assumptions; the simplified analytical estimate gives **816.0 m**. CG and CP remain reference values for the current CDR configuration until closure through CAD mass properties and/or physical measurement.
+
 ## Validation
 
 TRAJECTUM uses explicit reference cases and independent cross-checks to verify numerical behavior. The current CDR trajectory has been compared against **RocketPy 1.13.0** under matched first-order assumptions, with close agreement in apogee, burnout state, maximum velocity, Mach number and dynamic pressure.
