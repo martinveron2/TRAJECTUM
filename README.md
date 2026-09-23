@@ -1,7 +1,7 @@
 # TRAJECTUM
 
 <p align="center">
-  <img src="assets/trajectum-social-preview.jpg" alt="TRAJECTUM aerospace engineering and flight simulation platform" width="100%">
+  <img src="assets/trajectum-social-preview.svg" alt="TRAJECTUM aerospace engineering and flight simulation platform" width="100%">
 </p>
 
 <p align="center">
