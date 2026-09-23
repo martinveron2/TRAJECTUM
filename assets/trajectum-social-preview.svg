@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#020a16"/>
+      <stop offset="0.58" stop-color="#061426"/>
+      <stop offset="1" stop-color="#081b31"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3cbcff"/>
+      <stop offset="1" stop-color="#77e5ff"/>
+    </linearGradient>
+    <linearGradient id="earth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#183e64" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#04111f" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#12314e" stroke-width="1" opacity=".42"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <rect width="1200" height="600" fill="url(#grid)"/>
+  <path d="M0 460 Q250 395 520 470 T1200 470 V600 H0Z" fill="url(#earth)" opacity=".72"/>
+  <path d="M0 458 Q280 385 555 468 T1200 463" fill="none" stroke="#2f85bd" stroke-width="2" opacity=".5"/>
+  <g opacity=".55" stroke="#2e6f9c" fill="none">
+    <circle cx="960" cy="92" r="48"/>
+    <circle cx="960" cy="92" r="27"/>
+    <path d="M900 92h120M960 32v120M930 60l60 64"/>
+    <path d="M1060 36v420"/>
+    <path d="M1090 64v378"/>
+  </g>
+  <g transform="translate(1060 60)" fill="none" stroke="#6fcfff" stroke-width="1.5" opacity=".8">
+    <path d="M55 0C77 41 79 92 79 156v184l28 55-32-16-20 62-20-62-32 16 28-55V156C31 92 33 41 55 0Z"/>
+    <path d="M31 156h48M31 260h48M23 340h64M55 0v441"/>
+  </g>
+
+  <g transform="translate(50 56)">
+    <path d="M0 36 C85 -20 170 55 262 5 S420 36 460 0" fill="none" stroke="url(#cyan)" stroke-width="3" filter="url(#glow)"/>
+    <circle cx="260" cy="6" r="7" fill="#d9f3ff"/>
+    <circle cx="460" cy="0" r="6" fill="#82dfff"/>
+    <text x="0" y="102" fill="#f5fbff" font-family="Arial,Helvetica,sans-serif" font-size="62" font-weight="700" letter-spacing="7">TRAJECTUM</text>
+    <text x="3" y="139" fill="#b7cce0" font-family="Arial,Helvetica,sans-serif" font-size="21" letter-spacing="5">AEROSPACE ENGINEERING &amp;</text>
+    <text x="3" y="169" fill="#b7cce0" font-family="Arial,Helvetica,sans-serif" font-size="21" letter-spacing="5">FLIGHT SIMULATION PLATFORM</text>
+    <text x="3" y="205" fill="#a7c5dc" font-family="Arial,Helvetica,sans-serif" font-size="17">Rocket vehicle definition · CG/CP · RK4 trajectory · Validation</text>
+
+    <g transform="translate(0 248)" font-family="Arial,Helvetica,sans-serif">
+      <g>
+        <text x="0" y="0" fill="#6fd7ff" font-size="14" letter-spacing="2">APOGEE</text>
+        <text x="0" y="32" fill="#fff" font-size="28" font-weight="700">720.45 m</text>
+      </g>
+      <line x1="145" y1="-8" x2="145" y2="42" stroke="#2d5c7d"/>
+      <g transform="translate(172)">
+        <text x="0" y="0" fill="#6fd7ff" font-size="14" letter-spacing="2">VALIDATION</text>
+        <text x="0" y="32" fill="#fff" font-size="22" font-weight="700">RocketPy</text>
+        <text x="0" y="55" fill="#9bb8cf" font-size="15">cross-check</text>
+      </g>
+      <line x1="315" y1="-8" x2="315" y2="42" stroke="#2d5c7d"/>
+      <g transform="translate(342)">
+        <text x="0" y="0" fill="#6fd7ff" font-size="14" letter-spacing="2">INTERFACE</text>
+        <text x="0" y="32" fill="#fff" font-size="22" font-weight="700">Mobile ready</text>
+        <text x="0" y="55" fill="#9bb8cf" font-size="15">Desktop in development</text>
+      </g>
+    </g>
+  </g>
+
+  <g transform="translate(610 92)">
+    <rect x="0" y="0" width="500" height="370" rx="24" fill="#061627" stroke="#2a6d98" stroke-width="2"/>
+    <rect x="18" y="18" width="464" height="44" rx="11" fill="#0a2239" stroke="#17486c"/>
+    <text x="34" y="46" fill="#ecf8ff" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="700" letter-spacing="2">TRAJECTUM · CDR</text>
+    <text x="377" y="46" fill="#68d9ff" font-family="Arial,Helvetica,sans-serif" font-size="16">03 / 06</text>
+
+    <g transform="translate(18 80)">
+      <rect width="270" height="170" rx="14" fill="#071a2b" stroke="#17486c"/>
+      <text x="18" y="28" fill="#a9c6dc" font-family="Arial,Helvetica,sans-serif" font-size="13" letter-spacing="1">ALTITUDE vs TIME</text>
+      <path d="M24 140H250M24 45V140" stroke="#315d79" stroke-width="1"/>
+      <path d="M28 138 C68 132 104 76 138 48 C174 18 212 64 246 134" fill="none" stroke="#48c9ff" stroke-width="4" filter="url(#glow)"/>
+      <circle cx="143" cy="45" r="5" fill="#8beaff"/>
+      <text x="156" y="45" fill="#74e0ff" font-family="Arial,Helvetica,sans-serif" font-size="12">720.45 m</text>
+      <text x="103" y="160" fill="#789bb3" font-family="Arial,Helvetica,sans-serif" font-size="11">Time (s)</text>
+    </g>
+
+    <g transform="translate(306 80)">
+      <rect width="176" height="170" rx="14" fill="#071a2b" stroke="#17486c"/>
+      <text x="16" y="28" fill="#a9c6dc" font-family="Arial,Helvetica,sans-serif" font-size="13" letter-spacing="1">KEY METRICS</text>
+      <text x="16" y="61" fill="#7fdfff" font-family="Arial,Helvetica,sans-serif" font-size="12">CG</text>
+      <text x="145" y="61" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="13" text-anchor="end">0.301 m</text>
+      <text x="16" y="88" fill="#7fdfff" font-family="Arial,Helvetica,sans-serif" font-size="12">CP</text>
+      <text x="145" y="88" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="13" text-anchor="end">0.567 m</text>
+      <text x="16" y="115" fill="#7fdfff" font-family="Arial,Helvetica,sans-serif" font-size="12">RK4</text>
+      <text x="145" y="115" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="13" text-anchor="end">Trajectory</text>
+      <text x="16" y="142" fill="#7fdfff" font-family="Arial,Helvetica,sans-serif" font-size="12">STATUS</text>
+      <text x="145" y="142" fill="#67f0b3" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" text-anchor="end">ACTIVE</text>
+    </g>
+
+    <g transform="translate(18 268)" font-family="Arial,Helvetica,sans-serif">
+      <rect width="464" height="82" rx="14" fill="#081d31" stroke="#17486c"/>
+      <text x="18" y="26" fill="#74ddff" font-size="13" letter-spacing="1">ENGINEERING WORKFLOW</text>
+      <text x="18" y="54" fill="#dfeef7" font-size="14">Geometry → Mass &amp; CG → CP / Stability → Trajectory → Recovery → Export</text>
+      <text x="18" y="72" fill="#7f9db3" font-size="11">Independent RocketPy cross-check · v0.1.0-cdr</text>
+    </g>
+  </g>
+
+  <g font-family="Arial,Helvetica,sans-serif">
+    <text x="52" y="558" fill="#b7cee0" font-size="16">Live Demo · Engineering Review · v0.1.0-cdr</text>
+    <text x="1138" y="558" fill="#5fbadf" font-size="13" text-anchor="end" letter-spacing="2">MODEL · SIMULATE · VALIDATE · FLY</text>
+  </g>
+</svg>
