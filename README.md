@@ -1,7 +1,7 @@
 # TRAJECTUM
 
 <p align="center">
-  <img src="assets/imagen%20dell%20proyecto.jpeg" alt="TRAJECTUM aerospace engineering and flight simulation platform" width="100%">
+  <img src="assets/IMAGEN%20DEL%20PROYECTO.png" alt="TRAJECTUM aerospace engineering and flight simulation platform" width="100%">
 </p>
 
 <p align="center">
