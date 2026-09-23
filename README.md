@@ -23,6 +23,8 @@
 
 <p align="center">
   <a href="https://trajectum-vercel.vercel.app"><strong>Live Demo</strong></a>
+  · <strong>Mobile app: ready</strong>
+  · <strong>Desktop interface: in development</strong>
   ·
   <a href="docs/USER_GUIDE.md">User Guide</a>
   ·
