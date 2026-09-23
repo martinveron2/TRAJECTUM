@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Aerospace Engineering & Flight Simulation Platform</strong><br>
-  Modular engineering software for vehicle geometry, flight physics, trajectory analysis, aerodynamics, validation and technical reporting.
+  Open engineering software for rocket vehicle definition, stability analysis, trajectory simulation, recovery modelling and technical validation.
 </p>
 
 <p align="center">
@@ -14,9 +14,11 @@
   <img src="https://img.shields.io/badge/TypeScript-Frontend-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/React-Web-61DAFB?logo=react&logoColor=111" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white" alt="Docker">
   <img src="https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-6C63FF" alt="License">
-  <a href="https://github.com/martinveron2/TRAJECTUM/actions/workflows/ci.yml"><img src="https://github.com/martinveron2/TRAJECTUM/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
+
+<p align="center">
+  <strong>Academic reference case:</strong> UTN FR Haedo · Mecánica de los Fluidos · Grupo 07 · CDR 2026
 </p>
 
 <p align="center">
@@ -29,11 +31,15 @@
 
 ---
 
-## Mission
+## Engineering Purpose
 
-TRAJECTUM is being built as a serious aerospace engineering platform rather than a single-purpose calculator. The repository is organized as a modular monorepo so that geometry, physics, CAD, APIs, validation, reporting and user interfaces can evolve independently while sharing a common engineering model.
+TRAJECTUM is an aerospace engineering and flight-simulation platform developed to bring vehicle geometry, mass properties, propulsion, stability, trajectory, recovery, validation and technical reporting into a common analysis workflow.
 
-Current focus: **`v0.1.0-cdr`**.
+The repository is organized as a modular monorepo so that geometry, physics, CAD, APIs, validation, reporting and user interfaces can evolve independently while sharing a common engineering model.
+
+The current academic reference case is based on the **Grupo 07** configuration used in the **Mecánica de los Fluidos** integrative project at **Universidad Tecnológica Nacional — Facultad Regional Haedo (UTN FRH)**, including PDR and CDR design-review stages.
+
+TRAJECTUM is an independently developed software project. It is **not an official UTN institutional product, endorsement, certification or publication**.
 
 ## Engineering Scope
 
@@ -137,6 +143,16 @@ See **[Engineering Evidence](docs/ENGINEERING_EVIDENCE.md)** for the current ver
 ## Engineering Principles
 
 TRAJECTUM aims for **traceability, reproducibility and physical transparency**. Numerical outputs should be tied to explicit assumptions, models, units and validation evidence. Higher-fidelity capabilities should be added without hiding the engineering reasoning behind black-box interfaces.
+
+## Project Status
+
+- **Current engineering focus:** `v0.1.0-cdr`
+- **Development state:** active engineering development
+- **CI:** [GitHub Actions](https://github.com/martinveron2/TRAJECTUM/actions/workflows/ci.yml)
+- **Release history:** [CHANGELOG.md](CHANGELOG.md)
+- **Release notes:** [v0.1.0-cdr](docs/RELEASE_NOTES_v0.1.0-cdr.md)
+
+CI status is intentionally presented here rather than in the project header so that build health remains visible without dominating the technical overview.
 
 ## Language Statistics
 
