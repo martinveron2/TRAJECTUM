@@ -5,6 +5,11 @@
 </p>
 
 <p align="center">
+  <strong>Model · Simulate · Validate · Fly</strong><br>
+  Mobile engineering workflow ready · Desktop interface in development
+</p>
+
+<p align="center">
   <strong>Aerospace Engineering & Flight Simulation Platform</strong><br>
   Open engineering software for rocket vehicle definition, stability analysis, trajectory simulation, recovery modelling and technical validation.
 </p>
