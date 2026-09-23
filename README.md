@@ -27,6 +27,8 @@
   <a href="docs/USER_GUIDE.md">User Guide</a>
   ·
   <a href="docs/VALIDATION.md">Validation</a>
+  ·
+  <a href="https://github.com/martinveron2/TRAJECTUM/issues/52"><strong>Engineering Review</strong></a>
 </p>
 
 ---
@@ -139,6 +141,14 @@ This comparison is treated as an **independent cross-check**, not as experimenta
 TRAJECTUM separates **software maturity** from **physical-model maturity**. Each major capability is tied to an explicit method, evidence source, status and limitation so that a passing build is never mistaken for experimental validation.
 
 See **[Engineering Evidence](docs/ENGINEERING_EVIDENCE.md)** for the current verification matrix.
+
+## Engineering Review
+
+Technical review is welcome from engineers, researchers and developers working in aerodynamics, CFD, flight dynamics, GNC, rocketry, scientific computing and aerospace software.
+
+Current review topics include trajectory integration, aerodynamic modelling, CG/CP and static stability, propulsion-curve treatment, variable mass, atmosphere and drag modelling, validation strategy and software reproducibility.
+
+Use **[Engineering Review #52](https://github.com/martinveron2/TRAJECTUM/issues/52)** for focused technical feedback. If you genuinely find the project useful or promising, a GitHub star is appreciated, but concrete engineering criticism is the priority.
 
 ## Engineering Principles
 
